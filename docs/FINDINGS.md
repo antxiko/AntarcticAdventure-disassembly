@@ -56,6 +56,26 @@ Checked three separate ways, because one check isn't enough here:
 The other seven do show up pointed at, so the check works and NEW ZEALAND's
 zero means something.
 
+## The seal comes out of the hole in eight steps
+
+Three of the seven obstacles —the holes— have a seal come out of them, and it's
+all there in the cartridge: eight frames, one per step from 7 to 14, with the
+table at 0x78C1. That table's index is easy to read backwards, and the mistake
+is a convincing one: it looks like the obstacle type and it's **the step it's
+on**. Read the other way you get pointers that walk off the end of the
+cartridge; read right, you get eight in a row, and the last frame ends exactly
+on the one that hides the seal, which in turn ends where code starts again.
+
+The first three steps are two sprites and the remaining five are four, and each
+frame carries three variants, one per kind of hole.
+
+And the colour isn't in there. The routine that assembles it copies three bytes
+per sprite —position and picture— and **skips the fourth**, which is precisely
+the colour one: that was left in place by the attribute list, which gives the
+first sprite black and the other three dark red. Since on an MSX the
+lowest-numbered sprite goes in front, the black one ends up on top and what you
+see is a brown seal with a dark face.
+
 ## The alphabet has no F
 
 The typeface is laid out so a tile's number is its ASCII minus 0x20, so A is

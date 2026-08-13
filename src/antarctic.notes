@@ -1067,20 +1067,22 @@ L 0x781E FONDO_AVANZA
 D 0x7836 0x783A fondo_desplazamientos Cuatro desplazamientos con signo para la X: -1, +1, -2 y +2
 D 0x783A 0x7842 fondo_posiciones Cuatro parejas (Y, X) de salida, todas en la misma columna
 
-L 0x7842 ANIMA_LA_FOCA    Mueve el bicho de cuatro sprites que sale de los agujeros, sacando cada fotograma de la tabla de 0x78C1 (?)
-C 0x7848 El tipo de obstaculo del que ha salido
-C 0x785b (tipo+8)*2 dentro de la tabla de fotogramas
+L 0x7842 ANIMA_LA_FOCA    Saca la foca del agujero: ocho pasos, del 7 al 14, con su fotograma sacado de la tabla de 0x78C1. Dibujada, se la reconoce: primero asoma un filo, luego la cabeza, y del paso 10 en adelante el cuerpo entero con las dos aletas
+C 0x7848 0xE181 apunta al byte de ESTADO de la ficha, asi que esto es EL PASO en que va, no el tipo
+C 0x785b paso-15+8 = paso-7: ocho entradas, para los pasos 7 a 14
 C 0x78ae Cuatro sprites, y si hace falta tambien los otros cuatro
-L 0x785B FOCA_FOTOGRAMA
+L 0x785B FOCA_FOTOGRAMA   Coge el fotograma del paso en que va
 L 0x787B FOCA_PASO
 L 0x7886 FOCA_AVANZA
 L 0x7893 FOCA_AVANZA_UNO
 L 0x7897 FOCA_COPIA
 L 0x789B FOCA_ENTRADA
-L 0x789D FOCA_BYTE
+L 0x789D FOCA_BYTE       Copia Y, X y patron, y se SALTA el cuarto byte del atributo: el color. Por eso el color de la foca no esta en el fotograma sino en la lista de atributos de 0x66EF, que le deja el primer sprite en NEGRO y los otros tres en ROJO OSCURO. Dibujada asi es una foca con la cara oscura, porque el negro es el atributo 16 y en un MSX el numero mas bajo va delante
 L 0x78B9 FOCA_A_VRAM
 
-D 0x78C1 0x79C9 fotogramas_de_la_foca Punteros y datos de los fotogramas: 0x785B los indexa con (tipo+8)*2 y 0x7854 usa ademas el de 0x79BD
+D 0x78C1 0x78D1 punteros_de_la_foca Ocho punteros, uno por cada paso del 7 al 14. 0x785B los indexa con paso-7, no con el tipo de obstaculo: leido de la otra manera salen punteros que se van fuera del cartucho. Cierra clavada en 0x78D3, que es el primero de ellos
+D 0x78D1 0x79BD fotogramas_de_la_foca Los ocho fotogramas, cada uno con TRES variantes -una por tipo de agujero, que elige 0x7886 mirando el bit que 0x7657 encendio en 0xE183-. Los tres primeros pasos llevan dos sprites (18 bytes = 3 x 2 x 3) y los cinco siguientes cuatro (36 bytes). De cada sprite van tres bytes: Y, X y patron
+D 0x79BD 0x79C9 foca_escondida El fotograma del paso 15, con las cuatro Y a 0xE0 para sacarla de la pantalla. Cierra clavado en 0x79C9, donde vuelve a haber codigo
 
 # =============================================================================
 # EL SONIDO

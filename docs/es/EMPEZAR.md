@@ -45,7 +45,7 @@ comido un byte por el camino.
 
 Se puede leer igualmente el listado de `src/antarctic.asm` y las notas, que es
 donde está de verdad el trabajo: 394 rutinas con nombre, 264 comentarios
-anclados a su dirección y 60 rangos de datos con su explicación al lado.
+anclados a su dirección y 62 rangos de datos con su explicación al lado.
 
 ## Cómo está organizado
 
@@ -80,3 +80,4 @@ cabecera qué hace y por qué se hizo así:
 | `render_banderas.py` | las banderas de las diez paradas |
 | `render_decorados.py` | los decorados, con el intérprete del propio juego |
 | `render_pista.py` | los siete obstáculos, montados paso a paso |
+| `render_foca.py` | la foca que sale de los agujeros, fotograma a fotograma |

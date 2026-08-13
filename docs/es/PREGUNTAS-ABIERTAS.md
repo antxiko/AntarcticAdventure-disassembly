@@ -27,13 +27,6 @@ cuando hay partida de verdad, nunca en la demo.
 Lo que hacen está leído instrucción a instrucción. Qué se ve exactamente
 cuando salen, no.
 
-## Si el bicho de los agujeros es una foca
-
-De los agujeros sale algo hecho con cuatro sprites, con sus fotogramas en una
-tabla propia y su arco de salto. Que se puede pisar, que suena y que vale 300
-puntos está claro. Si lo que se ve es un pez, una foca o las dos cosas según el
-tipo de agujero, está por mirar.
-
 ## Lo que no se ha medido en el emulador
 
 Todo lo que dice este repositorio sale de leer el binario, y eso tiene un
@@ -44,7 +37,7 @@ mal, saldría ruido en vez de pingüinos—, pero no sustituyen a ver el juego
 correr.
 
 Falta esa pasada: arrancar el cartucho en un emulador, contrastar contra el
-listado lo que se ve, y usarlo para cerrar las tres preguntas de arriba.
+listado lo que se ve, y usarlo para cerrar las dos preguntas de arriba.
 
 ## Lo que sí está cerrado, y por qué se puede afirmar
 

@@ -58,6 +58,26 @@ basta:
 Las otras siete sí aparecen apuntadas, así que el control funciona y el cero de
 NEW ZEALAND significa algo.
 
+## La foca sale del agujero en ocho pasos
+
+De tres de los siete obstáculos —los agujeros— sale una foca, y está entera en
+el cartucho: ocho fotogramas, uno por cada paso del 7 al 14, con la tabla en
+0x78C1. El índice de esa tabla es fácil de leer al revés, y el error es
+convincente: parece el tipo de obstáculo y es **el paso en que va**. Leída de
+la otra manera salen punteros que se van fuera del cartucho; leída bien salen
+ocho seguidos, y el último acaba justo en el fotograma que la esconde, que a su
+vez acaba donde vuelve a haber código.
+
+Los tres primeros pasos son de dos sprites y los cinco siguientes de cuatro, y
+cada fotograma lleva tres variantes, una por tipo de agujero.
+
+Y el color no está ahí. La rutina que la monta copia tres bytes de cada sprite
+—posición y dibujo— y **se salta el cuarto**, que es justo el del color: ese lo
+dejó puesto la lista de atributos, que le da el primer sprite en negro y los
+otros tres en rojo oscuro. Como en un MSX el sprite de número más bajo va
+delante, el negro queda encima y lo que se ve es una foca marrón con la cara
+oscura.
+
 ## El alfabeto no tiene F
 
 La tipografía va colocada de forma que el número de casilla es su ASCII menos

@@ -4444,11 +4444,11 @@ FONDO_AVANZA:
 ; ======================================================================
 
 
-ANIMA_LA_FOCA:		; Mueve el bicho de cuatro sprites que sale de los agujeros, sacando cada fotograma de la tabla de 0x78C1 (?)
+ANIMA_LA_FOCA:		; Saca la foca del agujero: ocho pasos, del 7 al 14, con su fotograma sacado de la tabla de 0x78C1. Dibujada, se la reconoce: primero asoma un filo, luego la cabeza, y del paso 10 en adelante el cuerpo entero con las dos aletas
 	ld a,(0e183h)		;7842
 	and 0e0h		;7845
 	ret z			;7847
-	ld hl,(0e181h)		;7848   ; El tipo de obstaculo del que ha salido
+	ld hl,(0e181h)		;7848   ; 0xE181 apunta al byte de ESTADO de la ficha, asi que esto es EL PASO en que va, no el tipo
 	ld a,(hl)		;784b
 	ld hl,0e183h		;784c
 	sub 00fh		;784f
@@ -4457,8 +4457,8 @@ ANIMA_LA_FOCA:		; Mueve el bicho de cuatro sprites que sale de los agujeros, sac
 	ld hl,079bdh		;7854
 	ld b,004h		;7857
 	jr FOCA_COPIA		;7859
-FOCA_FOTOGRAMA:
-	ld hl,078c1h		;785b   ; (tipo+8)*2 dentro de la tabla de fotogramas
+FOCA_FOTOGRAMA:		; Coge el fotograma del paso en que va
+	ld hl,078c1h		;785b   ; paso-15+8 = paso-7: ocho entradas, para los pasos 7 a 14
 	add a,008h		;785e
 	ld b,a			;7860
 	add a,a			;7861
@@ -4497,7 +4497,7 @@ FOCA_COPIA:
 	push de			;789a
 FOCA_ENTRADA:
 	ld c,003h		;789b
-FOCA_BYTE:
+FOCA_BYTE:		; Copia Y, X y patron, y se SALTA el cuarto byte del atributo: el color. Por eso el color de la foca no esta en el fotograma sino en la lista de atributos de 0x66EF, que le deja el primer sprite en NEGRO y los otros tres en ROJO OSCURO. Dibujada asi es una foca con la cara oscura, porque el negro es el atributo 16 y en un MSX el numero mas bajo va delante
 	ld a,(hl)		;789d
 	ld (de),a		;789e
 	inc hl			;789f
@@ -4520,8 +4520,12 @@ FOCA_A_VRAM:
 	jp COPIA_A_VRAM		;78be
 
 ; ----------------------------------------------------------------------
-; DATOS fotogramas_de_la_foca: Punteros y datos de los fotogramas: 0x785B los indexa con (tipo+8)*2 y 0x7854 usa ademas el de 0x79BD
-;   0x78c1..0x79c9  (264 bytes)
+; DATOS punteros_de_la_foca: Ocho punteros, uno por cada paso del 7 al 14. 0x785B los indexa con paso-7, no con el tipo de obstaculo: leido de la otra manera salen punteros que se van fuera del cartucho. Cierra clavada en 0x78D3, que es el primero de ellos
+;   0x78c1..0x78d1  (16 bytes)
+; DATOS fotogramas_de_la_foca: Los ocho fotogramas, cada uno con TRES variantes -una por tipo de agujero, que elige 0x7886 mirando el bit que 0x7657 encendio en 0xE183-. Los tres primeros pasos llevan dos sprites (18 bytes = 3 x 2 x 3) y los cinco siguientes cuatro (36 bytes). De cada sprite van tres bytes: Y, X y patron
+;   0x78d1..0x79bd  (236 bytes)
+; DATOS foca_escondida: El fotograma del paso 15, con las cuatro Y a 0xE0 para sacarla de la pantalla. Cierra clavado en 0x79C9, donde vuelve a haber codigo
+;   0x79bd..0x79c9  (12 bytes)
 ; ----------------------------------------------------------------------
 	defb 0d3h,078h,0e5h,078h,0f7h,078h,009h,079h,02dh,079h,051h,079h,075h,079h,099h,079h	; 78c1  .x.x.x.y-yQyuy.y
 	defb 0bdh,079h,067h,078h,07ch,067h,078h,0e8h,067h,090h,07ch,067h,090h,0e8h,067h,060h	; 78d1  .ygx|gx.g.|g..g`

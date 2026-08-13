@@ -27,12 +27,12 @@ DATOS = 10437
 TXT = {
     "es": dict(
         titulo="Antarctic Adventure (1984) — desensamblado comentado",
-        claim="Un cartucho japonés de 16 KB de 1984, desmontado byte a byte. "
+        claim="Un cartucho de 16 KB de 1984, desmontado byte a byte. "
               "Dentro hay un pingüino que cruza la Antártida entre diez bases "
               "de investigación, una partida de demostración que va grabada "
               "como un pianola, y una base a la que no se llega nunca.",
         ficha=["Konami · <b>1984</b>", "Cartucho de <b>16 KB</b>",
-               "MSX1 · <b>RC-701</b>", "Sin cinta: <b>ROM fija</b>"],
+               "MSX1 · <b>RC-701</b>", "Volcado <b>europeo</b>"],
         nav=[("#numbers", "Las cifras"), ("#findings", "Hallazgos"),
              ("#screens", "Los gráficos")],
         docnav=[("EMPEZAR.html", "Empezar"), ("EL-JUEGO.html", "El juego"),
@@ -58,12 +58,12 @@ TXT = {
     ),
     "en": dict(
         titulo="Antarctic Adventure (1984) — a commented disassembly",
-        claim="A 16 KB Japanese cartridge from 1984, taken apart byte by byte. "
+        claim="A 16 KB cartridge from 1984, taken apart byte by byte. "
               "Inside there's a penguin crossing Antarctica between ten "
               "research bases, an attract-mode game that plays back from a "
               "recording like a pianola roll, and one base you never get to.",
         ficha=["Konami · <b>1984</b>", "A <b>16 KB</b> cartridge",
-               "MSX1 · <b>RC-701</b>", "No tape: <b>fixed ROM</b>"],
+               "MSX1 · <b>RC-701</b>", "<b>European</b> dump"],
         nav=[("#numbers", "The numbers"), ("#findings", "What turned up"),
              ("#screens", "The graphics")],
         docnav=[("GETTING-STARTED.html", "Getting started"),
@@ -213,8 +213,12 @@ HALLAZGOS = {
 
 IMAGENES = [
     ("sprites.png",
-     "Los 64 sprites de 16x16: los pingüinos, los peces y las focas",
-     "The 64 16x16 sprites: the penguins, the fish and the seals"),
+     "Los 64 sprites de 16x16. Salen en blanco porque el color no vive en el "
+     "dibujo: cada sprite lo lleva en su entrada de la tabla de atributos, "
+     "así que el mismo dibujo puede salir de un color o de otro",
+     "The 64 16x16 sprites. They come out white because colour doesn't live in "
+     "the picture: each sprite carries it in its entry in the attribute table, "
+     "so the same picture can come out in one colour or another"),
     ("tiles-banco0.png",
      "El primero de los tres bancos de casillas: la tipografía, el logotipo de "
      "KONAMI y el rótulo de la presentación",
@@ -226,6 +230,11 @@ IMAGENES = [
     ("banderas.png",
      "Las banderas de las bases, descomprimidas: siete dibujos para diez paradas",
      "The bases' flags, decompressed: seven pictures for ten stops"),
+    ("foca.png",
+     "La foca saliendo del agujero: los ocho pasos, y las tres variantes que "
+     "hay según de qué agujero salga",
+     "The seal coming out of the hole: all eight steps, and the three variants "
+     "depending on which hole it comes from"),
     ("pista.png",
      "Un agujero en el hielo, montado por trozos según se acerca",
      "A hole in the ice, built up piece by piece as it comes closer"),

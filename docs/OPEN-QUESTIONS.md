@@ -27,13 +27,6 @@ real game, never in the demo.
 What they do is read instruction by instruction. What you actually see when
 they appear isn't.
 
-## Whether the thing from the holes is a seal
-
-Something made of four sprites comes out of the holes, with its frames in a
-table of its own and its own jump arc. That it can be landed on, that it makes
-a noise and that it pays 300 points is clear. Whether what you see is a fish, a
-seal, or both depending on the kind of hole, is still to be looked at.
-
 ## What hasn't been measured in an emulator
 
 Everything this repository says comes from reading the binary, and that has a
@@ -43,7 +36,7 @@ where we say they are —get the video memory layout wrong and you'd get noise
 instead of penguins— but they're no substitute for watching the game run.
 
 That pass is still missing: boot the cartridge in an emulator, check what's on
-screen against the listing, and use it to close the three questions above.
+screen against the listing, and use it to close the two questions above.
 
 ## What is settled, and why it can be said
 

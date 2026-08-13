@@ -1,6 +1,6 @@
 # Antarctic Adventure (Konami, 1984, MSX) — a commented disassembly
 
-A 16 KB Japanese cartridge from 1984, taken apart byte by byte. All 16,384
+A 16 KB Konami cartridge from 1984, taken apart byte by byte. All 16,384
 bytes are bounded and owned, and inside there's a penguin crossing Antarctica
 between ten research bases, an attract mode that plays back from a recording
 like a pianola roll, and one base you never get to.
@@ -56,7 +56,7 @@ what we say about them does. So two more checks run alongside:
 | bytes unexplained | **0** |
 | named labels | 394 |
 | anchored comments | 264 |
-| data ranges with an explanation | 60 |
+| data ranges with an explanation | 62 |
 
 ## A few things that turned up
 
@@ -79,7 +79,7 @@ There's more, with the evidence, on
 
 The listing is complete and every byte is accounted for, but nothing has been
 measured in an emulator yet: what's read explains what the program does, not
-what the player sees. Three things wait on that, and they're listed with the
+what the player sees. Two things wait on that, and they're listed with the
 rest on
 [the open-questions page](https://antxiko.github.io/AntarcticAdventure-disassembly/OPEN-QUESTIONS.html).
 

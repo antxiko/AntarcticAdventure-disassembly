@@ -44,7 +44,7 @@ byte along the way.
 
 You can still read `src/antarctic.asm` and the notes, which is where the work
 actually lives: 394 named routines, 264 comments anchored to their address, and
-60 data ranges with an explanation beside each one.
+62 data ranges with an explanation beside each one.
 
 ## How it's laid out
 
@@ -81,3 +81,4 @@ does and why it was built that way:
 | `render_banderas.py` | the flags of the ten stops |
 | `render_decorados.py` | the scenery, using the game's own interpreter |
 | `render_pista.py` | the seven obstacles, built up step by step |
+| `render_foca.py` | the seal that comes out of the holes, frame by frame |
