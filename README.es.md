@@ -56,7 +56,7 @@ lo que decimos de ellos. Así que van dos comprobaciones más al lado:
 | bytes de datos | 10.437 |
 | bytes sin explicar | **0** |
 | etiquetas con nombre | 394 |
-| comentarios anclados | 264 |
+| comentarios anclados | 267 |
 | rangos de datos con explicación | 62 |
 
 ## Algunas cosas que aparecieron
@@ -79,7 +79,7 @@ Hay más, con la evidencia al lado, en
 
 El listado está completo y no hay un byte sin explicar, pero todavía no se ha
 medido nada en un emulador: lo que se lee explica lo que el programa hace, no
-lo que el jugador ve. Dos cosas dependen de eso, y están con las demás en
+lo que el jugador ve. Una cosa depende de eso, y están con las demás en
 [la página de preguntas abiertas](https://antxiko.github.io/AntarcticAdventure-disassembly/es/PREGUNTAS-ABIERTAS.html).
 
 ## Para empezar

@@ -55,7 +55,7 @@ what we say about them does. So two more checks run alongside:
 | bytes of data | 10,437 |
 | bytes unexplained | **0** |
 | named labels | 394 |
-| anchored comments | 264 |
+| anchored comments | 267 |
 | data ranges with an explanation | 62 |
 
 ## A few things that turned up
@@ -79,7 +79,7 @@ There's more, with the evidence, on
 
 The listing is complete and every byte is accounted for, but nothing has been
 measured in an emulator yet: what's read explains what the program does, not
-what the player sees. Two things wait on that, and they're listed with the
+what the player sees. One thing waits on that, and they're listed with the
 rest on
 [the open-questions page](https://antxiko.github.io/AntarcticAdventure-disassembly/OPEN-QUESTIONS.html).
 

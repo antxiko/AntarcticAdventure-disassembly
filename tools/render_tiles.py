@@ -135,7 +135,16 @@ def duenos(rom):
         pon(patron, colores_de_atributos(rom, 20, 1)[0], "sombra")
     # Los de fondo, que no salen de la lista: 0x77CE les pone el color a mano.
     for patron in (0xE0, 0xDC, 0xD8, 0xD1):
-        pon(patron, 0x0F, "fondo")
+        pon(patron, 0x0F, "nubes")
+    # LAS PATAS AMARILLAS. Mientras el pinguino chapotea en el agujero se le
+    # ven dos patas amarillas, y no hay un sprite nuevo para eso: 0x4F7F le
+    # cambia el COLOR al atributo de la sombra, de azul oscuro a 0x0A, y
+    # 0x4FC6 le va poniendo estos tres patrones. Al salir, 0x5012 le devuelve
+    # el patron y el color de sombra.
+    for patron in (0x70, 0x74, 0x78):
+        pon(patron, 0x0A, "patas")
+    # Y el atributo 14, que la lista deja ya en amarillo con su patron puesto.
+    pon(0xD4, colores_de_atributos(rom, 14, 1)[0], "chapuzon")
     return mapa
 
 

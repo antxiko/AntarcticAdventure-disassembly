@@ -525,7 +525,7 @@ PARTIDA_ERA_DEMO:		; Si no habia partida de verdad, vuelve al paso 1 de la demo
 ESTADO_12_TIME_OUT:		; Estado 12: se acabo el tiempo
 	xor a			;42dc
 	ld (0e00ch),a		;42dd
-	ld hl,0e0b8h		;42e0   ; Aparca fuera de la pantalla los cuatro sprites de fondo de 0xE0B8
+	ld hl,0e0b8h		;42e0   ; Aparca las cuatro nubes fuera de la pantalla
 	ld de,00004h		;42e3
 	ld b,004h		;42e6
 TIME_OUT_SPRITES:
@@ -1840,7 +1840,7 @@ PASO_DE_PARTIDA:		; Todo lo que pasa en un fotograma de juego
 	call AVANZA_DISTANCIA		;4b78   ; La distancia que queda y el decorado que toca
 	call ELIGE_DECORADO		;4b7b
 	call CREA_OBSTACULO		;4b7e
-	jp SPRITES_DE_FONDO		;4b81
+	jp LAS_NUBES		;4b81
 
 ; ----------------------------------------------------------------------
 ; DATOS poses_del_pinguino: Diez poses de cuatro bytes: los cuatro patrones de sprite que forman el pinguino en cada postura. 0x4BD5 las reparte de cuatro en cuatro por los atributos
@@ -2462,15 +2462,31 @@ AGUA_SPRITES:
 	ld a,004h		;4f66
 	call SUMA_A_HL		;4f68
 	djnz AGUA_SPRITES		;4f6b
-DIBUJA_EN_EL_AGUA:		; Coloca al pinguino asomando por el agujero, en Y=0x9F
+
+; ----------------------------------------------------------------------
+; ----------------------------------------------------------------------
+; LAS PATAS AMARILLAS, QUE SON LA SOMBRA PINTADA DE OTRO COLOR
+; ----------------------------------------------------------------------
+; Mientras el pinguino chapotea en el agujero se le ven dos patas
+; amarillas moviendose. No hay un sprite nuevo para eso: es el
+; MISMO atributo que hace de sombra, al que estas dos
+; instrucciones le cambian el color de azul oscuro a amarillo.
+; Luego 0x4FC6 le va poniendo los patrones 0x70, 0x74 y 0x78,
+; que son las patas en tres posturas, y al salir del agua
+; 0x5012 le devuelve el patron 0xA0 y el color 4.
+; Es la misma idea que las banderas o la foca: el color de un
+; sprite no esta en su dibujo, esta en su entrada de atributo,
+; asi que se puede cambiar sin tocar un solo byte de grafico.
+; ----------------------------------------------------------------------
+DIBUJA_EN_EL_AGUA:		; Coloca al pinguino asomando por el agujero, en Y=0x9F, y le PONE LAS PATAS AMARILLAS
 	ld hl,(0e078h)		;4f6d
 	ld l,09fh		;4f70
 	call COLOCA_SPRITES		;4f72
 	ld a,010h		;4f75
 	call PONE_POSE		;4f77
 	ld a,0e0h		;4f7a
-	ld (0e0a0h),a		;4f7c
-	ld hl,0e00ah		;4f7f
+	ld (0e0a0h),a		;4f7c   ; Saca de la pantalla el sprite de la sombra...
+	ld hl,0e00ah		;4f7f   ; ...y con este par de bytes le cambia el COLOR a 0x0A, que es amarillo, y aparca el de al lado
 	ld (0e0a3h),hl		;4f82
 VUELCA_OCHO_SPRITES:		; Los ocho atributos de 0xE068 a la VRAM, sprites 6 a 13
 	ld hl,0e068h		;4f85
@@ -2489,11 +2505,11 @@ SIGUE_EN_EL_AGUA:		; Manotea hasta que se pulsa el gatillo
 	jr nz,SALE_DEL_AGUA		;4fa2
 	ld a,(0e003h)		;4fa4
 	ld c,a			;4fa7
-	and 007h		;4fa8   ; La animacion cambia cada ocho
+	and 007h		;4fa8   ; Las patas cambian cada ocho fotogramas
 	ret nz			;4faa
 	ld a,008h		;4fab
 	ld b,099h		;4fad
-	ld de,01470h		;4faf
+	ld de,01470h		;4faf   ; Los tres patrones de pataleo: 0x70, 0x74 y 0x78
 	bit 3,c			;4fb2
 	jr z,AGUA_ANIMA		;4fb4
 	ld a,004h		;4fb6
@@ -2503,7 +2519,7 @@ SIGUE_EN_EL_AGUA:		; Manotea hasta que se pulsa el gatillo
 	jr z,AGUA_ANIMA		;4fbf
 	ld a,00bh		;4fc1
 	ld de,01c78h		;4fc3
-AGUA_ANIMA:
+AGUA_ANIMA:		; Mueve las patas: el patron va cambiando entre 0x70, 0x74 y 0x78, y la posicion los sigue
 	ld hl,(0e078h)		;4fc6
 	ld l,b			;4fc9
 	add a,h			;4fca
@@ -4335,18 +4351,18 @@ VELOCIMETRO_A_VRAM:
 	ld de,03839h		;779c
 	ld bc,00006h		;779f
 	jp COPIA_A_VRAM		;77a2
-SPRITES_DE_FONDO:		; Cuatro sprites que suben por la pantalla al ritmo de la velocidad, se van abriendo y cambian de patron por el camino (?)
+LAS_NUBES:		; Las cuatro nubes del cielo. Suben por la pantalla al ritmo de la velocidad, se van abriendo hacia los lados y crecen de patron por el camino: es la perspectiva de acercarse a ellas y pasarles por debajo. Se apagan al llegar arriba (Y=8) y vuelven a salir
 	ld a,(0e002h)		;77a5   ; En la demo no salen
 	bit 6,a			;77a8
 	ret z			;77aa
 	ld b,004h		;77ab
 	ld de,0e0b8h		;77ad
 	ld hl,0e14ah		;77b0
-FONDO_CREA:
+NUBE_NUEVA:
 	ld a,(hl)		;77b3
 	or a			;77b4
 	ld a,004h		;77b5
-	jr nz,FONDO_SIGUIENTE		;77b7
+	jr nz,NUBE_SIGUIENTE		;77b7
 	push hl			;77b9
 	inc (hl)		;77ba
 	ld hl,07838h		;77bb   ; Donde empieza cada uno
@@ -4367,30 +4383,30 @@ FONDO_CREA:
 	ld (de),a		;77d0
 	ld a,001h		;77d1
 	pop hl			;77d3
-FONDO_SIGUIENTE:
+NUBE_SIGUIENTE:
 	call SUMA_A_DE		;77d4
 	inc hl			;77d7
-	djnz FONDO_CREA		;77d8
+	djnz NUBE_NUEVA		;77d8
 	ld hl,0e149h		;77da
 	dec (hl)		;77dd
 	ret nz			;77de
-	ld a,(0e148h)		;77df   ; El ritmo, que es la mitad de la velocidad
+	ld a,(0e148h)		;77df   ; El ritmo al que suben, que es la mitad de la velocidad del pinguino
 	ld (hl),a		;77e2
 	ld b,000h		;77e3
 	ld hl,0e14ah		;77e5
 	ld de,0e0b8h		;77e8
-FONDO_MUEVE:
+MUEVE_LAS_NUBES:
 	ld a,(hl)		;77eb
 	or a			;77ec
-	jr z,FONDO_AVANZA		;77ed
+	jr z,NUBE_AVANZA		;77ed
 	ld a,(de)		;77ef
 	cp 008h			;77f0
-	jr nz,FONDO_PASO		;77f2
+	jr nz,NUBE_PASO		;77f2
 	ld a,0d1h		;77f4
 	ld (de),a		;77f6
 	ld (hl),000h		;77f7
-	jr FONDO_AVANZA		;77f9
-FONDO_PASO:
+	jr NUBE_AVANZA		;77f9
+NUBE_PASO:
 	push de			;77fb
 	inc (hl)		;77fc
 	ex de,hl		;77fd
@@ -4408,33 +4424,33 @@ FONDO_PASO:
 	ld a,(hl)		;780d
 	cp 00ch			;780e
 	ld a,0dch		;7810
-	jr z,FONDO_PATRON		;7812
+	jr z,NUBE_CRECE		;7812
 	ld a,(hl)		;7814
 	cp 018h			;7815
 	ld a,0d8h		;7817
-	jr nz,FONDO_RECUPERA		;7819
-FONDO_PATRON:
+	jr nz,NUBE_RECUPERA		;7819
+NUBE_CRECE:
 	inc de			;781b
 	ld (de),a		;781c
-FONDO_RECUPERA:
+NUBE_RECUPERA:
 	pop de			;781d
-FONDO_AVANZA:
+NUBE_AVANZA:
 	ld a,004h		;781e
 	call SUMA_A_DE		;7820
 	inc hl			;7823
 	ld a,004h		;7824
 	inc b			;7826
 	cp b			;7827
-	jr nz,FONDO_MUEVE		;7828
+	jr nz,MUEVE_LAS_NUBES		;7828
 	ld hl,0e0b8h		;782a
 	ld de,03b68h		;782d
 	ld bc,00010h		;7830
 	jp COPIA_A_VRAM		;7833
 
 ; ----------------------------------------------------------------------
-; DATOS fondo_desplazamientos: Cuatro desplazamientos con signo para la X: -1, +1, -2 y +2
+; DATOS nubes_desplazamientos: Cuanto se corre de lado cada nube en cada paso: -1, +1, -2 y +2. Con la Y subiendo y la X abriendose, las cuatro se separan del centro segun se acercan
 ;   0x7836..0x783a  (4 bytes)
-; DATOS fondo_posiciones: Cuatro parejas (Y, X) de salida, todas en la misma columna
+; DATOS nubes_posiciones: Por donde asoma cada nube: cuatro parejas (Y, X), las cuatro en la misma columna y a alturas distintas
 ;   0x783a..0x7842  (8 bytes)
 ; ----------------------------------------------------------------------
 	defb 0ffh,001h,0feh,002h,038h,098h,037h,058h,03ch,07ch,03ah,074h	; 7836  ....8.7X<|:t

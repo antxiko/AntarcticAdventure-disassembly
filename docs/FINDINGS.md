@@ -80,6 +80,36 @@ first sprite black and the other three dark red. Since on an MSX the
 lowest-numbered sprite goes in front, the black one ends up on top and what you
 see is a brown seal with a dark face.
 
+## The clouds come at you and pass overhead
+
+There are four clouds in the sky, and they aren't part of the scenery: they're
+four sprites the game drives separately. They come up at fixed spots, rise up
+the screen at a rate set by the penguin's speed —half of it, exactly— spread
+outwards with a drift of their own each (-1, +1, -2 and +2) and change picture
+along the way, to a bigger one.
+
+All of that together is perspective: the cloud grows and spreads because you're
+closing on it, and it rises because it ends up passing over your head. At the
+very top it switches off and comes back up from below.
+
+And they only show up in a real game. In the demo the sky is empty.
+
+## The yellow feet aren't a new picture
+
+When the penguin falls down a hole and flails about in there, you can see two
+yellow feet moving. There's no new sprite for that: it's **the same sprite that
+serves as his shadow**, with two instructions changing its colour from dark
+blue to yellow. From then on it's just a matter of feeding it the three
+flailing pictures, and on the way out another instruction gives it back its own
+picture and its shadow colour.
+
+It's the same idea used all over the cartridge: **a sprite's colour doesn't
+live in its picture**, it lives in its entry in the attribute table. So
+anything can be recoloured without touching a single byte of artwork, and
+that's what's done with the shadow here, with the seal —whose dark face is a
+second black sprite laid over the red body— and with the flags, all ten of
+which come out of the same pair of sprites with their two colours swapped.
+
 ## The alphabet has no F
 
 The typeface is laid out so a tile's number is its ASCII minus 0x20, so A is

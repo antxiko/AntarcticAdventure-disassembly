@@ -230,7 +230,7 @@ L 0x42D3 PARTIDA_CAMBIA
 L 0x42D7 PARTIDA_ERA_DEMO   Si no habia partida de verdad, vuelve al paso 1 de la demo
 
 L 0x42DC ESTADO_12_TIME_OUT Estado 12: se acabo el tiempo
-C 0x42e0 Aparca fuera de la pantalla los cuatro sprites de fondo de 0xE0B8
+C 0x42e0 Aparca las cuatro nubes fuera de la pantalla
 C 0x42f5 Sonido 0x8C
 C 0x42f8 El rotulo "TIME OUT"
 L 0x42E8 TIME_OUT_SPRITES
@@ -808,12 +808,28 @@ L 0x4F4B CAE_AL_AGUA      Se cae por el agujero: ocho sprites y a esperar
 C 0x4f4e 0xE140: esta en el agua
 C 0x4f5c Sonido 5
 L 0x4F65 AGUA_SPRITES
-L 0x4F6D DIBUJA_EN_EL_AGUA  Coloca al pinguino asomando por el agujero, en Y=0x9F
+L 0x4F6D DIBUJA_EN_EL_AGUA  Coloca al pinguino asomando por el agujero, en Y=0x9F, y le PONE LAS PATAS AMARILLAS
+C 0x4f7c Saca de la pantalla el sprite de la sombra...
+C 0x4f7f ...y con este par de bytes le cambia el COLOR a 0x0A, que es amarillo, y aparca el de al lado
+B 0x4F6D ----------------------------------------------------------------------
+B 0x4F6D LAS PATAS AMARILLAS, QUE SON LA SOMBRA PINTADA DE OTRO COLOR
+B 0x4F6D ----------------------------------------------------------------------
+B 0x4F6D Mientras el pinguino chapotea en el agujero se le ven dos patas
+B 0x4F6D amarillas moviendose. No hay un sprite nuevo para eso: es el
+B 0x4F6D MISMO atributo que hace de sombra, al que estas dos
+B 0x4F6D instrucciones le cambian el color de azul oscuro a amarillo.
+B 0x4F6D Luego 0x4FC6 le va poniendo los patrones 0x70, 0x74 y 0x78,
+B 0x4F6D que son las patas en tres posturas, y al salir del agua
+B 0x4F6D 0x5012 le devuelve el patron 0xA0 y el color 4.
+B 0x4F6D Es la misma idea que las banderas o la foca: el color de un
+B 0x4F6D sprite no esta en su dibujo, esta en su entrada de atributo,
+B 0x4F6D asi que se puede cambiar sin tocar un solo byte de grafico.
 L 0x4F85 VUELCA_OCHO_SPRITES  Los ocho atributos de 0xE068 a la VRAM, sprites 6 a 13
 L 0x4F94 SIGUE_EN_EL_AGUA  Manotea hasta que se pulsa el gatillo
 C 0x4f9b Los primeros 32 fotogramas no vale pulsar
-C 0x4fa8 La animacion cambia cada ocho
-L 0x4FC6 AGUA_ANIMA
+C 0x4fa8 Las patas cambian cada ocho fotogramas
+C 0x4faf Los tres patrones de pataleo: 0x70, 0x74 y 0x78
+L 0x4FC6 AGUA_ANIMA       Mueve las patas: el patron va cambiando entre 0x70, 0x74 y 0x78, y la posicion los sigue
 L 0x4FE2 SALE_DEL_AGUA    Con el gatillo se sale, y la velocidad vuelve a 0x13
 L 0x5000 SALIDA_SPRITES
 L 0x501C COGE_OBJETO      Tipos 5 y 6: se borra la ficha, se repinta el hueco y suma 500 puntos
@@ -1052,20 +1068,20 @@ L 0x7789 VELOCIMETRO_LLENA
 L 0x778E VELOCIMETRO_CASILLA
 L 0x7795 VELOCIMETRO_VACIA
 L 0x7799 VELOCIMETRO_A_VRAM
-L 0x77A5 SPRITES_DE_FONDO Cuatro sprites que suben por la pantalla al ritmo de la velocidad, se van abriendo y cambian de patron por el camino (?)
+L 0x77A5 LAS_NUBES        Las cuatro nubes del cielo. Suben por la pantalla al ritmo de la velocidad, se van abriendo hacia los lados y crecen de patron por el camino: es la perspectiva de acercarse a ellas y pasarles por debajo. Se apagan al llegar arriba (Y=8) y vuelven a salir
 C 0x77a5 En la demo no salen
 C 0x77bb Donde empieza cada uno
-C 0x77df El ritmo, que es la mitad de la velocidad
-L 0x77B3 FONDO_CREA
-L 0x77D4 FONDO_SIGUIENTE
-L 0x77EB FONDO_MUEVE
-L 0x77FB FONDO_PASO
-L 0x781B FONDO_PATRON
-L 0x781D FONDO_RECUPERA
-L 0x781E FONDO_AVANZA
+C 0x77df El ritmo al que suben, que es la mitad de la velocidad del pinguino
+L 0x77B3 NUBE_NUEVA
+L 0x77D4 NUBE_SIGUIENTE
+L 0x77EB MUEVE_LAS_NUBES
+L 0x77FB NUBE_PASO
+L 0x781B NUBE_CRECE
+L 0x781D NUBE_RECUPERA
+L 0x781E NUBE_AVANZA
 
-D 0x7836 0x783A fondo_desplazamientos Cuatro desplazamientos con signo para la X: -1, +1, -2 y +2
-D 0x783A 0x7842 fondo_posiciones Cuatro parejas (Y, X) de salida, todas en la misma columna
+D 0x7836 0x783A nubes_desplazamientos Cuanto se corre de lado cada nube en cada paso: -1, +1, -2 y +2. Con la Y subiendo y la X abriendose, las cuatro se separan del centro segun se acercan
+D 0x783A 0x7842 nubes_posiciones Por donde asoma cada nube: cuatro parejas (Y, X), las cuatro en la misma columna y a alturas distintas
 
 L 0x7842 ANIMA_LA_FOCA    Saca la foca del agujero: ocho pasos, del 7 al 14, con su fotograma sacado de la tabla de 0x78C1. Dibujada, se la reconoce: primero asoma un filo, luego la cabeza, y del paso 10 en adelante el cuerpo entero con las dos aletas
 C 0x7848 0xE181 apunta al byte de ESTADO de la ficha, asi que esto es EL PASO en que va, no el tipo

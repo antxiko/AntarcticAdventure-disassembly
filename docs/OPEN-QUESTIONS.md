@@ -17,16 +17,6 @@ What isn't settled is what you'd call each one looking at it. That types 5 and
 clump of ice or something else needs eyes on it. That's an afternoon with an
 emulator, not an investigation.
 
-## The four background sprites
-
-Four sprites appear at fixed positions, rise up the screen at a rate set by the
-speed, spread outwards as they go —one, two, minus one, minus two— and change
-picture along the way until they switch off at the top. They only show up in a
-real game, never in the demo.
-
-What they do is read instruction by instruction. What you actually see when
-they appear isn't.
-
 ## What hasn't been measured in an emulator
 
 Everything this repository says comes from reading the binary, and that has a
@@ -36,7 +26,7 @@ where we say they are —get the video memory layout wrong and you'd get noise
 instead of penguins— but they're no substitute for watching the game run.
 
 That pass is still missing: boot the cartridge in an emulator, check what's on
-screen against the listing, and use it to close the two questions above.
+screen against the listing, and use it to close the question above.
 
 ## What is settled, and why it can be said
 

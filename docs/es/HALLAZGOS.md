@@ -82,6 +82,36 @@ otros tres en rojo oscuro. Como en un MSX el sprite de número más bajo va
 delante, el negro queda encima y lo que se ve es una foca marrón con la cara
 oscura.
 
+## Las nubes se acercan y te pasan por encima
+
+Hay cuatro nubes en el cielo, y no son un dibujo del decorado: son cuatro
+sprites que el juego gobierna aparte. Asoman por sitios fijos, suben por la
+pantalla al ritmo que marca la velocidad del pingüino —la mitad, exactamente—,
+se van abriendo hacia los lados con un desplazamiento propio cada una (-1, +1,
+-2 y +2) y cambian de dibujo por el camino, a uno más grande.
+
+Todo eso junto es la perspectiva: la nube crece y se abre porque te la estás
+acercando, y sube porque acaba pasándote por encima. Al llegar arriba del todo
+se apaga y vuelve a salir por abajo.
+
+Y solo salen si hay partida de verdad. En la demo, el cielo está vacío.
+
+## Las patas amarillas no son un dibujo nuevo
+
+Cuando el pingüino se cae por un agujero y chapotea ahí dentro, se le ven dos
+patas amarillas moviéndose. No hay ningún sprite nuevo para eso: es **el mismo
+sprite que le hace de sombra**, al que dos instrucciones le cambian el color de
+azul oscuro a amarillo. A partir de ahí solo hay que irle poniendo los tres
+dibujos del pataleo, y al salir del agua otra instrucción le devuelve su dibujo
+y su color de sombra.
+
+Es la misma idea que está por todo el cartucho: **el color de un sprite no vive
+en su dibujo**, vive en su entrada de la tabla de atributos. Así que se puede
+recolorear cualquier cosa sin tocar ni un byte de gráfico, y eso es lo que se
+hace con la sombra aquí, con la foca —cuya cara oscura es un segundo sprite
+negro por encima del cuerpo rojo— y con las banderas, que salen las diez del
+mismo par de sprites cambiándoles los dos colores.
+
 ## El alfabeto no tiene F
 
 La tipografía va colocada de forma que el número de casilla es su ASCII menos

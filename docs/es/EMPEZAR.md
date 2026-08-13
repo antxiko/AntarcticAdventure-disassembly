@@ -44,7 +44,7 @@ comido un byte por el camino.
 ## Sin el cartucho
 
 Se puede leer igualmente el listado de `src/antarctic.asm` y las notas, que es
-donde está de verdad el trabajo: 394 rutinas con nombre, 264 comentarios
+donde está de verdad el trabajo: 394 rutinas con nombre, 267 comentarios
 anclados a su dirección y 62 rangos de datos con su explicación al lado.
 
 ## Cómo está organizado

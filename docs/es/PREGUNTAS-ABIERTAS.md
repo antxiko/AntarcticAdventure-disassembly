@@ -17,16 +17,6 @@ se recogen y valen 500 puntos está en el código; si eso es una bandera, una
 mata de hielo o cualquier otra cosa, hace falta verlo. Es una tarde de
 emulador, no una investigación.
 
-## Los cuatro sprites de fondo
-
-Hay cuatro sprites que aparecen en posiciones fijas, suben por la pantalla al
-ritmo de la velocidad, se van abriendo hacia los lados —uno, dos, menos uno,
-menos dos— y cambian de dibujo por el camino hasta apagarse arriba. Solo salen
-cuando hay partida de verdad, nunca en la demo.
-
-Lo que hacen está leído instrucción a instrucción. Qué se ve exactamente
-cuando salen, no.
-
 ## Lo que no se ha medido en el emulador
 
 Todo lo que dice este repositorio sale de leer el binario, y eso tiene un
@@ -37,7 +27,7 @@ mal, saldría ruido en vez de pingüinos—, pero no sustituyen a ver el juego
 correr.
 
 Falta esa pasada: arrancar el cartucho en un emulador, contrastar contra el
-listado lo que se ve, y usarlo para cerrar las dos preguntas de arriba.
+listado lo que se ve, y usarlo para cerrar la pregunta de arriba.
 
 ## Lo que sí está cerrado, y por qué se puede afirmar
 
