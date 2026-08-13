@@ -3255,7 +3255,7 @@ SUBE_LA_BANDERA:		; Sube la bandera dos pixeles por llamada hasta Y=0x36, que es
 	ld (0e060h),a		;55c3
 	ld (0e064h),a		;55c6
 	ld (0e068h),a		;55c9
-BANDERA_A_VRAM:		; Los tres sprites de la bandera, a la VRAM
+BANDERA_A_VRAM:		; Los TRES sprites de la bandera, a la VRAM. Son doce bytes, o sea tres atributos: el patron 0xE8 con el primer color, el 0xEC con el segundo, y el 0xE4 con blanco fijo. Ese tercero no viene en el flujo comprimido -sale de la carga general de sprites- y es un rectangulo blanco macizo de 16x12 que hace de fondo. Y como en un MSX el sprite de numero mas bajo va DELANTE, el orden de dibujo es blanco, segundo color y primer color encima
 	ld hl,0e060h		;55cc
 	ld de,03b10h		;55cf
 	ld bc,0000ch		;55d2

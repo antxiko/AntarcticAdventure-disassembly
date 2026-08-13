@@ -45,24 +45,23 @@ for _en, _es in _PAREJAS:
 
 # El pie va en el idioma de la pagina, y los creditos son los que dice la propia
 # pantalla de creditos del juego (0xF124-0xF2D0 del bloque del juego), leidos del
-# binario: "CONVERSION POR CARLOS ARIAS / GRAFICOS JUAN CARLOS Y JAVIER AREVALO /
-# ...ADEMAS DE... JULIO MARTIN / MUSICA COMPUESTA POR GOMINOLAS / BASADO EN UNA
-# IDEA ORIGINAL DE JOSE MANUEL MU&OZ". La pantalla de carga va firmada CANO.
+# De donde sale el pie: de barrer el cartucho entero descifrando el texto
+# (cada byte es su ASCII menos 0x20). Las unicas tiras legibles son los
+# rotulos del propio juego -ANTARCTICA, KONAMI 1984, los nombres de las
+# bases, STAGE, TIME, PLAY SELECT, JOYSTICK, KEYBOARD y TIME OUT-. Ni un
+# nombre de persona: Konami no acredito a nadie aqui.
 PIE = {
-    "es": "<em>Stardust</em> lo publicó Topo Soft en 1987. Según la pantalla de "
-          "créditos del propio juego, la conversión es de <b>Carlos Arias</b>, los "
-          "gráficos de <b>Juan Carlos y Javier Arévalo</b> —además de <b>Julio "
-          "Martín</b>—, la música de <b>Gominolas</b>, y está basado en una idea "
-          "original de <b>José Manuel Muñoz</b>; la pantalla de carga va firmada "
-          "<b>Cano</b>. Todos los derechos sobre el juego siguen siendo de sus "
-          "titulares. Este trabajo es de preservación, estudio y documentación.",
-    "en": "<em>Stardust</em> was published by Topo Soft in 1987. By the game's own "
-          "credits screen, the conversion is by <b>Carlos Arias</b>, the graphics by "
-          "<b>Juan Carlos and Javier Arévalo</b> —along with <b>Julio Martín</b>—, "
-          "the music by <b>Gominolas</b>, and it is based on an original idea by "
-          "<b>José Manuel Muñoz</b>; the loading screen is signed <b>Cano</b>. All "
-          "rights in the game remain with their holders. This is preservation, study "
-          "and documentation work.",
+    "es": "<em>Antarctic Adventure</em> lo publicó Konami en 1984 con la "
+          "referencia RC-701. El cartucho no acredita a nadie por su nombre: lo "
+          "único que firma, en la pantalla de presentación, es "
+          "<b>&copy;KONAMI 1984</b>. Todos los derechos sobre el juego siguen "
+          "siendo de sus titulares. Este trabajo es de preservación, estudio y "
+          "documentación.",
+    "en": "<em>Antarctic Adventure</em> was published by Konami in 1984, "
+          "reference RC-701. The cartridge credits nobody by name: the only "
+          "signature in it, on the title screen, is <b>&copy;KONAMI 1984</b>. "
+          "All rights in the game remain with their holders. This is "
+          "preservation, study and documentation work.",
 }
 
 
@@ -86,8 +85,8 @@ def enlinea(t):
 
 # La web se sirve desde docs/, asi que lo que este fuera de esa carpeta no
 # existe para el navegador: esos enlaces se mandan al repositorio.
-REPO = os.environ.get("STARDUST_REPO",
-                      "https://github.com/antxiko/Stardust-MSX-disassembly")
+REPO = os.environ.get("ANTARCTIC_REPO",
+                      "https://github.com/antxiko/AntarcticAdventure-disassembly")
 
 
 def ruta(href):
@@ -215,7 +214,7 @@ def main(docdir, idioma="en"):
         dst = os.path.join(docdir, fn[:-3] + ".html")
         texto = open(src, encoding="utf-8").read()
         m = re.search(r"^#\s+(.*)$", texto, re.M)
-        titulo = (m.group(1) if m else fn[:-3]) + " — Stardust (1987)"
+        titulo = (m.group(1) if m else fn[:-3]) + " — Antarctic Adventure (1984)"
         open(dst, "w", encoding="utf-8").write(
             convierte(texto, titulo, fn[:-3] + ".html", idioma))
         print(f"  {fn} -> {os.path.basename(dst)}")

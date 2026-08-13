@@ -1,4 +1,4 @@
-<title>The code — Stardust (1987)</title>
+<title>The code — Antarctic Adventure (1984)</title>
 <style>
 :root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
   --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
@@ -128,4 +128,4 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 <p>The number also says how many channels it takes: below 0x8A just one, up to 0x8C two, and above that all three. Effects take one channel and music takes three, so an effect never cuts a tune in half.</p>
 <p>Each note is <b>one byte</b>: the low nibble is the note within a twelve-note chromatic octave, and the high nibble is the duration, looked up in another table of twelve sitting right next to the first. Both have twelve entries and they&#x27;re side by side, which rather invites reading them as the same thing; they aren&#x27;t. Going up an octave is doubling the period as many times as needed, and there&#x27;s a control byte to change it, another to repeat a section and another to finish.</p>
 <p>Of the twenty-four stream pointers, one points outside the cartridge —sound zero, which is never asked for— and three point at the same place: an end-of-stream byte. That&#x27;s the silence, and it&#x27;s what the startup asks for to leave the chip quiet before it begins.</p>
-<footer><p><em>Stardust</em> was published by Topo Soft in 1987. By the game's own credits screen, the conversion is by <b>Carlos Arias</b>, the graphics by <b>Juan Carlos and Javier Arévalo</b> —along with <b>Julio Martín</b>—, the music by <b>Gominolas</b>, and it is based on an original idea by <b>José Manuel Muñoz</b>; the loading screen is signed <b>Cano</b>. All rights in the game remain with their holders. This is preservation, study and documentation work.</p></footer></div>
+<footer><p><em>Antarctic Adventure</em> was published by Konami in 1984, reference RC-701. The cartridge credits nobody by name: the only signature in it, on the title screen, is <b>&copy;KONAMI 1984</b>. All rights in the game remain with their holders. This is preservation, study and documentation work.</p></footer></div>

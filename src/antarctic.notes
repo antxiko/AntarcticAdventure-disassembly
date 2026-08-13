@@ -937,7 +937,7 @@ C 0x559a La bandera, indexada aparte con 0xE0E0
 C 0x55aa VRAM 0x1F40: los patrones de sprite
 C 0x55b0 Y detras de la bandera van los dos colores
 L 0x55BB SUBE_LA_BANDERA  Sube la bandera dos pixeles por llamada hasta Y=0x36, que es el tope del mastil
-L 0x55CC BANDERA_A_VRAM   Los tres sprites de la bandera, a la VRAM
+L 0x55CC BANDERA_A_VRAM   Los TRES sprites de la bandera, a la VRAM. Son doce bytes, o sea tres atributos: el patron 0xE8 con el primer color, el 0xEC con el segundo, y el 0xE4 con blanco fijo. Ese tercero no viene en el flujo comprimido -sale de la carga general de sprites- y es un rectangulo blanco macizo de 16x12 que hace de fondo. Y como en un MSX el sprite de numero mas bajo va DELANTE, el orden de dibujo es blanco, segundo color y primer color encima
 
 D 0x55D9 0x55ED punteros_de_las_bases Diez punteros, uno por fase, a los nombres de las bases. Cierra clavada en 0x55ED, que es la primera cadena; con ocho, nueve, once o doce entradas no cierra
 D 0x55ED 0x565C nombres_de_las_bases OCHO cadenas para diez fases: JAPAN, AUSTRALIA, FRANCE, NEW ZEALAND, ARGENTINA, UNITED KINGDOM, THE SOUTH POLE y USA. El reparto que sale de la tabla de arriba es FRANCE, USA, THE SOUTH POLE, USA, USA, ARGENTINA, UNITED KINGDOM, JAPAN, AUSTRALIA y AUSTRALIA. NEW ZEALAND (0x5611) NO LA VISITA NADIE: no esta en la tabla, ninguna instruccion la apunta, y ninguna de sus veinte direcciones aparece como palabra en los 16 KB

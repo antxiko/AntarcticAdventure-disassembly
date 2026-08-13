@@ -118,5 +118,67 @@ class TestRangosDeDatos(unittest.TestCase):
                          % " ".join(mudos))
 
 
+
+class TestNadaDeOtroJuego(unittest.TestCase):
+    """Que no se cuele material de otro proyecto.
+
+    Las herramientas de este repositorio vienen de un tronco comun, y con ellas
+    viajan textos que hablan de OTRO juego: un pie de pagina, un enlace al
+    repositorio equivocado, el titulo que se le pone a cada pagina. Eso no lo
+    caza ninguna otra comprobacion -la web se genera igual de bien y los
+    enlaces internos siguen sin romperse- y acaba publicado.
+
+    Este test barre las fuentes y lo que se publica buscando el nombre de los
+    demas juegos y de sus editoras.
+    """
+
+    AJENOS = ("stardust", "temptations", "ale hop", "alehop", "colt 36",
+              "colt36", "topo soft")
+
+    def _barre(self, ficheros):
+        malos = []
+        for ruta in ficheros:
+            with open(ruta, encoding="utf-8", errors="ignore") as f:
+                texto = f.read().lower()
+            for nombre in self.AJENOS:
+                if nombre in texto:
+                    malos.append("%s: %s" % (os.path.relpath(ruta, RAIZ), nombre))
+        return malos
+
+    def _todos(self, carpeta, exts):
+        out = []
+        for base, _, ficheros in os.walk(os.path.join(RAIZ, carpeta)):
+            if ".forja" in base or "__pycache__" in base:
+                continue
+            out += [os.path.join(base, f) for f in ficheros
+                    if f.endswith(exts)]
+        return out
+
+    def test_las_herramientas_no_hablan_de_otro_juego(self):
+        malos = self._barre(self._todos("tools", (".py",)))
+        self.assertEqual(malos, [], "material de otro proyecto: %s"
+                         % "; ".join(malos))
+
+    def test_la_web_no_habla_de_otro_juego(self):
+        malos = self._barre(self._todos("docs", (".md", ".html")))
+        self.assertEqual(malos, [], "material de otro proyecto: %s"
+                         % "; ".join(malos))
+
+    def test_la_raiz_no_habla_de_otro_juego(self):
+        raiz = [os.path.join(RAIZ, f) for f in
+                ("README.md", "README.es.md", "AVISO-LEGAL.md",
+                 "LEGAL-NOTICE.md", "LICENSE", "Makefile")]
+        malos = self._barre(raiz)
+        self.assertEqual(malos, [], "material de otro proyecto: %s"
+                         % "; ".join(malos))
+
+    def test_el_listado_no_habla_de_otro_juego(self):
+        malos = self._barre([ASM, NOTES,
+                             os.path.join(RAIZ, "src", "antarctic.entries"),
+                             os.path.join(RAIZ, "src", "antarctic.nocode")])
+        self.assertEqual(malos, [], "material de otro proyecto: %s"
+                         % "; ".join(malos))
+
+
 if __name__ == "__main__":
     unittest.main()

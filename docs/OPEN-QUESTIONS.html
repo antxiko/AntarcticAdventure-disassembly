@@ -1,4 +1,4 @@
-<title>Open questions — Stardust (1987)</title>
+<title>Open questions — Antarctic Adventure (1984)</title>
 <style>
 :root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
   --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
@@ -100,4 +100,4 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 <h2 id="two-warnings-for-whoever-comes-next">Two warnings for whoever comes next</h2>
 <p><b>Axes and orderings are easy to read backwards, and getting them wrong raises no error.</b> A 16x16 sprite is two halves of sixteen rows, not sixteen rows of two bytes; read the other way it gives a convincing picture, but sliced into strips. The same goes for the video memory bases: reading a colour table as if it were artwork gives you something that looks like artwork. The only defence is taking the bases from the code itself and looking at the result.</p>
 <p>**And a call to the decompressor with no <code>ld hl</code> in front doesn&#x27;t start from scratch**: it carries on with the pointer the previous one left. That holds for the source stream and for the destination in video memory too, which means the order the calls run in matters. Walking the cartridge top to bottom call by call does not reconstruct the same thing as executing it.</p>
-<footer><p><em>Stardust</em> was published by Topo Soft in 1987. By the game's own credits screen, the conversion is by <b>Carlos Arias</b>, the graphics by <b>Juan Carlos and Javier Arévalo</b> —along with <b>Julio Martín</b>—, the music by <b>Gominolas</b>, and it is based on an original idea by <b>José Manuel Muñoz</b>; the loading screen is signed <b>Cano</b>. All rights in the game remain with their holders. This is preservation, study and documentation work.</p></footer></div>
+<footer><p><em>Antarctic Adventure</em> was published by Konami in 1984, reference RC-701. The cartridge credits nobody by name: the only signature in it, on the title screen, is <b>&copy;KONAMI 1984</b>. All rights in the game remain with their holders. This is preservation, study and documentation work.</p></footer></div>

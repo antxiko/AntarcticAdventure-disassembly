@@ -91,7 +91,7 @@ imagenes: $(ROM)
 	python3 tools/descomprime.py $(ROM) work >/dev/null
 	python3 tools/render_tiles.py work/vram.bin docs/imagenes
 	python3 tools/render_decorados.py $(ROM) work/vram.bin docs/imagenes | tail -1
-	python3 tools/render_banderas.py $(ROM) docs/imagenes | tail -3
+	python3 tools/render_banderas.py $(ROM) work/vram.bin docs/imagenes | tail -3
 	python3 tools/render_pista.py $(ROM) work/vram.bin docs/imagenes | tail -1
 
 web: imagenes

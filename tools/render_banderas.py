@@ -20,7 +20,24 @@ distintos caigan todos en la misma cifra no es casualidad.
 Detras de cada flujo van sus dos bytes de color, que 0x55B0 recoge para las
 dos entradas de atributo.
 
-Uso: render_banderas.py <rom> <directorio_salida>
+LA BANDERA SON TRES SPRITES, NO DOS, y eso hay que sacarlo de la lista de
+atributos de la escena de la base (0x672C), porque el flujo comprimido solo
+trae dos. Los tres, tal y como quedan montados:
+
+    atributo 4  patron 0xE8  -> VRAM 0x1F40, los bytes 0-31 del flujo
+    atributo 5  patron 0xEC  -> VRAM 0x1F60, los bytes 32-63
+    atributo 6  patron 0xE4  -> VRAM 0x1F20, color 0x0F FIJO
+
+El tercero no viene en el flujo: es un rectangulo blanco macizo de 16x12 que
+sale de la carga general de sprites, y es el fondo de la bandera. Sin el, los
+dibujos se ven en el aire.
+
+Y EL ORDEN IMPORTA: en un MSX el sprite de numero MAS BAJO se dibuja DELANTE,
+asi que se pinta de atras hacia adelante -el blanco, luego el segundo color y
+por ultimo el primero-. Al reves, el segundo color tapa al primero y los
+colores salen mal.
+
+Uso: render_banderas.py <rom> <work/vram.bin> <directorio_salida>
 """
 import os
 import sys
@@ -33,6 +50,7 @@ from render_maps import PALETA, png                  # noqa: E402
 ORG = 0x4000
 TABLA = 0x565C
 NOMBRES = 0x55D9       # los diez punteros a los nombres de las bases
+FONDO_VRAM = 0x1F20    # patron 0xE4: el rectangulo blanco de fondo
 FASES = 10
 ESCALA = 3
 
@@ -81,12 +99,17 @@ def sprite16(datos, base):
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         sys.exit(__doc__)
     with open(sys.argv[1], "rb") as f:
         rom = f.read()
-    salida = sys.argv[2]
+    with open(sys.argv[2], "rb") as f:
+        vram = f.read()
+    salida = sys.argv[3]
     os.makedirs(salida, exist_ok=True)
+
+    # El sprite de fondo, el que no viene en el flujo: patron 0xE4.
+    fondo = vram[FONDO_VRAM:FONDO_VRAM + 32]
 
     # OJO CON EL INDICE, que no es la fase: 0x559A indexa esta tabla con
     # (0xE0E0) & 0x0F, y 0xE0E0 es el numero de fase EN BCD, que empieza en 1.
@@ -105,13 +128,15 @@ def main():
     ancho = FASES * (16 + hueco) * ESCALA
     alto = 16 * ESCALA
     img = [[PALETA[4]] * ancho for _ in range(alto)]
-    # Los 64 bytes son DOS sprites que se pintan uno encima del otro, cada uno
-    # con su color: es como se hace un sprite de dos colores en un MSX1, donde
-    # cada sprite es de un color solo.
+    # Tres capas, de atras hacia adelante, porque en un MSX el sprite de numero
+    # mas bajo va delante: el fondo blanco, el segundo color y el primero.
     for i, (fase, p, datos, colores, n, comprimido) in enumerate(banderas):
-        for capa, base in enumerate((0, 32)):
-            tinta = PALETA[colores[capa] & 15]
-            for y, fila in enumerate(sprite16(datos, base)):
+        capas = [(fondo, 0, 0x0F),
+                 (datos, 32, colores[1]),
+                 (datos, 0, colores[0])]
+        for bytes_, base, color in capas:
+            tinta = PALETA[color & 15]
+            for y, fila in enumerate(sprite16(bytes_, base)):
                 for x, bit in enumerate(fila):
                     if not bit:
                         continue
