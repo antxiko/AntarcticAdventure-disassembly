@@ -110,6 +110,19 @@ that's what's done with the shadow here, with the seal —whose dark face is a
 second black sprite laid over the red body— and with the flags, all ten of
 which come out of the same pair of sprites with their two colours swapped.
 
+## And one yellow sprite that never shows up
+
+The attribute list has one entry set up completely —number 14, with its picture
+and its yellow colour in place— that never appears in play. And the picture is
+not just anything: it's an **explosion**, a burst of yellow spikes. It's built with its
+vertical coordinate at 0xE0, which is off the screen, and nobody ever changes
+it: there isn't a single instruction writing to that entry, the chain that
+rebuilds the sprites on the way out of the water stops at the one before it,
+and the other copies start higher up or end lower down.
+
+So the cartridge loads the picture, reserves its slot, gives it a colour… and
+leaves it out of frame.
+
 ## The alphabet has no F
 
 The typeface is laid out so a tile's number is its ASCII minus 0x20, so A is

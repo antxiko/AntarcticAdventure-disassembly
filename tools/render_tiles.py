@@ -143,8 +143,12 @@ def duenos(rom):
     # el patron y el color de sombra.
     for patron in (0x70, 0x74, 0x78):
         pon(patron, 0x0A, "patas")
-    # Y el atributo 14, que la lista deja ya en amarillo con su patron puesto.
-    pon(0xD4, colores_de_atributos(rom, 14, 1)[0], "chapuzon")
+    # EL ATRIBUTO 14 NO SE VE NUNCA. La lista se lo monta entero -patron 0xD4 y
+    # color amarillo- pero con Y=0xE0, que es fuera de la pantalla, y NADIE se
+    # la cambia: ni una instruccion escribe en 0xE088, la cadena de 0x4FE2 se
+    # para en el atributo 13, y las demas copias empiezan mas arriba o mas
+    # abajo. Se pinta aqui para que se vea lo que hay, pero jugando no sale.
+    pon(0xD4, colores_de_atributos(rom, 14, 1)[0], "sin estrenar")
     return mapa
 
 

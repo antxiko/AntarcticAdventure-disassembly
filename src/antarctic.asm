@@ -3704,7 +3704,7 @@ VUELCA_ATRIBUTOS:		; Copia los 128 bytes de 0xE050 a la tabla de atributos de sp
 	jp COPIA_A_VRAM		;66ec
 
 ; ----------------------------------------------------------------------
-; DATOS atributos_de_partida: La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final
+; DATOS atributos_de_partida: La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es una EXPLOSION de puntas- y color amarillo, que no se ve nunca: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia, porque ni una instruccion escribe en 0xE088 y la cadena de 0x4FE2 se para en el atributo 13
 ;   0x66ef..0x672c  (61 bytes)
 ; DATOS atributos_de_base: La misma lista para la escena de la base. Cierra clavada en 0x6756, donde vuelve a haber codigo. Sus bytes de 0x6746 los copia ademas 0x5537
 ;   0x672c..0x6756  (42 bytes)

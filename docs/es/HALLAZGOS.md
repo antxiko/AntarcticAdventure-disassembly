@@ -112,6 +112,19 @@ hace con la sombra aquí, con la foca —cuya cara oscura es un segundo sprite
 negro por encima del cuerpo rojo— y con las banderas, que salen las diez del
 mismo par de sprites cambiándoles los dos colores.
 
+## Y un sprite amarillo que no se ve nunca
+
+En la lista de atributos hay una entrada montada del todo —la número 14, con su
+dibujo y su color amarillo puesto— que jugando no aparece jamás. Y el dibujo no
+es cualquier cosa: es una **explosión**, un estallido de puntas amarillas. Se monta con
+la coordenada vertical a 0xE0, que es fuera de la pantalla, y nadie se la
+cambia nunca: no hay una sola instrucción que escriba en esa entrada, la cadena
+que rehace los sprites al salir del agua se para justo en la anterior, y las
+demás copias empiezan más arriba o acaban más abajo.
+
+O sea que el cartucho carga el dibujo, le reserva su sitio, le da color… y lo
+deja fuera del encuadre.
+
 ## El alfabeto no tiene F
 
 La tipografía va colocada de forma que el número de casilla es su ASCII menos
