@@ -1,0 +1,86 @@
+# Puntos de entrada de Antarctic Adventure (Konami, 1984). ROM de 16 KB en 0x4000.
+#
+# El unico punto de entrada que declara el cartucho: la BIOS lee la cabecera
+# "AB" y llama a INIT despues de inicializar la maquina. Todo lo demas tiene
+# que salir de seguir el flujo desde aqui, o de medirlo en el emulador.
+0x4010   # INIT, declarado en la cabecera del cartucho
+0x405D   # H.TIMI: la rutina de interrupcion. INIT la engancha con
+         # ld hl,405Dh / ld (0FD9Bh),hl en 0x4025-0x402A, detras del
+         # ld a,0C3h / ld (0FD9Ah),a que pone el JP. La BIOS la llama 50 o 60
+         # veces por segundo, asi que ningun trazador estatico llega sin esto.
+
+# --- Los destinos de las SEIS tablas de salto del despachador de 0x40B2.
+# El despachador coge el indice en A, hace POP HL para quedarse con la
+# direccion de retorno -que es la tabla, pegada detras del CALL-, le suma el
+# desplazamiento y salta. Como la tabla va incrustada en el propio codigo, un
+# trazador estatico no puede seguirla: son las entradas de abajo.
+#
+# Cada tabla se delimita sola, y ese es el control que las valida: la ultima
+# palabra acaba EXACTAMENTE donde empieza su primer destino. Las seis cierran
+# clavadas, asi que ni el tamano ni el formato son suposiciones.
+0x414F   # destino de tabla de saltos
+0x4150   # destino de tabla de saltos
+0x4166   # destino de tabla de saltos
+0x4178   # destino de tabla de saltos
+0x4183   # destino de tabla de saltos
+0x4191   # destino de tabla de saltos
+0x4199   # destino de tabla de saltos
+0x41A0   # destino de tabla de saltos
+0x41AC   # destino de tabla de saltos
+0x41C3   # destino de tabla de saltos
+0x41E4   # destino de tabla de saltos
+0x41EF   # destino de tabla de saltos
+0x41FD   # destino de tabla de saltos
+0x420E   # destino de tabla de saltos
+0x4221   # destino de tabla de saltos
+0x4251   # destino de tabla de saltos
+0x425B   # destino de tabla de saltos
+0x429D   # destino de tabla de saltos
+0x42B6   # destino de tabla de saltos
+0x42DC   # destino de tabla de saltos
+0x4301   # destino de tabla de saltos
+0x4312   # destino de tabla de saltos
+0x4328   # destino de tabla de saltos
+0x433B   # destino de tabla de saltos
+0x437B   # destino de tabla de saltos
+0x4389   # destino de tabla de saltos
+0x43A6   # destino de tabla de saltos
+0x43D0   # destino de tabla de saltos
+0x43D9   # destino de tabla de saltos
+0x4400   # destino de tabla de saltos
+0x4908   # destino de tabla de saltos
+0x491C   # destino de tabla de saltos
+0x4936   # destino de tabla de saltos
+0x493D   # destino de tabla de saltos
+0x4974   # destino de tabla de saltos
+0x4990   # destino de tabla de saltos
+0x499D   # destino de tabla de saltos
+0x49F4   # destino de tabla de saltos
+0x773B   # destino de tabla de saltos
+0x7753   # destino de tabla de saltos
+0x7769   # destino de tabla de saltos
+
+# --- El segundo despachador, el de 0x49E0, que es de otra clase.
+# 0x49C8 hace ld hl,49E1h / call 48FEh (HL += A) y luego call 49E0h, que es un
+# JP (HL) pelado: o sea que A no indexa una tabla de DIRECCIONES sino codigo
+# incrustado, con paso de cuatro bytes. Los cuatro casos cargan un valor
+# distinto en A (0xE0, 0x01, 0x20, 0xFF) y caen todos en el mismo call 4903h;
+# el primero ademas hace un DEC D por el camino.
+0x49E1   # caso 0: ld a,0E0h
+0x49E5   # caso 1: ld a,001h
+0x49E9   # caso 2: ld a,020h
+0x49ED   # caso 3: ld a,0FFh
+
+# --- CODIGO AL QUE NO LLEGA NADIE. Son rutinas de verdad, no datos: el
+# trazador no las alcanza porque ninguna instruccion las llama.
+#
+# 0x48D9 es "lee un byte de la VRAM" y 0x48F1 "apunta la VRAM para LEER",
+# gemelas exactas de 0x48D0 y 0x48E2, que son las de escribir y si se usan
+# (diez y seis veces). La palabra 0x48D9 NO APARECE NI UNA VEZ en los 16 KB,
+# asi que nada puede llamarla; y la unica aparicion de 0x48F1 esta dentro del
+# propio `call 48F1h` de la rutina muerta. El juego solo escribe en la
+# pantalla: la mitad de leer viene en el cartucho sin estrenar.
+0x48D9   # lee un byte de la VRAM (nadie la llama)
+0x48F1   # apunta la VRAM para leer (solo la llama la de arriba)
+0x4421   # trozo suelto: call 45A8h / ld a,(0E002h) / rlca ... (nadie lo llama)
+0x4462   # un RET suelto

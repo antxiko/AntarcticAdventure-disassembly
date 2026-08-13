@@ -1,0 +1,135 @@
+<title>Findings — Stardust (1987)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,640px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Home</a><a href="GETTING-STARTED.html">Start</a><a href="THE-GAME.html">The game</a><a href="THE-CARTRIDGE.html">The cartridge</a><a href="THE-CODE.html">The code</a><a href="FINDINGS.html" style=color:var(--tinta)>Findings</a><a href="OPEN-QUESTIONS.html">Open questions</a><a href="es/HALLAZGOS.html" style="margin-left:auto;color:var(--oro)">Castellano</a></nav>
+<h1 id="findings">Findings</h1>
+<p>What turned up when the cartridge came apart, with the evidence alongside. Everything on this page checks out by reading the binary; what isn&#x27;t settled yet is in <a href="OPEN-QUESTIONS.html">Open questions</a>.</p>
+<h2 id="the-demo-is-a-recording">The demo is a recording</h2>
+<p>Left alone, the game starts a session that plays itself. There&#x27;s no intelligence behind it: there are 64 bytes at 0x584A carrying exactly the same bits the joystick returns, and the input reader takes one every 32 frames. In between it holds the previous direction, so the recording runs at a very coarse rate and still does the job.</p>
+<p>You can see it in the bytes themselves: <code>01</code> is up, <code>09</code> up and right, <code>11</code> up and button. Not one value falls outside the controller&#x27;s bit map.</p>
+<p>And the length works out too. The demo runs 0x073C steps, which at one byte every 32 is 58 of the 64 that are there. The run ends exactly where the next routine&#x27;s first instruction begins.</p>
+<h2 id="the-first-thing-the-cartridge-does-is-write-over-itself">The first thing the cartridge does is write over itself</h2>
+<p>Between bringing the machine up and starting the game sit these four instructions:</p>
+<pre><code>    ld hl,0411fh      ; source: three bytes that read C3 00 00, i.e. jp 0000h
+    ld de,DESPACHA    ; destination: 0x40B2, the whole game&#x27;s dispatcher
+    ld bc,00003h
+    ldir</code></pre>
+<p>On a cartridge that does absolutely nothing, because that half of the memory map is ROM and the write goes nowhere. But if the cartridge were running from a copy in RAM, the dispatcher would turn into a jump to zero and the machine would reset on the first frame, since the game loop calls it right away.</p>
+<p>That it does this is settled by reading the bytes. Why it does it can&#x27;t be proved from the binary, and the reasonable reading is a guard against copies in memory; but that&#x27;s a reading, not a fact.</p>
+<h2 id="there-s-a-base-you-never-reach">There&#x27;s a base you never reach</h2>
+<p>The cartridge carries eight base names and the route has ten stops. Seven of those names cover the ten —the United States turns up three times and Australia twice— and the eighth, <b>NEW ZEALAND</b>, is asked for by nobody.</p>
+<p>Checked three separate ways, because one check isn&#x27;t enough here:</p>
+<ul><li>it isn&#x27;t among the name table&#x27;s ten entries;</li><li>no instruction points at it, walking only instruction starts;</li><li>and not one of that string&#x27;s twenty addresses appears as a word anywhere in the cartridge&#x27;s 16 KB.</li></ul>
+<p>The other seven do show up pointed at, so the check works and NEW ZEALAND&#x27;s zero means something.</p>
+<h2 id="the-alphabet-has-no-f">The alphabet has no F</h2>
+<p>The typeface is laid out so a tile&#x27;s number is its ASCII minus 0x20, so A is 0x21, B is 0x22 and so on. By that arithmetic, F ought to be at 0x26.</p>
+<p>It isn&#x27;t: that tile holds a different picture, in all three thirds of the screen. And the one word in the whole game that needs an F —<b>FRANCE</b>, the route&#x27;s first base— brings its own: its string doesn&#x27;t use 0x26 but 0xC9, a lone F kept apart, nowhere near the alphabet.</p>
+<h2 id="half-of-talking-to-the-screen-was-never-used">Half of talking to the screen was never used</h2>
+<p>The routines dealing with the graphics chip come in pairs: one to write and its exact twin to read. Both writers are used constantly, ten and six times respectively.</p>
+<p>Neither reader is called by anyone. And that can be said flatly, because one of their addresses <b>never appears in the 16 KB at all</b>, and the only appearance of the other is the call its own dead twin makes to it.</p>
+<p>This game never reads the screen. It only writes.</p>
+<h2 id="there-s-a-two-player-mode-left-in-the-wiring">There&#x27;s a two-player mode left in the wiring</h2>
+<p>There&#x27;s a routine that writes a string followed by a <code>1</code> or a <code>2</code>, taken from bit 7 of the flag word. Nobody calls it —its address doesn&#x27;t appear in the cartridge— and on top of that nobody ever sets that bit, because the only two values ever written there are 0x40 and 0x50.</p>
+<p>Matching that, the panel&#x27;s label reads <b>1P</b>, fixed, written into the label string as one more constant.</p>
+<h2 id="the-tables-give-themselves-away">The tables give themselves away</h2>
+<p>Working out where a table ends is usually the worst part of a disassembly, because the size isn&#x27;t written down anywhere and getting it wrong raises no error at all.</p>
+<p>In this cartridge nearly all of them say so. The table&#x27;s last word ends exactly on the byte where its own first destination starts, so only one size is possible: try N entries and only one N closes. It works for the six jump tables, the ten stages, the ten flags, the seven horizons, the twenty-four sounds and the five stretches of the finish.</p>
+<p>And there&#x27;s a second house trick, this one to save instructions: <b>three tables are pointed at one byte before they begin</b>, because their index is never zero and that saves a <code>dec a</code>. The byte-zero of one of them is the last byte of a <code>jp</code>; of another, a stray <code>ret</code> that serves as data without ceasing to be a <code>ret</code>.</p>
+<h2 id="the-seven-obstacles-tile-their-region-without-a-byte-left-over">The seven obstacles tile their region without a byte left over</h2>
+<p>Between 0x6BE9 and 0x7241 there are 92 pieces of artwork, and the only clue to what they&#x27;re for is that the obstacle table&#x27;s seven pointers land inside.</p>
+<p>Chain the fifteen steps each obstacle lasts and this comes out:</p>
+<pre><code>type 3   6BE9 -&gt; 6D85      type 2   7091 -&gt; 7150
+type 4   6D85 -&gt; 6F19      type 6   7150 -&gt; 71C8
+type 0   6F19 -&gt; 6FD2      type 5   71C8 -&gt; 7241
+type 1   6FD2 -&gt; 7091</code></pre>
+<p>Each chain ends precisely where the next begins, and the last ends precisely at the end of the region. The seven share out all 92 pieces with nothing spare and nothing missing, and that confirms both the fifteen-step count and that the chaining is being read correctly.</p>
+<p>A nice detail from that: all seven pointers point at an <b>empty</b> block. It isn&#x27;t a misreading — an obstacle&#x27;s first step draws nothing because it&#x27;s still behind the horizon, and two of the seven carry two empty steps.</p>
+<h2 id="up-brakes-and-down-accelerates">Up brakes and down accelerates</h2>
+<p>The table governing speed has four destinations, one per combination of up and down. Pressing nothing does nothing, pressing both does nothing either, and the other two run backwards from what you&#x27;d expect: <b>up lowers the speed and down raises it</b>.</p>
+<p>They don&#x27;t cost the same, either. Each step of acceleration takes four frames and each step of braking takes twelve, so the penguin picks up speed three times faster than he lets it go.</p>
+<h2 id="the-two-tables-of-twelve-that-aren-t-the-same-thing">The two tables of twelve that aren&#x27;t the same thing</h2>
+<p>Next to the sound player sit two twelve-byte tables, right up against each other. The first is a chromatic octave, and it shows: the twelve periods land 0.09 semitones from equal temperament.</p>
+<p>The second invites the same reading, and isn&#x27;t. Measured as a scale it gives 15.8 semitones, which is no scale at all. What it actually is shows in the code that uses it: each note&#x27;s high nibble indexes it to get <b>how long the note lasts</b>. They&#x27;re durations, and they run from 5 to 100 frames.</p>
+<h2 id="silence-is-a-stream-that-ends-on-its-first-byte">Silence is a stream that ends on its first byte</h2>
+<p>Of the twenty-four sound pointers, the first points outside the cartridge. That&#x27;s not a mistake: sound zero is never asked for, so that entry is never read.</p>
+<p>And the last three all point at the same byte, which is an <code>0xFF</code>, the end of a stream. That&#x27;s the silence, and it&#x27;s what the startup asks for to leave the chip quiet before anything starts.</p>
+<footer><p><em>Stardust</em> was published by Topo Soft in 1987. By the game's own credits screen, the conversion is by <b>Carlos Arias</b>, the graphics by <b>Juan Carlos and Javier Arévalo</b> —along with <b>Julio Martín</b>—, the music by <b>Gominolas</b>, and it is based on an original idea by <b>José Manuel Muñoz</b>; the loading screen is signed <b>Cano</b>. All rights in the game remain with their holders. This is preservation, study and documentation work.</p></footer></div>

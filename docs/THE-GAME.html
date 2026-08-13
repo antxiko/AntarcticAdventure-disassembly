@@ -1,0 +1,111 @@
+<title>The game — Stardust (1987)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,640px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Home</a><a href="GETTING-STARTED.html">Start</a><a href="THE-GAME.html" style=color:var(--tinta)>The game</a><a href="THE-CARTRIDGE.html">The cartridge</a><a href="THE-CODE.html">The code</a><a href="FINDINGS.html">Findings</a><a href="OPEN-QUESTIONS.html">Open questions</a><a href="es/EL-JUEGO.html" style="margin-left:auto;color:var(--oro)">Castellano</a></nav>
+<h1 id="the-game">The game</h1>
+<p>A penguin crosses Antarctica from base to base. He always runs forwards, you steer him across the track and jump whatever gets in the way, and each leg has a distance to cover and a clock running out. Everything here comes from reading the code that does it.</p>
+<h2 id="the-route-ten-stops">The route: ten stops</h2>
+<p>The table at 0x4AD9 holds ten four-byte entries, each carrying the leg&#x27;s distance, the map square where it starts and the time you&#x27;re given. The table ends exactly where code starts again, which is what fixes its size without anyone having to guess.</p>
+<table><tr><th>Stage</th><th>Base</th><th>Distance</th><th>Time</th></tr><tr><td>1</td><td>FRANCE</td><td>1500 m</td><td>100 s</td></tr><tr><td>2</td><td>USA</td><td>1700 m</td><td>120 s</td></tr><tr><td>3</td><td>THE SOUTH POLE</td><td>1100 m</td><td>80 s</td></tr><tr><td>4</td><td>USA</td><td>1200 m</td><td>80 s</td></tr><tr><td>5</td><td>USA</td><td>1200 m</td><td>80 s</td></tr><tr><td>6</td><td>ARGENTINA</td><td>500 m</td><td>40 s</td></tr><tr><td>7</td><td>UNITED KINGDOM</td><td>2600 m</td><td>165 s</td></tr><tr><td>8</td><td>JAPAN</td><td>1200 m</td><td>90 s</td></tr><tr><td>9</td><td>AUSTRALIA</td><td>1500 m</td><td>100 s</td></tr><tr><td>10</td><td>AUSTRALIA</td><td>1200 m</td><td>90 s</td></tr></table>
+<p>The sixth is the game&#x27;s sprint, half a kilometre, and the seventh its marathon: 2600 metres with nearly three minutes to do it in. Past the tenth the counter wraps around, so the route goes all the way round.</p>
+<p>Each stop has its flag, decompressed into the sprite patterns just before you arrive. Seven pictures cover ten stops —the American one turns up three times and the Australian twice— and each lands on its own country, including the penguin that stands in as a flag at the South Pole.</p>
+<h2 id="leftover-time-isn-t-a-gift">Leftover time isn&#x27;t a gift</h2>
+<p>Reaching a base turns whatever&#x27;s left on the clock into points, a hundred per second, ticking as it goes down. But it&#x27;s also written down: each stage&#x27;s surplus is filed in its own slot and <b>next time round it gets deducted from that same stage&#x27;s allowance</b>, once it goes past ten. The better you do, the less room you&#x27;re given on the next lap.</p>
+<h2 id="the-throttle-is-upside-down">The throttle is upside down</h2>
+<p>The controls are four directions and a button, and they don&#x27;t do what you&#x27;d expect. Left and right move the penguin across the track, between columns 20 and 204, and the button jumps. Up and down, though, work the speed: and it&#x27;s <b>down that accelerates and up that brakes</b>.</p>
+<p>It&#x27;s not just that they&#x27;re swapped, it&#x27;s that they don&#x27;t cost the same. Going up one speed step takes four frames and coming down takes twelve, so he picks up speed three times faster than he sheds it. Speed lives between 9 and 19, and every stage starts at 16.</p>
+<h2 id="what-s-out-on-the-track">What&#x27;s out on the track</h2>
+<p>There are seven kinds of obstacle, and the table defining them gives each one a pointer to its artwork and two collision windows: a position and a width, twice. The collision is only checked on step 13 of the fifteen the approach lasts, which is when the obstacle is level with the penguin.</p>
+<p>Three of the seven are holes in the ice. Catch one by the edge and you trip and roll; catch it square and you fall in and stay there flailing until you press the button, while the clock keeps running, which is the real punishment. And out of those same holes comes the fish: when one reaches step seven, a four-sprite creature pops up on its own arc, and landing on it is worth 300 points.</p>
+<p>Jumping clean over an obstacle scores too, though barely: thirty points. And two of the kinds, the last two, are collected rather than dodged: touching them makes a noise, wipes them off the ice and pays 500.</p>
+<h2 id="the-panel">The panel</h2>
+<p>The top two rows of the screen aren&#x27;t a picture: they&#x27;re written by a single string that drops five labels in five different places, with the numbers going on top.</p>
+<pre><code>1P  &lt;score&gt;       HI  &lt;high score&gt;     STAGE  &lt;stage&gt;
+TIME  &lt;clock&gt;          &lt;distance left&gt;</code></pre>
+<p>It&#x27;s all packed decimal, two digits to a byte, which is what lets it be added with a single instruction and written out without dividing by ten. The score is three bytes and pegs at 999999 if you get that far; the high score is another three, and they&#x27;re the only ones that survive a reset, because the wipe starts three bytes further along.</p>
+<h2 id="the-demo">The demo</h2>
+<p>Leave the game alone and it starts a game that plays itself for 1852 steps. There&#x27;s no intelligence behind it: the controls come out of a 64-byte recording carried in the cartridge itself, and the reader takes one every 32 frames.</p>
+<p>While it runs, the bit that says &quot;a real game is in progress&quot; is off, and that has a nice consequence: the scoring routine leaves by the back door on its second instruction. The demo plays, crashes and jumps, but never scores.</p>
+<h2 id="starting-a-game">Starting a game</h2>
+<p>You press <b>1</b> to play with a joystick or <b>2</b> to play with the keyboard. That key is checked every single frame, on any screen, and the routine handling it does something unusual: it eats its own return address so it never goes back to whoever called it, and plants the menu right there.</p>
+<p>From the keyboard it uses the arrow row and the space bar, and the code drops them into the same bits the joystick&#x27;s own come in on, so from that point the game has no idea which of the two you&#x27;re using.</p>
+<footer><p><em>Stardust</em> was published by Topo Soft in 1987. By the game's own credits screen, the conversion is by <b>Carlos Arias</b>, the graphics by <b>Juan Carlos and Javier Arévalo</b> —along with <b>Julio Martín</b>—, the music by <b>Gominolas</b>, and it is based on an original idea by <b>José Manuel Muñoz</b>; the loading screen is signed <b>Cano</b>. All rights in the game remain with their holders. This is preservation, study and documentation work.</p></footer></div>

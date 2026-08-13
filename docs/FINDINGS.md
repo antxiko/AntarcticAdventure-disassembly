@@ -1,0 +1,160 @@
+# Findings
+
+What turned up when the cartridge came apart, with the evidence alongside.
+Everything on this page checks out by reading the binary; what isn't settled yet
+is in [Open questions](OPEN-QUESTIONS.html).
+
+## The demo is a recording
+
+Left alone, the game starts a session that plays itself. There's no
+intelligence behind it: there are 64 bytes at 0x584A carrying exactly the same
+bits the joystick returns, and the input reader takes one every 32 frames. In
+between it holds the previous direction, so the recording runs at a very coarse
+rate and still does the job.
+
+You can see it in the bytes themselves: `01` is up, `09` up and right, `11` up
+and button. Not one value falls outside the controller's bit map.
+
+And the length works out too. The demo runs 0x073C steps, which at one byte
+every 32 is 58 of the 64 that are there. The run ends exactly where the next
+routine's first instruction begins.
+
+## The first thing the cartridge does is write over itself
+
+Between bringing the machine up and starting the game sit these four
+instructions:
+
+```asm
+    ld hl,0411fh      ; source: three bytes that read C3 00 00, i.e. jp 0000h
+    ld de,DESPACHA    ; destination: 0x40B2, the whole game's dispatcher
+    ld bc,00003h
+    ldir
+```
+
+On a cartridge that does absolutely nothing, because that half of the memory
+map is ROM and the write goes nowhere. But if the cartridge were running from a
+copy in RAM, the dispatcher would turn into a jump to zero and the machine
+would reset on the first frame, since the game loop calls it right away.
+
+That it does this is settled by reading the bytes. Why it does it can't be
+proved from the binary, and the reasonable reading is a guard against copies in
+memory; but that's a reading, not a fact.
+
+## There's a base you never reach
+
+The cartridge carries eight base names and the route has ten stops. Seven of
+those names cover the ten —the United States turns up three times and Australia
+twice— and the eighth, **NEW ZEALAND**, is asked for by nobody.
+
+Checked three separate ways, because one check isn't enough here:
+
+- it isn't among the name table's ten entries;
+- no instruction points at it, walking only instruction starts;
+- and not one of that string's twenty addresses appears as a word anywhere in
+  the cartridge's 16 KB.
+
+The other seven do show up pointed at, so the check works and NEW ZEALAND's
+zero means something.
+
+## The alphabet has no F
+
+The typeface is laid out so a tile's number is its ASCII minus 0x20, so A is
+0x21, B is 0x22 and so on. By that arithmetic, F ought to be at 0x26.
+
+It isn't: that tile holds a different picture, in all three thirds of the
+screen. And the one word in the whole game that needs an F —**FRANCE**, the
+route's first base— brings its own: its string doesn't use 0x26 but 0xC9, a
+lone F kept apart, nowhere near the alphabet.
+
+## Half of talking to the screen was never used
+
+The routines dealing with the graphics chip come in pairs: one to write and its
+exact twin to read. Both writers are used constantly, ten and six times
+respectively.
+
+Neither reader is called by anyone. And that can be said flatly, because one of
+their addresses **never appears in the 16 KB at all**, and the only appearance
+of the other is the call its own dead twin makes to it.
+
+This game never reads the screen. It only writes.
+
+## There's a two-player mode left in the wiring
+
+There's a routine that writes a string followed by a `1` or a `2`, taken from
+bit 7 of the flag word. Nobody calls it —its address doesn't appear in the
+cartridge— and on top of that nobody ever sets that bit, because the only two
+values ever written there are 0x40 and 0x50.
+
+Matching that, the panel's label reads **1P**, fixed, written into the label
+string as one more constant.
+
+## The tables give themselves away
+
+Working out where a table ends is usually the worst part of a disassembly,
+because the size isn't written down anywhere and getting it wrong raises no
+error at all.
+
+In this cartridge nearly all of them say so. The table's last word ends exactly
+on the byte where its own first destination starts, so only one size is
+possible: try N entries and only one N closes. It works for the six jump
+tables, the ten stages, the ten flags, the seven horizons, the twenty-four
+sounds and the five stretches of the finish.
+
+And there's a second house trick, this one to save instructions: **three tables
+are pointed at one byte before they begin**, because their index is never zero
+and that saves a `dec a`. The byte-zero of one of them is the last byte of a
+`jp`; of another, a stray `ret` that serves as data without ceasing to be a
+`ret`.
+
+## The seven obstacles tile their region without a byte left over
+
+Between 0x6BE9 and 0x7241 there are 92 pieces of artwork, and the only clue to
+what they're for is that the obstacle table's seven pointers land inside.
+
+Chain the fifteen steps each obstacle lasts and this comes out:
+
+    type 3   6BE9 -> 6D85      type 2   7091 -> 7150
+    type 4   6D85 -> 6F19      type 6   7150 -> 71C8
+    type 0   6F19 -> 6FD2      type 5   71C8 -> 7241
+    type 1   6FD2 -> 7091
+
+Each chain ends precisely where the next begins, and the last ends precisely at
+the end of the region. The seven share out all 92 pieces with nothing spare and
+nothing missing, and that confirms both the fifteen-step count and that the
+chaining is being read correctly.
+
+A nice detail from that: all seven pointers point at an **empty** block. It
+isn't a misreading — an obstacle's first step draws nothing because it's still
+behind the horizon, and two of the seven carry two empty steps.
+
+## Up brakes and down accelerates
+
+The table governing speed has four destinations, one per combination of up and
+down. Pressing nothing does nothing, pressing both does nothing either, and the
+other two run backwards from what you'd expect: **up lowers the speed and down
+raises it**.
+
+They don't cost the same, either. Each step of acceleration takes four frames
+and each step of braking takes twelve, so the penguin picks up speed three
+times faster than he lets it go.
+
+## The two tables of twelve that aren't the same thing
+
+Next to the sound player sit two twelve-byte tables, right up against each
+other. The first is a chromatic octave, and it shows: the twelve periods land
+0.09 semitones from equal temperament.
+
+The second invites the same reading, and isn't. Measured as a scale it gives
+15.8 semitones, which is no scale at all. What it actually is shows in the code
+that uses it: each note's high nibble indexes it to get **how long the note
+lasts**. They're durations, and they run from 5 to 100 frames.
+
+## Silence is a stream that ends on its first byte
+
+Of the twenty-four sound pointers, the first points outside the cartridge.
+That's not a mistake: sound zero is never asked for, so that entry is never
+read.
+
+And the last three all point at the same byte, which is an `0xFF`, the end of a
+stream. That's the silence, and it's what the startup asks for to leave the
+chip quiet before anything starts.

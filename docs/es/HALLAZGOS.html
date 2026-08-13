@@ -1,0 +1,135 @@
+<title>Hallazgos — Stardust (1987)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,640px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Portada</a><a href="EMPEZAR.html">Empezar</a><a href="EL-JUEGO.html">El juego</a><a href="EL-CARTUCHO.html">El cartucho</a><a href="EL-CODIGO.html">El código</a><a href="HALLAZGOS.html" style=color:var(--tinta)>Hallazgos</a><a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a><a href="../FINDINGS.html" style="margin-left:auto;color:var(--oro)">English</a></nav>
+<h1 id="hallazgos">Hallazgos</h1>
+<p>Lo que apareció al desmontar el cartucho, con la evidencia al lado. Todo lo de esta página se comprueba leyendo el binario; lo que todavía no está cerrado está en <a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a>.</p>
+<h2 id="la-demo-va-grabada">La demo va grabada</h2>
+<p>Cuando el juego se queda solo, arranca una partida que juega sola. No hay ninguna inteligencia detrás: hay 64 bytes en 0x584A que llevan exactamente los mismos bits que devuelve el joystick, y el lector de mandos coge uno cada 32 fotogramas. Entre byte y byte se repite la dirección anterior, así que la grabación va a un ritmo muy lento y aun así basta.</p>
+<p>Se ve en los propios bytes: <code>01</code> es arriba, <code>09</code> arriba y derecha, <code>11</code> arriba y botón. Ni un valor sale del mapa de bits del mando.</p>
+<p>Y encaja hasta en la duración. La demo dura 0x073C pasos, que a un byte cada 32 son 58 bytes de los 64 que hay. La tira acaba exactamente donde empieza la primera instrucción de la rutina siguiente.</p>
+<h2 id="lo-primero-que-hace-el-cartucho-es-escribir-sobre-si-mismo">Lo primero que hace el cartucho es escribir sobre sí mismo</h2>
+<p>Entre inicializar la máquina y arrancar el juego hay estas cuatro instrucciones:</p>
+<pre><code>    ld hl,0411fh      ; origen: tres bytes que son C3 00 00, o sea jp 0000h
+    ld de,DESPACHA    ; destino: 0x40B2, el despachador de todo el juego
+    ld bc,00003h
+    ldir</code></pre>
+<p>En un cartucho eso no hace absolutamente nada, porque esa mitad del mapa de memoria es ROM y la escritura se pierde por el camino. Pero si el cartucho estuviera copiado en RAM, el despachador quedaría convertido en un salto a cero y la máquina se reiniciaría en el primer fotograma, porque el bucle de juego lo llama nada más empezar.</p>
+<p>Que hace eso está comprobado leyendo los bytes. Para qué lo hace no se puede demostrar desde el binario, y lo más razonable es que sea una protección contra copias en memoria; pero eso es una lectura, no un hecho.</p>
+<h2 id="hay-una-base-a-la-que-no-se-llega-nunca">Hay una base a la que no se llega nunca</h2>
+<p>El cartucho lleva ocho nombres de base y el recorrido tiene diez paradas. Siete de esos nombres cubren las diez —Estados Unidos sale tres veces y Australia dos— y el octavo, <b>NEW ZEALAND</b>, no lo pide nadie.</p>
+<p>Comprobado por tres caminos distintos, porque una sola comprobación aquí no basta:</p>
+<ul><li>no está entre las diez entradas de la tabla de nombres;</li><li>ninguna instrucción lo apunta, recorriendo solo inicios de instrucción;</li><li>y ninguna de las veinte direcciones de esa cadena aparece como palabra en los 16 KB del cartucho.</li></ul>
+<p>Las otras siete sí aparecen apuntadas, así que el control funciona y el cero de NEW ZEALAND significa algo.</p>
+<h2 id="el-alfabeto-no-tiene-f">El alfabeto no tiene F</h2>
+<p>La tipografía va colocada de forma que el número de casilla es su ASCII menos 0x20, así que la A es la 0x21, la B la 0x22 y así. Con esa cuenta, la F tendría que estar en la 0x26.</p>
+<p>No está: en esa casilla hay otro dibujo, en los tres tercios de la pantalla. Y la única palabra de todo el juego que necesita una F —<b>FRANCE</b>, la primera base del recorrido— se la lleva puesta: su cadena no usa la 0x26 sino la 0xC9, que es una F suelta guardada aparte, lejos del alfabeto.</p>
+<h2 id="la-mitad-de-hablar-con-la-pantalla-viene-sin-estrenar">La mitad de hablar con la pantalla viene sin estrenar</h2>
+<p>Las rutinas que tratan con el chip gráfico van por parejas: una para escribir y su gemela exacta para leer. Las dos de escribir se usan a todas horas, diez y seis veces respectivamente.</p>
+<p>Las dos de leer no las llama nadie. Y se puede decir sin rodeos porque la dirección de una de ellas <b>no aparece ni una sola vez en los 16 KB</b>, y la única aparición de la otra es la llamada que le hace su propia gemela muerta.</p>
+<p>Este juego no lee la pantalla nunca. Solo escribe.</p>
+<h2 id="queda-el-rastro-de-un-modo-de-dos-jugadores">Queda el rastro de un modo de dos jugadores</h2>
+<p>Hay una rutina que escribe una cadena y detrás un <code>1</code> o un <code>2</code>, sacado del bit 7 de la palabra de banderas. Nadie la llama —su dirección no aparece en el cartucho— y además ese bit no lo enciende nadie, porque los dos únicos valores que se escriben ahí son 0x40 y 0x50.</p>
+<p>A juego con eso, el rótulo del marcador dice <b>1P</b> fijo, escrito en la cadena de los rótulos como una constante más.</p>
+<h2 id="las-tablas-se-delatan-solas">Las tablas se delatan solas</h2>
+<p>Saber dónde acaba una tabla suele ser lo peor de un desensamblado, porque el tamaño no está escrito en ninguna parte y equivocarse no da ningún error.</p>
+<p>En este cartucho casi todas lo dicen. La última palabra de la tabla acaba exactamente en el byte donde empieza su primer destino, así que solo hay un tamaño posible: se prueba con N entradas y solo una N cierra. Funciona con las seis tablas de salto, con las diez fases, con las diez banderas, con los siete horizontes, con los veinticuatro sonidos y con los cinco tramos de la meta.</p>
+<p>Y hay un segundo truco de la casa, este para ahorrar instrucciones: <b>tres tablas se apuntan un byte antes de donde empiezan</b>, porque su índice nunca vale cero y así se evitan un <code>dec a</code>. El byte cero de una de ellas es el último byte de un <code>jp</code>; el de otra, un <code>ret</code> suelto que hace de dato sin dejar de ser un <code>ret</code>.</p>
+<h2 id="los-siete-obstaculos-embaldosan-su-zona-sin-dejar-un-byte">Los siete obstáculos embaldosan su zona sin dejar un byte</h2>
+<p>Entre 0x6BE9 y 0x7241 hay 92 trozos de dibujo, y la única pista de para qué son es que los siete punteros de la tabla de obstáculos caen ahí dentro.</p>
+<p>Encadenando los quince pasos que dura cada obstáculo, sale esto:</p>
+<pre><code>tipo 3   6BE9 -&gt; 6D85      tipo 2   7091 -&gt; 7150
+tipo 4   6D85 -&gt; 6F19      tipo 6   7150 -&gt; 71C8
+tipo 0   6F19 -&gt; 6FD2      tipo 5   71C8 -&gt; 7241
+tipo 1   6FD2 -&gt; 7091</code></pre>
+<p>Cada cadena acaba justo donde empieza la siguiente, y la última acaba justo en el final de la zona. Los siete se reparten los 92 trozos sin que sobre ni falte nada, y de paso queda confirmado que los pasos son quince y que el encadenamiento se lee bien.</p>
+<p>Un detalle bonito de ahí: los siete punteros apuntan a un bloque <b>vacío</b>. No es un error de lectura, es que el primer paso de un obstáculo no dibuja nada porque todavía está detrás del horizonte, y dos de los siete llevan dos pasos vacíos.</p>
+<h2 id="arriba-frena-y-abajo-acelera">Arriba frena y abajo acelera</h2>
+<p>La tabla que gobierna la velocidad tiene cuatro destinos, uno por cada combinación de arriba y abajo. Sin tocar nada no pasa nada, con las dos a la vez tampoco, y las otras dos van al revés de lo que uno esperaría: <b>arriba baja la velocidad y abajo la sube</b>.</p>
+<p>Además no cuestan igual. Cada escalón de aceleración tarda cuatro fotogramas y cada escalón de frenada tarda doce, así que el pingüino coge carrera tres veces más rápido de lo que la suelta.</p>
+<h2 id="las-dos-tablas-de-doce-que-no-son-lo-mismo">Las dos tablas de doce que no son lo mismo</h2>
+<p>Junto al reproductor de sonido hay dos tablas de doce bytes, pegadas la una a la otra. La primera es una octava cromática, y se nota: los doce periodos caen a 0,09 semitonos del temperamento igual.</p>
+<p>La segunda invita a leerse igual, y no lo es. Medida como si fuera una escala da 15,8 semitonos, que no es ninguna escala de nada. Lo que es se ve en el código que la usa: el nibble alto de cada nota la indexa para sacar <b>cuánto dura</b>. Son duraciones, y van de 5 a 100 fotogramas.</p>
+<h2 id="el-silencio-es-un-flujo-que-se-acaba-en-el-primer-byte">El silencio es un flujo que se acaba en el primer byte</h2>
+<p>De los veinticuatro punteros de sonido, el primero apunta fuera del cartucho. No es un error: el sonido cero no se pide nunca, así que esa entrada no se lee jamás.</p>
+<p>Y los tres últimos apuntan todos al mismo byte, que es un <code>0xFF</code>, o sea el final de un flujo. Ese es el silencio, y es lo que pide el arranque para dejar el chip callado antes de empezar.</p>
+<footer><p><em>Stardust</em> lo publicó Topo Soft en 1987. Según la pantalla de créditos del propio juego, la conversión es de <b>Carlos Arias</b>, los gráficos de <b>Juan Carlos y Javier Arévalo</b> —además de <b>Julio Martín</b>—, la música de <b>Gominolas</b>, y está basado en una idea original de <b>José Manuel Muñoz</b>; la pantalla de carga va firmada <b>Cano</b>. Todos los derechos sobre el juego siguen siendo de sus titulares. Este trabajo es de preservación, estudio y documentación.</p></footer></div>

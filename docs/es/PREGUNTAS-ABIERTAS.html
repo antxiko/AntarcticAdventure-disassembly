@@ -1,0 +1,103 @@
+<title>Preguntas abiertas — Stardust (1987)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,640px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Portada</a><a href="EMPEZAR.html">Empezar</a><a href="EL-JUEGO.html">El juego</a><a href="EL-CARTUCHO.html">El cartucho</a><a href="EL-CODIGO.html">El código</a><a href="HALLAZGOS.html">Hallazgos</a><a href="PREGUNTAS-ABIERTAS.html" style=color:var(--tinta)>Preguntas abiertas</a><a href="../OPEN-QUESTIONS.html" style="margin-left:auto;color:var(--oro)">English</a></nav>
+<h1 id="preguntas-abiertas">Preguntas abiertas</h1>
+<p>Cada byte del cartucho tiene dueño, el listado vuelve a dar el original byte a byte y las 394 etiquetas tienen escrito qué hacen. Pero eso no es una lista de deberes tachados: esta página cuenta qué significan esas cifras exactamente, y qué queda por saber.</p>
+<h2 id="que-es-cada-obstaculo">Qué es cada obstáculo</h2>
+<p>Los siete están completamente descritos por dentro —su dibujo, su cadena de quince pasos, sus dos ventanas de choque, qué sonido dan y qué puntos— y de tres de ellos se sabe además que son agujeros, porque son exactamente los tres de los que sale el pez.</p>
+<p>Lo que no está cerrado es cómo se llama cada uno mirándolo. Que los tipos 5 y 6 se recogen y valen 500 puntos está en el código; si eso es una bandera, una mata de hielo o cualquier otra cosa, hace falta verlo. Es una tarde de emulador, no una investigación.</p>
+<h2 id="los-cuatro-sprites-de-fondo">Los cuatro sprites de fondo</h2>
+<p>Hay cuatro sprites que aparecen en posiciones fijas, suben por la pantalla al ritmo de la velocidad, se van abriendo hacia los lados —uno, dos, menos uno, menos dos— y cambian de dibujo por el camino hasta apagarse arriba. Solo salen cuando hay partida de verdad, nunca en la demo.</p>
+<p>Lo que hacen está leído instrucción a instrucción. Qué se ve exactamente cuando salen, no.</p>
+<h2 id="si-el-bicho-de-los-agujeros-es-una-foca">Si el bicho de los agujeros es una foca</h2>
+<p>De los agujeros sale algo hecho con cuatro sprites, con sus fotogramas en una tabla propia y su arco de salto. Que se puede pisar, que suena y que vale 300 puntos está claro. Si lo que se ve es un pez, una foca o las dos cosas según el tipo de agujero, está por mirar.</p>
+<h2 id="lo-que-no-se-ha-medido-en-el-emulador">Lo que no se ha medido en el emulador</h2>
+<p>Todo lo que dice este repositorio sale de leer el binario, y eso tiene un límite muy concreto: <b>lo que se lee explica lo que el programa hace, no lo que el jugador ve</b>. Las imágenes de la web son una comprobación fuerte de que los gráficos están donde decimos —si el reparto de la memoria de vídeo estuviera mal, saldría ruido en vez de pingüinos—, pero no sustituyen a ver el juego correr.</p>
+<p>Falta esa pasada: arrancar el cartucho en un emulador, contrastar contra el listado lo que se ve, y usarlo para cerrar las tres preguntas de arriba.</p>
+<h2 id="lo-que-si-esta-cerrado-y-por-que-se-puede-afirmar">Lo que sí está cerrado, y por qué se puede afirmar</h2>
+<p>Para que quede claro qué respalda cada cifra:</p>
+<ul><li><b>Reensambla byte a byte.</b> El listado publicado se ensambla y el sha256 del resultado es el del cartucho. Esto no es una comprobación parcial: si un comentario se hubiera comido un byte, esa línea no saldría.</li><li><b>Ni un byte sin explicar.</b> Los 16384 se reparten en 5947 de código que el trazador alcanza siguiendo el flujo de verdad, y 10437 dentro de un rango declarado, cada uno con la instrucción que lo lee escrita al lado.</li><li><b>Ninguna zona de datos se lee como código.</b> Es una comprobación aparte, y hace falta: un desensamblado puede reensamblar perfecto y estar mintiendo, si unos dibujos se están leyendo como instrucciones. Los bytes no cambian, solo cambia lo que decimos de ellos.</li><li><b>Ningún punto de entrada cae dentro de una zona de datos.</b> Sembrar el trazador con una dirección mal deducida hincha la cobertura sin que salte ninguna alarma, así que hay una regla para exactamente eso.</li></ul>
+<h2 id="dos-avisos-para-quien-siga-por-aqui">Dos avisos para quien siga por aquí</h2>
+<p><b>Los ejes y los órdenes son fáciles de leer al revés, y equivocarse no da error.</b> Un sprite de 16x16 son dos mitades de dieciséis filas, no dieciséis filas de dos bytes; leído de la otra manera sale una imagen convincente, pero cortada en tiras. Lo mismo pasa con las bases de la memoria de vídeo: leer una tabla de colores como si fuera de dibujos da algo que parece un dibujo. La única defensa es sacar las bases del propio código y mirar el resultado.</p>
+<p>**Y una llamada al descompresor sin <code>ld hl</code> delante no empieza de cero**: sigue con el puntero que dejó la anterior. Eso vale para el flujo de origen y también para el destino en la memoria de vídeo, y significa que el orden en el que se ejecutan las llamadas importa. Recorrer el cartucho de arriba abajo llamada por llamada no reconstruye lo mismo que ejecutarlo.</p>
+<footer><p><em>Stardust</em> lo publicó Topo Soft en 1987. Según la pantalla de créditos del propio juego, la conversión es de <b>Carlos Arias</b>, los gráficos de <b>Juan Carlos y Javier Arévalo</b> —además de <b>Julio Martín</b>—, la música de <b>Gominolas</b>, y está basado en una idea original de <b>José Manuel Muñoz</b>; la pantalla de carga va firmada <b>Cano</b>. Todos los derechos sobre el juego siguen siendo de sus titulares. Este trabajo es de preservación, estudio y documentación.</p></footer></div>
