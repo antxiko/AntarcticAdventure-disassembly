@@ -82,3 +82,4 @@ does and why it was built that way:
 | `render_decorados.py` | the scenery, using the game's own interpreter |
 | `render_pista.py` | the seven obstacles, built up step by step |
 | `render_foca.py` | the seal that comes out of the holes, frame by frame |
+| `render_pinguino.py` | the penguin's ten poses, in its own colour |

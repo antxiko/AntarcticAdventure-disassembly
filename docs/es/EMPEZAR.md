@@ -81,3 +81,4 @@ cabecera qué hace y por qué se hizo así:
 | `render_decorados.py` | los decorados, con el intérprete del propio juego |
 | `render_pista.py` | los siete obstáculos, montados paso a paso |
 | `render_foca.py` | la foca que sale de los agujeros, fotograma a fotograma |
+| `render_pinguino.py` | las diez posturas del pingüino, en su color |

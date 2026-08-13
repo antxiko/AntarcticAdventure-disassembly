@@ -19,7 +19,10 @@ Dibujar con las bases cambiadas no da error: da una imagen, y encima
 convincente, porque los colores se leen como dibujo y al reves. Por eso las
 bases salen de aqui de los registros y no de una constante escrita a mano.
 
-Uso: render_tiles.py <work/vram.bin> <directorio_salida>
+Uso: render_tiles.py <work/vram.bin> <directorio_salida> [rom]
+
+Con la ROM detras, los sprites salen cada uno del color que de verdad les
+da su entrada en la tabla de atributos.
 """
 import os
 import sys
@@ -65,34 +68,125 @@ def hoja_de_tiles(v, banco, escala=3, ancho=16):
     return w, h, img
 
 
-def hoja_de_sprites(v, escala=3, ancho=8):
+ORG = 0x4000
+LISTA_ATRIBUTOS = 0x66EF      # con la que se monta la tabla durante la partida
+POSTURAS = 0x4B84             # diez posturas del pinguino, cuatro patrones cada una
+FOTOGRAMAS_FOCA = 0x78C1      # ocho punteros, uno por paso
+ESCONDE_FOCA = 0x79BD
+SIN_DUENO = 15                # los que no reclama nadie, en blanco
+
+
+def colores_de_atributos(rom, desde, cuantos):
+    """Los colores que la lista de atributos deja puestos, desde el numero N.
+
+    Formato de la lista: (cuantos, y, x, patron, color) repetido y un cero al
+    final, que es lo que ejecuta 0x66CA para componer los 128 bytes.
+    """
+    out, i, p = [], 0, LISTA_ATRIBUTOS
+    while True:
+        n = rom[p - ORG]
+        if n == 0:
+            return out
+        p += 1
+        entrada = rom[p - ORG:p - ORG + 4]
+        p += 4
+        for _ in range(n):
+            if desde <= i < desde + cuantos:
+                out.append(entrada[3] & 15)
+            i += 1
+
+
+def duenos(rom):
+    """De que color sale cada sprite, y por culpa de quien.
+
+    EL COLOR DE UN SPRITE NO ESTA EN SU DIBUJO: va en el cuarto byte de su
+    entrada de atributo, asi que el mismo dibujo puede salir de un color o de
+    otro segun quien lo use. Aqui se rehace ese reparto siguiendo a los cuatro
+    que reparten patrones -el pinguino, la foca, el pez y la sombra- mas los
+    de fondo, que se pintan a mano en 0x77CE.
+    """
+    def w(a):
+        return rom[a - ORG] | (rom[a + 1 - ORG] << 8)
+
+    mapa = {}
+
+    def pon(patron, color, quien):
+        mapa.setdefault(patron & 0xFC, (color, quien))
+
+    # El pinguino: los cuatro sprites de cada postura, atributos 10-13.
+    for color, base in zip(colores_de_atributos(rom, 10, 4), range(4)):
+        for pose in range(10):
+            pon(rom[POSTURAS + pose * 4 + base - ORG], color, "pinguino")
+    # La foca: los fotogramas, con sus tres variantes, atributos 16-19.
+    col_foca = colores_de_atributos(rom, 16, 4)
+    ptr = [w(FOTOGRAMAS_FOCA + 2 * i) for i in range(8)] + [ESCONDE_FOCA]
+    for i in range(8):
+        p, fin = ptr[i], ptr[i + 1]
+        cuantos = 2 if fin - p == 18 else 4
+        for var in range(3):
+            q = p + var * (fin - p) // 3
+            for s in range(cuantos):
+                pon(rom[q + s * 3 + 2 - ORG], col_foca[s], "foca")
+    # El pez: los tres patrones de 0x7644-0x764F, atributo 15.
+    for patron in (0x66, 0x64, 0x92):
+        pon(patron, colores_de_atributos(rom, 15, 1)[0], "pez")
+    # La sombra: atributos 20-21.
+    for patron in (0xA0, 0xA4, 0xAE):
+        pon(patron, colores_de_atributos(rom, 20, 1)[0], "sombra")
+    # Los de fondo, que no salen de la lista: 0x77CE les pone el color a mano.
+    for patron in (0xE0, 0xDC, 0xD8, 0xD1):
+        pon(patron, 0x0F, "fondo")
+    return mapa
+
+
+def hoja_de_sprites(v, rom=None, escala=3, ancho=8):
     """Los sprites son de 16x16 (R1 bit 1), o sea CUATRO cuartos de 8x8 cada uno.
 
     El VDP los guarda por columnas: el cuarto de arriba-izquierda, el de
     abajo-izquierda, el de arriba-derecha y el de abajo-derecha. Ponerlos en
     orden de lectura los parte por la mitad, y se nota a simple vista.
+
+    Con la ROM delante, cada uno sale del color que le da su entrada de
+    atributo; sin ella, todos en blanco. El fondo es gris a proposito: sobre
+    el hielo blanco del juego no se verian los de fondo, que son blancos, y
+    sobre el azul del borde no se veria la sombra, que es azul.
     """
     n = 0x800 // 32                       # 64 sprites de 16x16
+    mapa = duenos(rom) if rom else {}
     alto = (n + ancho - 1) // ancho
     w, h = ancho * 16 * escala, alto * 16 * escala
-    img = [[PALETA[FONDO]] * w for _ in range(h)]
-    blanco = bytes([0xF0]) * 8            # sin tabla de color: tinta 15
+    img = [[PALETA[14]] * w for _ in range(h)]
+    # Aqui NO vale pinta_tile: esa rutina es para casillas, que llevan tinta y
+    # fondo, y pintaria tambien los pixeles apagados. Un sprite no tiene fondo:
+    # lo que no esta encendido es transparente y deja ver lo que hay detras.
     for s in range(n):
         base = SPR_PAT + s * 32
+        color, _ = mapa.get(s * 4, (SIN_DUENO, None))
+        rgb = PALETA[color]
         x0, y0 = (s % ancho) * 16, (s // ancho) * 16
-        for cuarto in range(4):
-            dx, dy = (cuarto // 2) * 8, (cuarto % 2) * 8
-            pinta_tile(img, x0 + dx, y0 + dy,
-                       v[base + cuarto * 8:base + cuarto * 8 + 8], blanco, escala)
+        for y in range(16):
+            izq, der = v[base + y], v[base + 16 + y]
+            fila = ([(izq >> (7 - i)) & 1 for i in range(8)]
+                    + [(der >> (7 - i)) & 1 for i in range(8)])
+            for x, bit in enumerate(fila):
+                if not bit:
+                    continue
+                for sy in range(escala):
+                    for sx in range(escala):
+                        img[(y0 + y) * escala + sy][(x0 + x) * escala + sx] = rgb
     return w, h, img
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) not in (3, 4):
         sys.exit(__doc__)
     with open(sys.argv[1], "rb") as f:
         v = f.read()
     salida = sys.argv[2]
+    rom = None
+    if len(sys.argv) == 4:
+        with open(sys.argv[3], "rb") as f:
+            rom = f.read()
     os.makedirs(salida, exist_ok=True)
 
     for banco in range(3):
@@ -101,9 +195,16 @@ def main():
         png(os.path.join(salida, nombre), w, h, img)
         print("  %-22s %dx%d   los 256 dibujos del banco %d" % (nombre, w, h, banco))
 
-    w, h, img = hoja_de_sprites(v)
+    w, h, img = hoja_de_sprites(v, rom)
     png(os.path.join(salida, "sprites.png"), w, h, img)
-    print("  %-22s %dx%d   los 64 sprites de 16x16" % ("sprites.png", w, h))
+    if rom:
+        from collections import Counter
+        cuenta = Counter(q for _, q in duenos(rom).values())
+        print("  %-22s %dx%d   los 64 sprites, cada uno de su color: %s"
+              % ("sprites.png", w, h,
+                 ", ".join("%s %d" % (q, n) for q, n in sorted(cuenta.items()))))
+    else:
+        print("  %-22s %dx%d   los 64 sprites de 16x16" % ("sprites.png", w, h))
 
 
 if __name__ == "__main__":

@@ -212,13 +212,20 @@ HALLAZGOS = {
 }
 
 IMAGENES = [
+    ("pinguino.png",
+     "Las diez posturas del pingüino, cuatro sprites de 16x16 cada una. Va "
+     "entero en negro: lo blanco de la barriga no está dibujado, es el hielo "
+     "que se ve por los huecos del propio dibujo",
+     "The penguin's ten poses, four 16x16 sprites each. He's black all "
+     "through: the white of his belly isn't drawn at all, it's the ice showing "
+     "through the gaps in the picture itself"),
     ("sprites.png",
-     "Los 64 sprites de 16x16. Salen en blanco porque el color no vive en el "
-     "dibujo: cada sprite lo lleva en su entrada de la tabla de atributos, "
-     "así que el mismo dibujo puede salir de un color o de otro",
-     "The 64 16x16 sprites. They come out white because colour doesn't live in "
-     "the picture: each sprite carries it in its entry in the attribute table, "
-     "so the same picture can come out in one colour or another"),
+     "Los 64 sprites, cada uno del color que le da su entrada de atributo: el "
+     "pingüino en negro, la foca en negro y rojo, el pez en rojo y la sombra "
+     "en azul. Los dieciséis que no reclama nadie salen en blanco",
+     "All 64 sprites, each in the colour its attribute entry gives it: the "
+     "penguin black, the seal black and red, the fish red and the shadow blue. "
+     "The sixteen nobody claims come out white"),
     ("tiles-banco0.png",
      "El primero de los tres bancos de casillas: la tipografía, el logotipo de "
      "KONAMI y el rótulo de la presentación",
@@ -231,10 +238,12 @@ IMAGENES = [
      "Las banderas de las bases, descomprimidas: siete dibujos para diez paradas",
      "The bases' flags, decompressed: seven pictures for ten stops"),
     ("foca.png",
-     "La foca saliendo del agujero: los ocho pasos, y las tres variantes que "
-     "hay según de qué agujero salga",
-     "The seal coming out of the hole: all eight steps, and the three variants "
-     "depending on which hole it comes from"),
+     "La foca saliendo del agujero: los ocho pasos superpuestos, y las tres "
+     "salidas que hay —por el centro, hacia la derecha y hacia la izquierda—. "
+     "El dibujo es el mismo en las tres; lo que cambia es por dónde sale",
+     "The seal coming out of the hole: the eight steps superimposed, and the "
+     "three exits there are —centre, right and left. The picture is the same "
+     "in all three; what changes is where it comes out"),
     ("pista.png",
      "Un agujero en el hielo, montado por trozos según se acerca",
      "A hole in the ice, built up piece by piece as it comes closer"),

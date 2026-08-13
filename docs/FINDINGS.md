@@ -67,7 +67,11 @@ cartridge; read right, you get eight in a row, and the last frame ends exactly
 on the one that hides the seal, which in turn ends where code starts again.
 
 The first three steps are two sprites and the remaining five are four, and each
-frame carries three variants, one per kind of hole.
+frame carries three variants. But all three carry the same picture: the only
+thing that changes is the X, because one seal comes up through the centre, one
+veers right and one veers left. And from step 10 to 14 the same happens with the
+other coordinate —the four pictures are always the same and it's the Y that
+drops— so the seal doesn't deform as it approaches: it just moves.
 
 And the colour isn't in there. The routine that assembles it copies three bytes
 per sprite —position and picture— and **skips the fourth**, which is precisely

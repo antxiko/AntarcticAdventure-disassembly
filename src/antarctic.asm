@@ -4522,7 +4522,7 @@ FOCA_A_VRAM:
 ; ----------------------------------------------------------------------
 ; DATOS punteros_de_la_foca: Ocho punteros, uno por cada paso del 7 al 14. 0x785B los indexa con paso-7, no con el tipo de obstaculo: leido de la otra manera salen punteros que se van fuera del cartucho. Cierra clavada en 0x78D3, que es el primero de ellos
 ;   0x78c1..0x78d1  (16 bytes)
-; DATOS fotogramas_de_la_foca: Los ocho fotogramas, cada uno con TRES variantes -una por tipo de agujero, que elige 0x7886 mirando el bit que 0x7657 encendio en 0xE183-. Los tres primeros pasos llevan dos sprites (18 bytes = 3 x 2 x 3) y los cinco siguientes cuatro (36 bytes). De cada sprite van tres bytes: Y, X y patron
+; DATOS fotogramas_de_la_foca: Los ocho fotogramas, cada uno con TRES variantes que elige 0x7886 con el bit que 0x7657 encendio en 0xE183. Los tres primeros pasos llevan dos sprites (18 bytes = 3 x 2 x 3) y los cinco siguientes cuatro (36 bytes); de cada sprite van tres bytes: Y, X y patron. LAS TRES VARIANTES LLEVAN EL MISMO DIBUJO y solo cambian la X: una sale por el centro (0x78), otra se va a la derecha y otra a la izquierda, separandose mas en cada paso. Y del paso 10 al 14 los cuatro patrones son siempre C0, C4, C8 y CC: lo unico que cambia es la Y, que baja de 0x7B a 0xA1. La foca no se deforma, se acerca
 ;   0x78d1..0x79bd  (236 bytes)
 ; DATOS foca_escondida: El fotograma del paso 15, con las cuatro Y a 0xE0 para sacarla de la pantalla. Cierra clavado en 0x79C9, donde vuelve a haber codigo
 ;   0x79bd..0x79c9  (12 bytes)

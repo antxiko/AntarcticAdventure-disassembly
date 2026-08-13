@@ -69,7 +69,11 @@ ocho seguidos, y el último acaba justo en el fotograma que la esconde, que a su
 vez acaba donde vuelve a haber código.
 
 Los tres primeros pasos son de dos sprites y los cinco siguientes de cuatro, y
-cada fotograma lleva tres variantes, una por tipo de agujero.
+cada fotograma lleva tres variantes. Pero las tres llevan el mismo dibujo: lo
+único que cambia es la X, porque una foca sale por el centro, otra se va hacia
+la derecha y otra hacia la izquierda. Y del paso 10 al 14 pasa lo mismo con la
+otra coordenada —los cuatro dibujos son siempre los mismos y lo que baja es la
+Y—, así que la foca no se deforma al acercarse: solo cambia de sitio.
 
 Y el color no está ahí. La rutina que la monta copia tres bytes de cada sprite
 —posición y dibujo— y **se salta el cuarto**, que es justo el del color: ese lo

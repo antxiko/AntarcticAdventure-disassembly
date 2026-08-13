@@ -25,6 +25,19 @@ bit que 0x7657 encendio en 0xE183 segun el tipo (0x40, 0x20 o 0x80). Los tres
 primeros pasos son de DOS sprites -18 bytes: 3 variantes x 2 x 3- y los cinco
 restantes de CUATRO -36 bytes-.
 
+LAS TRES VARIANTES LLEVAN EL MISMO DIBUJO Y SOLO CAMBIAN LA X: una sale por el
+centro (X=0x78), otra se va hacia la derecha y otra hacia la izquierda, y cada
+paso las separa un poco mas del centro. Del paso 10 al 14 pasa lo mismo con la
+otra coordenada: los cuatro patrones son siempre C0, C4, C8 y CC, y lo que
+cambia es la Y, que va bajando de 0x7B a 0xA1. O sea que la foca no se
+deforma: se acerca.
+
+Por eso este dibujo NO recoloca los fotogramas en una rejilla. Si se
+normalizan las posiciones -que fue el primer intento- salen quince focas
+identicas y no se ve nada, porque justo se ha tirado lo unico que cambia. Van
+a su Y y su X de pantalla, los ocho pasos superpuestos, que es como se ve el
+acercamiento de un vistazo.
+
 DE CADA ENTRADA SE LEEN TRES BYTES -Y, X y patron- Y EL CUARTO SE SALTA, que
 es justo el del color: 0x789D copia tres y hace un `inc de` para pasar por
 encima del que hay. O sea que el color de la foca NO esta en el fotograma,
@@ -54,8 +67,9 @@ SPRITES = 0x1800       # los patrones de sprite en la VRAM
 ATRIBUTOS = 0x66EF     # la lista con la que se monta la tabla de atributos
 PRIMER_SPRITE = 16     # la foca ocupa los atributos 16 a 19
 FUERA = 0xE0           # una Y de 0xE0 es "este sprite no se ve"
-ESCALA = 3
-CELDA = 48
+ESCALA = 2
+PANTALLA = 256         # el ancho de la pantalla del MSX
+Y_DESDE, Y_HASTA = 0x60, 0xC8   # la banda por la que se mueve
 
 
 def w(rom, a):
@@ -115,8 +129,9 @@ def main():
     if ESCONDE + 12 != FIN:
         sys.exit("  el fotograma de esconder no acaba donde empieza el codigo")
 
-    ancho, alto = PASOS * CELDA, VARIANTES * CELDA
-    img = [[PALETA[4]] * ancho * ESCALA for _ in range(alto * ESCALA)]
+    banda = Y_HASTA - Y_DESDE
+    ancho, alto = PANTALLA, VARIANTES * banda
+    img = [[PALETA[15]] * ancho * ESCALA for _ in range(alto * ESCALA)]
 
     for var in range(VARIANTES):
         for i in range(PASOS):
@@ -125,13 +140,6 @@ def main():
             q = p + var * (fin - p) // VARIANTES
             entradas = [(rom[q + s * 3 - ORG], rom[q + s * 3 + 1 - ORG],
                          rom[q + s * 3 + 2 - ORG]) for s in range(cuantos)]
-            visibles = [e for e in entradas if e[0] != FUERA]
-            if not visibles:
-                continue
-            # Las coordenadas son de pantalla; aqui se recolocan pegadas a la
-            # esquina de su celda para poder verlas una al lado de otra.
-            oy = min(e[0] for e in visibles)
-            ox = min(e[1] for e in visibles)
             # De atras hacia adelante: el atributo de numero MAS BAJO va
             # DELANTE, y aqui el primero es el negro. Pintados en orden, los
             # rojos lo taparian y el bicho saldria de un solo color.
@@ -139,24 +147,25 @@ def main():
                 if y == FUERA:
                     continue
                 color = colores[s_]
-                px = i * CELDA + 8 + (x - ox)
-                py = var * CELDA + 8 + (y - oy)
                 for fy, fila in enumerate(sprite16(vram, patron)):
                     for fx, bit in enumerate(fila):
                         if not bit:
                             continue
+                        yy0 = var * banda + (y - Y_DESDE) + fy
+                        xx0 = x + fx
+                        if not (0 <= yy0 < alto and 0 <= xx0 < ancho):
+                            continue
                         for sy in range(ESCALA):
                             for sx in range(ESCALA):
-                                yy, xx = (py + fy) * ESCALA + sy, (px + fx) * ESCALA + sx
-                                if 0 <= yy < alto * ESCALA and 0 <= xx < ancho * ESCALA:
-                                    img[yy][xx] = PALETA[color]
+                                img[yy0 * ESCALA + sy][xx0 * ESCALA + sx] = PALETA[color]
             if var == 0:
-                print("  paso %2d  fotograma 0x%04X  %d sprites, colores %s"
-                      % (i + 7, p, cuantos,
-                         " ".join(str(c) for c in colores[:cuantos])))
+                xs = " ".join("%02X" % e[1] for e in entradas)
+                print("  paso %2d  fotograma 0x%04X  %d sprites  Y=%02X  X=%s"
+                      % (i + 7, p, cuantos, entradas[0][0], xs))
 
     png(os.path.join(salida, "foca.png"), ancho * ESCALA, alto * ESCALA, img)
-    print("  foca.png                ocho pasos x tres tipos de agujero")
+    print("  foca.png                los ocho pasos, en su sitio de pantalla,")
+    print("                          y las tres salidas: centro, derecha e izquierda")
     print("  la cadena acaba en 0x%04X y el codigo empieza en 0x%04X: clavada"
           % (ESCONDE + 12, FIN))
 
