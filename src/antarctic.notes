@@ -248,7 +248,7 @@ B 0x4312 por el tiempo que ha sobrado y la cortinilla para la siguiente.
 L 0x4312 ESTADO_14_META     Estado 14: la llegada a la base, en ocho pasos
 D 0x4318 0x4328 tabla_meta Los OCHO pasos del estado 14, del CALL de 0x4315
 L 0x4328 META_0_FRENA       Paso 0: espera a que el pinguino termine de frenar
-L 0x433B META_1_SIGUIENTE   Paso 1: sube el numero de fase y guarda el tiempo que ha sobrado
+L 0x433B META_1_SIGUIENTE   Paso 1: sube el numero de fase y guarda el tiempo que ha sobrado. Son DOS contadores distintos y conviene no mezclarlos: 0xE0E0 es el numero que se ve en el panel, en BCD y SIN TOPE -sigue subiendo a 11, 12...-, y 0xE0E1 es el indice 0-9 de la base, que DA LA VUELTA al llegar a diez. Esa pareja es la vuelta completa: el juego arranca con 0xE0E1 = 0, que es FRANCE (los valores iniciales estan en 0x4491), y cada llegada lo sube UNO, asi que se va de una base a la siguiente hasta que en la decima se vuelve al 0 y se cierra el circuito en Francia. Como el numero del panel no se reinicia, la vuelta siguiente son las mismas diez bases pero mas dificiles, que es lo que mira 0x76F7
 C 0x433f El numero que se ve, en BCD
 C 0x4344 Y el indice 0-9, que da la vuelta al llegar a diez
 C 0x4351 Lo que sobro de tiempo se guarda en 0xE0D5+fase y se descuenta la proxima vuelta
@@ -261,7 +261,7 @@ L 0x4389 META_3_LLEGA       Paso 3: llega, se monta el decorado de la base y sue
 C 0x439e Sonido 0x8F
 C 0x43a1 Se salta el paso 4... no: entra en el, poniendolo a mano
 L 0x43A6 META_4_SALUDA      Paso 4: la escena de la base
-L 0x43B8 META_4_FASE_ESPECIAL  Fases 1 y 3 (?): la escena tiene un remate propio
+L 0x43B8 META_4_FASE_ESPECIAL  Cuando 0xE0E1 vale 0 o 2, la llegada tiene un remate propio, y esos dos numeros son EL POLO SUR y FRANCIA. 0xE0E1 es el indice 0-9 de la base a la que se llega, y 0x433B lo sube UN PASO ANTES, en el paso 1 de esta misma escena, asi que aqui ya apunta a la base de destino: 0 es FRANCE y 2 es THE SOUTH POLE en la tabla de 0x55D9. El caso 2 esta MEDIDO en la partida grabada (t=270,2), con STAGE-02 en el panel y el rotulo SOUTH POLE debajo. El caso 0 no sale en esa partida: le toca a la llegada de la fase 10, la que cierra la vuelta volviendo a FRANCE, y por eso tiene remate propio igual que el Polo. Eso ultimo esta DEDUCIDO de como gira el indice en 0x433B, no medido todavia
 L 0x43C5 META_4_NORMAL
 L 0x43D0 META_5_ESPERA      Paso 5: espera a que se acabe la musica
 L 0x43D9 META_6_BONUS       Paso 6: cada cuatro fotogramas cambia un segundo que sobra por 100 puntos
@@ -617,6 +617,7 @@ D 0x5839 0x584A titulo_comprimido La pantalla de titulo: relleno y el rotulo SOF
 D 0x584A 0x588A mandos_de_la_demo LOS MANDOS GRABADOS DE LA DEMO. Sesenta y cuatro bytes, uno cada 32 fotogramas: 0x41BA los apunta y 0x4103 los va leyendo. La demo dura 0x073C pasos, asi que gasta 58 de los 64. Cada byte lleva los mismos bits que el joystick, y se ve: 0x01 arriba, 0x09 arriba y derecha, 0x11 arriba y gatillo... La partida de demostracion no la juega ninguna inteligencia, va grabada. Cierra clavada en 0x588A, la primera instruccion de MONTA_LA_FUENTE
 D 0x58DB 0x5DF2 fuente_comprimida La fuente y el logotipo de KONAMI, que van a los tres bancos
 D 0x5E22 0x6263 dibujos_banco1 Dibujos y colores del banco 1, comprimidos
+D 0x6263 0x6280 colores_de_pista_b LOS COLORES DE LA PISTA DEL SEGUNDO TIPO DE FASE: 29 bytes que descomprimen a 112 en la VRAM 0x0F78. Van EN PAREJA con los otros 29 de 0x6246-0x6262 -que son los del primer tipo y caen dentro del rango de arriba-, y 0x5044 elige entre las dos parejas mirando el bit 0 de la tabla de 0x5195 con la fase: o 0x5DE4 y 0x6246, o 0x5DEF y 0x6263. EL PUNTERO NO SE VE MIRANDO LAS INSTRUCCIONES DE AL LADO, y por eso el reconstructor se saltaba estos bytes: 0x5065 hace `ld de,06263h`, 0x5068 lo GUARDA EN LA PILA y quien lo usa es el `pop hl` de 0x506F, dos descompresiones despues. Es el mismo truco que la fuente en 0x58CF. Cierra clavado en 0x6280, donde empieza el remate del banco 1
 D 0x6280 0x628F dibujos_banco1_resto El remate del banco 1
 D 0x62C5 0x66C2 dibujos_banco2 Dibujos y colores del banco 2, comprimidos
 D 0x675C 0x6BE9 sprites_comprimidos Los patrones de sprite: los pinguinos, los peces y las focas
@@ -940,7 +941,7 @@ L 0x54F3 BASE_MULTIPLICA
 L 0x5508 BASE_ANDA
 L 0x551B DIBUJA_LA_BASE   Empieza a dibujar la base
 L 0x551F DIBUJA_LA_BASE_PASO  Alterna los dos bloques de la escena de la base
-L 0x5531 DIBUJA_EL_POLO   El remate de las fases 1 y 3 (?): otros sprites y un tercer bloque
+L 0x5531 DIBUJA_EL_POLO   El remate del POLO SUR: descomprime cuatro sprites mas (0x6B81 -> VRAM 0x1F80, o sea los patrones 0xF0, 0xF4, 0xF8 y 0xFC), copia sus cuatro atributos de 0x6746 encima de los numeros 7 a 10 -dos en amarillo y dos en negro- y dibuja un tercer bloque de casillas. Los cuatro completan al pinguino inclinado que dibujan las casillas: el pico y la mancha de la barriga en amarillo, el ala y el lomo en negro
 
 D 0x554C 0x5560 bloque_base_a Uno de los dos bloques que se van alternando para dibujar la base
 D 0x5560 0x556A bloque_base_b El otro
@@ -969,7 +970,7 @@ D 0x57B7 0x5839 rotulos Los rotulos de pantalla, en el formato de las cadenas: e
 # empieza la fase. Son cuatro tandas -0x5DF2, 0x628F, 0x6756 y 0x66C2- y entre
 # las cuatro llenan los tres bancos de patrones y de colores.
 
-L 0x588A MONTA_LA_FUENTE  Monta la fuente y los colores en los tres bancos de la pantalla
+L 0x588A MONTA_LA_FUENTE  Monta la fuente y los colores en los tres bancos de la pantalla. OJO: que la fuente se escriba tres veces NO quiere decir que los tres bancos acaben iguales. Cada escena descomprime luego sus dibujos ENCIMA, banco por banco, y comparando los tres en una VRAM de verdad solo quedan iguales DIECINUEVE casillas: la 0x00-0x0F, que son los cuadrados de color liso, y la 0xFD-0xFF, que estan vacias. Cada tercio de la pantalla tiene su propio juego de 256 casillas, y por eso render_tiles.py saca una hoja por banco y no una para todo
 L 0x589C MONTA_UN_BANCO   Un banco: los dieciseis primeros caracteres en color liso, el resto blanco sobre negro, y encima la fuente
 C 0x589e Los caracteres 0 a 15 se pintan de un color liso cada uno: son los que se usan para rellenar el cielo y el hielo
 C 0x58ac El resto del banco, blanco sobre negro
@@ -992,8 +993,8 @@ L 0x66D1 SPRITES_BORRA
 L 0x66D8 SPRITES_BUCLE
 L 0x66E3 VUELCA_ATRIBUTOS Copia los 128 bytes de 0xE050 a la tabla de atributos de sprite
 
-D 0x66EF 0x672C atributos_de_partida La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es una EXPLOSION de puntas- y color amarillo, que no se ve nunca: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia, porque ni una instruccion escribe en 0xE088 y la cadena de 0x4FE2 se para en el atributo 13
-D 0x672C 0x6756 atributos_de_base La misma lista para la escena de la base. Cierra clavada en 0x6756, donde vuelve a haber codigo. Sus bytes de 0x6746 los copia ademas 0x5537
+D 0x66EF 0x672C atributos_de_partida La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es una EXPLOSION de puntas- y color amarillo, que no se ve nunca: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia. MEDIDO sobre los diez minutos de partida grabada con un punto de observacion de escritura en 0xE088-0xE08B (tools/omsx_atributo14.tcl): las UNICAS cuatro cosas que lo tocan son barridos de la tabla entera -el ldir de 0x446E, el copiador de cuatro bytes de 0x45BE, BORRA_SPRITES en 0x4606 y el borrado previo de 0x66D1-, y ninguna va a por el. Al acabar la partida su entrada en la VRAM sigue siendo Y=0xE0, patron 0xD4, color 0x0A: cargado, coloreado y aparcado fuera del encuadre. El control -los mismos puntos en el atributo 13- recibe ademas 4426 y 41740 escrituras de las rutinas del pinguino, asi que los ceros del 14 son datos y no instrumentacion rota. Y de propina el control mide una cosa que estaba deducida: el 13 recibe 12 escrituras MAS que el 14 desde 0x45BE, que son las tres salidas del agua por cuatro bytes, o sea la cadena que rehace los sprites parandose justo antes del 14
+D 0x672C 0x6756 atributos_de_base La misma lista para la escena de la base, pero de OCHO entradas en vez de treinta: 0x66CB pone los 128 bytes a cero antes de aplicarla, asi que del atributo 8 en adelante no queda nada. Cierra clavada en 0x6756, donde vuelve a haber codigo. Sus bytes de 0x6746 los copia ademas 0x5537. Y AQUI ESTA EL UNICO SPRITE DEL PINGUINO QUE SE GIRA Y SONRIE: el atributo 7, con el patron 0xD0 en amarillo, que es el PICO. Todo lo demas de ese pinguino -la cara, los ojos, la boca roja y hasta la sombra azul de debajo- son CASILLAS, no sprites. Comprobado a t=126,6 de la partida grabada de dos maneras: la tabla de atributos solo tiene ocho entradas puestas, y comparando el fotograma real con la pantalla pintada SOLO con casillas quedan 224 pixeles sin explicar, que son 96+72+24 de la bandera y 32 del pico. Y 32 son exactamente los bits encendidos del patron 0xD0
 
 # =============================================================================
 # LA PISTA POR DENTRO
@@ -1021,7 +1022,8 @@ L 0x7607 PEZ_SIGUIENTE
 L 0x760F PEZ_SALE
 C 0x7618 Antes de que se cumpla el plazo de 0xE18A el pez sale; despues ya no
 L 0x7629 PEZ_LADO
-L 0x7632 PEZ_MONTA
+L 0x7632 PEZ_MONTA       Monta la entrada de atributo del pez. El DIBUJO sale de aqui: 0x90 si mira a un lado y 0x80 si al otro
+C 0x7644 CUIDADO CON ESTE `ld bc,07a66h`: 0x66, 0x64 y 0x92 son las X de los tres saltos -corto, medio y largo-, NO patrones. El patron es el que quedo en D unas instrucciones antes
 L 0x764D PEZ_SALTO_CORTO
 L 0x764F PEZ_SALTO_MEDIO
 L 0x7651 PEZ_GUARDA
@@ -1034,9 +1036,9 @@ C 0x7673 0xE188 es lo que mira MIRA_EL_PEZ para saber si el pinguino lo pisa
 C 0x7679 Sprite 15
 L 0x769A PEZ_ARCO
 L 0x76BB PEZ_SUBE
-L 0x76BE PEZ_CAE
+L 0x76BE PEZ_CAE         Al llegar al paso 0x10 del arco le SUMA 8 al byte del patron (0xE08E): el pez cambia al dibujo grande. Con eso y el bit 2 que voltea 0x76CD salen OCHO dibujos, cuatro por lado: 0x80-0x8C mirando a un lado y 0x90-0x9C al otro. Los ocho estan MEDIDOS en la partida grabada (work/sprites_medidos.txt), siempre en el color del atributo 15
 L 0x76C5 QUITA_EL_PEZ     Lo saca de la pantalla poniendole Y=0xE0
-L 0x76CD PEZ_GIRA         Cada 16 fotogramas le da la vuelta al patron
+L 0x76CD PEZ_GIRA        Cada 16 fotogramas le da la vuelta al BIT 2 del patron y le deja los dos de abajo a cero: eso es lo que anima al pez. Los tres `srl` mas el `ccf` mas los tres `rla` dejan (patron & 0xF8) | (bit2 invertido) << 2
 L 0x76E0 AJUSTA_DIFICULTAD  De la velocidad y de la fase sale cada cuantos pasos aparece el siguiente obstaculo
 C 0x76e8 0xE148: la mitad de la velocidad, que es el ritmo de los sprites de fondo
 C 0x76fa De la fase 10 en adelante, cuatro menos; de la 20, otros cuatro
@@ -1076,6 +1078,7 @@ L 0x77B3 NUBE_NUEVA
 L 0x77D4 NUBE_SIGUIENTE
 L 0x77EB MUEVE_LAS_NUBES
 L 0x77FB NUBE_PASO
+C 0x77f4 EL 0xD1 NO ES UN PATRON: DE apunta al byte de la Y, asi que esto saca la nube por abajo cuando ha llegado arriba del todo. Los patrones de nube son solo TRES -0xE0 al asomar, 0xDC y 0xD8 segun se acerca-, y el color 0x0F se lo pone a mano 0x77CE
 L 0x781B NUBE_CRECE
 L 0x781D NUBE_RECUPERA
 L 0x781E NUBE_AVANZA

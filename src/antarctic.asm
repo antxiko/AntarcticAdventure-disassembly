@@ -582,7 +582,7 @@ META_0_FRENA:		; Paso 0: espera a que el pinguino termine de frenar
 	or a			;4336
 	ret nz			;4337
 	jp SIGUIENTE_PASO		;4338
-META_1_SIGUIENTE:		; Paso 1: sube el numero de fase y guarda el tiempo que ha sobrado
+META_1_SIGUIENTE:		; Paso 1: sube el numero de fase y guarda el tiempo que ha sobrado. Son DOS contadores distintos y conviene no mezclarlos: 0xE0E0 es el numero que se ve en el panel, en BCD y SIN TOPE -sigue subiendo a 11, 12...-, y 0xE0E1 es el indice 0-9 de la base, que DA LA VUELTA al llegar a diez. Esa pareja es la vuelta completa: el juego arranca con 0xE0E1 = 0, que es FRANCE (los valores iniciales estan en 0x4491), y cada llegada lo sube UNO, asi que se va de una base a la siguiente hasta que en la decima se vuelve al 0 y se cierra el circuito en Francia. Como el numero del panel no se reinicia, la vuelta siguiente son las mismas diez bases pero mas dificiles, que es lo que mira 0x76F7
 	ld hl,0e0e0h		;433b
 	ld a,(hl)		;433e
 	add a,001h		;433f   ; El numero que se ve, en BCD
@@ -649,7 +649,7 @@ META_4_SALUDA:		; Paso 4: la escena de la base
 	jr z,META_4_FASE_ESPECIAL		;43b2
 	cp 002h			;43b4
 	jr nz,META_4_NORMAL		;43b6
-META_4_FASE_ESPECIAL:		; Fases 1 y 3 (?): la escena tiene un remate propio
+META_4_FASE_ESPECIAL:		; Cuando 0xE0E1 vale 0 o 2, la llegada tiene un remate propio, y esos dos numeros son EL POLO SUR y FRANCIA. 0xE0E1 es el indice 0-9 de la base a la que se llega, y 0x433B lo sube UN PASO ANTES, en el paso 1 de esta misma escena, asi que aqui ya apunta a la base de destino: 0 es FRANCE y 2 es THE SOUTH POLE en la tabla de 0x55D9. El caso 2 esta MEDIDO en la partida grabada (t=270,2), con STAGE-02 en el panel y el rotulo SOUTH POLE debajo. El caso 0 no sale en esa partida: le toca a la llegada de la fase 10, la que cierra la vuelta volviendo a FRANCE, y por eso tiene remate propio igual que el Polo. Eso ultimo esta DEDUCIDO de como gira el indice en 0x433B, no medido todavia
 	ld a,(0e13ah)		;43b8
 	cp 00fh			;43bb
 	jr nz,META_4_NORMAL		;43bd
@@ -3202,7 +3202,7 @@ DIBUJA_LA_BASE_PASO:		; Alterna los dos bloques de la escena de la base
 BASE_DIBUJA:
 	call DIBUJA_BLOQUE		;552d
 	ret			;5530
-DIBUJA_EL_POLO:		; El remate de las fases 1 y 3 (?): otros sprites y un tercer bloque
+DIBUJA_EL_POLO:		; El remate del POLO SUR: descomprime cuatro sprites mas (0x6B81 -> VRAM 0x1F80, o sea los patrones 0xF0, 0xF4, 0xF8 y 0xFC), copia sus cuatro atributos de 0x6746 encima de los numeros 7 a 10 -dos en amarillo y dos en negro- y dibuja un tercer bloque de casillas. Los cuatro completan al pinguino inclinado que dibujan las casillas: el pico y la mancha de la barriga en amarillo, el ala y el lomo en negro
 	ld hl,06b81h		;5531
 	call DESCOMPRIME		;5534
 	ld hl,06746h		;5537
@@ -3344,7 +3344,7 @@ BANDERA_A_VRAM:		; Los TRES sprites de la bandera, a la VRAM. Son doce bytes, o 
 ; ======================================================================
 
 
-MONTA_LA_FUENTE:		; Monta la fuente y los colores en los tres bancos de la pantalla
+MONTA_LA_FUENTE:		; Monta la fuente y los colores en los tres bancos de la pantalla. OJO: que la fuente se escriba tres veces NO quiere decir que los tres bancos acaben iguales. Cada escena descomprime luego sus dibujos ENCIMA, banco por banco, y comparando los tres en una VRAM de verdad solo quedan iguales DIECINUEVE casillas: la 0x00-0x0F, que son los cuadrados de color liso, y la 0xFD-0xFF, que estan vacias. Cada tercio de la pantalla tiene su propio juego de 256 casillas, y por eso render_tiles.py saca una hoja por banco y no una para todo
 	ld de,00000h		;588a
 	call MONTA_UN_BANCO		;588d
 	ld de,00800h		;5890
@@ -3499,6 +3499,8 @@ CARGA_BANCO_1:		; Descomprime los dibujos del banco 1
 ; ----------------------------------------------------------------------
 ; DATOS dibujos_banco1: Dibujos y colores del banco 1, comprimidos
 ;   0x5e22..0x6263  (1089 bytes)
+; DATOS colores_de_pista_b: LOS COLORES DE LA PISTA DEL SEGUNDO TIPO DE FASE: 29 bytes que descomprimen a 112 en la VRAM 0x0F78. Van EN PAREJA con los otros 29 de 0x6246-0x6262 -que son los del primer tipo y caen dentro del rango de arriba-, y 0x5044 elige entre las dos parejas mirando el bit 0 de la tabla de 0x5195 con la fase: o 0x5DE4 y 0x6246, o 0x5DEF y 0x6263. EL PUNTERO NO SE VE MIRANDO LAS INSTRUCCIONES DE AL LADO, y por eso el reconstructor se saltaba estos bytes: 0x5065 hace `ld de,06263h`, 0x5068 lo GUARDA EN LA PILA y quien lo usa es el `pop hl` de 0x506F, dos descompresiones despues. Es el mismo truco que la fuente en 0x58CF. Cierra clavado en 0x6280, donde empieza el remate del banco 1
+;   0x6263..0x6280  (29 bytes)
 ; DATOS dibujos_banco1_resto: El remate del banco 1
 ;   0x6280..0x628f  (15 bytes)
 ; ----------------------------------------------------------------------
@@ -3704,9 +3706,9 @@ VUELCA_ATRIBUTOS:		; Copia los 128 bytes de 0xE050 a la tabla de atributos de sp
 	jp COPIA_A_VRAM		;66ec
 
 ; ----------------------------------------------------------------------
-; DATOS atributos_de_partida: La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es una EXPLOSION de puntas- y color amarillo, que no se ve nunca: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia, porque ni una instruccion escribe en 0xE088 y la cadena de 0x4FE2 se para en el atributo 13
+; DATOS atributos_de_partida: La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es una EXPLOSION de puntas- y color amarillo, que no se ve nunca: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia. MEDIDO sobre los diez minutos de partida grabada con un punto de observacion de escritura en 0xE088-0xE08B (tools/omsx_atributo14.tcl): las UNICAS cuatro cosas que lo tocan son barridos de la tabla entera -el ldir de 0x446E, el copiador de cuatro bytes de 0x45BE, BORRA_SPRITES en 0x4606 y el borrado previo de 0x66D1-, y ninguna va a por el. Al acabar la partida su entrada en la VRAM sigue siendo Y=0xE0, patron 0xD4, color 0x0A: cargado, coloreado y aparcado fuera del encuadre. El control -los mismos puntos en el atributo 13- recibe ademas 4426 y 41740 escrituras de las rutinas del pinguino, asi que los ceros del 14 son datos y no instrumentacion rota. Y de propina el control mide una cosa que estaba deducida: el 13 recibe 12 escrituras MAS que el 14 desde 0x45BE, que son las tres salidas del agua por cuatro bytes, o sea la cadena que rehace los sprites parandose justo antes del 14
 ;   0x66ef..0x672c  (61 bytes)
-; DATOS atributos_de_base: La misma lista para la escena de la base. Cierra clavada en 0x6756, donde vuelve a haber codigo. Sus bytes de 0x6746 los copia ademas 0x5537
+; DATOS atributos_de_base: La misma lista para la escena de la base, pero de OCHO entradas en vez de treinta: 0x66CB pone los 128 bytes a cero antes de aplicarla, asi que del atributo 8 en adelante no queda nada. Cierra clavada en 0x6756, donde vuelve a haber codigo. Sus bytes de 0x6746 los copia ademas 0x5537. Y AQUI ESTA EL UNICO SPRITE DEL PINGUINO QUE SE GIRA Y SONRIE: el atributo 7, con el patron 0xD0 en amarillo, que es el PICO. Todo lo demas de ese pinguino -la cara, los ojos, la boca roja y hasta la sombra azul de debajo- son CASILLAS, no sprites. Comprobado a t=126,6 de la partida grabada de dos maneras: la tabla de atributos solo tiene ocho entradas puestas, y comparando el fotograma real con la pantalla pintada SOLO con casillas quedan 224 pixeles sin explicar, que son 96+72+24 de la bandera y 32 del pico. Y 32 son exactamente los bits encendidos del patron 0xD0
 ;   0x672c..0x6756  (42 bytes)
 ; ----------------------------------------------------------------------
 	defb 00ah,0e0h,000h,07ch,000h,001h,090h,070h,000h,001h,001h,090h,080h,004h,001h,001h	; 66ef  ...|...p........
@@ -4075,7 +4077,7 @@ PEZ_LADO:
 	inc a			;762c
 	ld (0e185h),a		;762d
 	bit 0,a			;7630
-PEZ_MONTA:
+PEZ_MONTA:		; Monta la entrada de atributo del pez. El DIBUJO sale de aqui: 0x90 si mira a un lado y 0x80 si al otro
 	ld a,090h		;7632
 	set 0,(hl)		;7634
 	jr z,PEZ_ALTURA		;7636
@@ -4087,7 +4089,7 @@ PEZ_ALTURA:
 	ld a,(de)		;7640
 	ld d,c			;7641
 	cp 001h			;7642
-	ld bc,07a66h		;7644
+	ld bc,07a66h		;7644   ; CUIDADO CON ESTE `ld bc,07a66h`: 0x66, 0x64 y 0x92 son las X de los tres saltos -corto, medio y largo-, NO patrones. El patron es el que quedo en D unas instrucciones antes
 	jr c,PEZ_SALTO_CORTO		;7647
 	jr z,PEZ_SALTO_MEDIO		;7649
 	ld b,092h		;764b
@@ -4172,7 +4174,7 @@ PEZ_SUBE:
 	dec (hl)		;76bb
 	dec (hl)		;76bc
 	ret			;76bd
-PEZ_CAE:
+PEZ_CAE:		; Al llegar al paso 0x10 del arco le SUMA 8 al byte del patron (0xE08E): el pez cambia al dibujo grande. Con eso y el bit 2 que voltea 0x76CD salen OCHO dibujos, cuatro por lado: 0x80-0x8C mirando a un lado y 0x90-0x9C al otro. Los ocho estan MEDIDOS en la partida grabada (work/sprites_medidos.txt), siempre en el color del atributo 15
 	inc hl			;76be
 	inc hl			;76bf
 	ld a,(hl)		;76c0
@@ -4186,7 +4188,7 @@ QUITA_EL_PEZ:		; Lo saca de la pantalla poniendole Y=0xE0
 	inc de			;76c9
 	ld (de),a		;76ca
 	jr PEZ_PASO		;76cb
-PEZ_GIRA:		; Cada 16 fotogramas le da la vuelta al patron
+PEZ_GIRA:		; Cada 16 fotogramas le da la vuelta al BIT 2 del patron y le deja los dos de abajo a cero: eso es lo que anima al pez. Los tres `srl` mas el `ccf` mas los tres `rla` dejan (patron & 0xF8) | (bit2 invertido) << 2
 	ld a,(0e003h)		;76cd
 	and 00fh		;76d0
 	ret nz			;76d2
@@ -4402,7 +4404,7 @@ MUEVE_LAS_NUBES:
 	ld a,(de)		;77ef
 	cp 008h			;77f0
 	jr nz,NUBE_PASO		;77f2
-	ld a,0d1h		;77f4
+	ld a,0d1h		;77f4   ; EL 0xD1 NO ES UN PATRON: DE apunta al byte de la Y, asi que esto saca la nube por abajo cuando ha llegado arriba del todo. Los patrones de nube son solo TRES -0xE0 al asomar, 0xDC y 0xD8 segun se acerca-, y el color 0x0F se lo pone a mano 0x77CE
 	ld (de),a		;77f6
 	ld (hl),000h		;77f7
 	jr NUBE_AVANZA		;77f9

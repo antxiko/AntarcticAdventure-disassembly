@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
-"""Presupuesto de la cinta: ni un byte sin explicar.
+"""Presupuesto del cartucho: ni un byte sin explicar.
 
-Por que este control y no el porcentaje de codigo trazado: mas de la mitad de
-esta cinta son datos, asi que un porcentaje de codigo bajo suena a trabajo a
-medias cuando puede estar entero. Lo que mide el avance de verdad es que cada
-byte sea una de estas cosas:
+Por que este control y no el porcentaje de codigo trazado: buena parte de estos
+16 KB son datos y graficos, asi que un porcentaje de codigo bajo suena a trabajo
+a medias cuando puede estar entero. Lo que mide el avance de verdad es que cada
+byte sea una de estas dos cosas:
 
-  - codigo que el trazador alcanza de verdad siguiendo el flujo
-  - un byte dentro de un rango de datos IDENTIFICADO en el fichero de notas
-  - parte del cargador BASIC, que es texto plano
+  - codigo que el trazador alcanza de verdad siguiendo el flujo desde los
+    puntos de entrada, o
+  - un byte dentro de un rango de datos IDENTIFICADO con una directiva D del
+    fichero de notas, o sea con nombre y explicacion.
 
-OJO con la particularidad de este juego: los bloques SE SOLAPAN en memoria. El
-del juego machaca al de la pantalla de carga, y la segunda parte cae dentro del
-primero. Asi que la suma se hace sobre los BLOQUES DE LA CINTA, cada uno con su
-org, y no sobre una imagen unica de 64K: en memoria esos bytes nunca conviven.
-
-Y es un control DISTINTO del de reproducibilidad. Un byte puede reensamblar
+Y ES UN CONTROL DISTINTO DEL DE REPRODUCIBILIDAD. Un byte puede reensamblar
 perfecto y estar sin explicar; o peor, estar mal explicado: si unos graficos se
 marcan como codigo, el binario reensamblado sigue saliendo identico -los bytes
 no cambian, solo su lectura- y el listado miente igual.
+
+LO QUE AQUI ES MAS FACIL QUE EN UNA CINTA: esto es un cartucho, o sea una sola
+foto de la memoria. Son 16384 bytes mapeados en 0x4000-0x7FFF, sin cargador,
+sin bloques y sin solapes, asi que el presupuesto se hace sobre una imagen
+unica y no hay que ir sumando trozos que en memoria nunca conviven.
 
 Uso: presupuesto.py <directorio_work> <directorio_src>
 """
@@ -26,29 +27,17 @@ import json
 import os
 import sys
 
-# nombre del modulo, org, fichero .raw, prefijo de sus ficheros de trazado/notas
-MODULOS = [
-    ("topo",   0x9470, "topo.raw",   "topo"),
-    ("loader", 0xD2F0, "loader.raw", "loader"),
-    ("pre",    0x9B8C, "pre.raw",    "pre"),
-    ("juego",  0x47A0, "juego.raw",  "juego"),
-    ("parte2", 0x61D0, "parte2.raw", "parte2"),
-]
+ORG = 0x4000
+TAM = 0x4000                      # 16 KB exactos, de 0x4000 a 0x7FFF
+TRAZA = "antarctic.trace.json"
+NOTAS = "antarctic.notes"
 
-# Bloques pequenos que no llevan codigo y se explican de una linea.
-SUELTOS = [
-    ("descriptor", 8, "ld ix,0x61D0 / ld de,0x74A5: dice donde va la segunda parte"),
-]
-
-# El cargador de cinta, que es un fichero de texto y no lleva codigo.
-CARGADOR = ("cargador BASIC", 256, "cinco lineas de texto y relleno hasta 256")
+SIN_EXPLICAR, CODIGO, DATOS = 0, 1, 2
 
 
 def rangos_de_notas(path):
-    """Saca los rangos de datos declarados con la directiva D del fichero .notes."""
+    """Los rangos de datos declarados con la directiva D del fichero .notes."""
     out = []
-    if not os.path.exists(path):
-        return out
     for ln in open(path, encoding="utf-8"):
         ln = ln.strip()
         if not ln.startswith("D "):
@@ -58,38 +47,36 @@ def rangos_de_notas(path):
     return out
 
 
-def revisa(work, src, nombre, org, raw, pref):
-    size = len(open(os.path.join(work, raw), "rb").read())
-    estado = bytearray(size)          # 0 sin explicar, 1 codigo, 2 datos con nombre
+def reparte(work, src):
+    """Marca cada byte del cartucho como codigo, datos con nombre, o nada."""
+    estado = bytearray(TAM)
 
-    tr = json.load(open(os.path.join(work, f"{pref}.trace.json")))
-    for kind, a, b in tr["blocks"]:
-        if kind == "c":
-            for i in range(max(0, a - org), min(size, b - org)):
-                estado[i] = 1
+    traza = json.load(open(os.path.join(work, TRAZA)))
+    for tipo, a, b in traza["blocks"]:
+        if tipo != "c":
+            continue
+        for i in range(max(0, a - ORG), min(TAM, b - ORG)):
+            estado[i] = CODIGO
 
-    for a, b in rangos_de_notas(os.path.join(src, f"{pref}.notes")):
-        for i in range(max(0, a - org), min(size, b - org)):
-            if estado[i] == 0:
-                estado[i] = 2
+    for a, b in rangos_de_notas(os.path.join(src, NOTAS)):
+        for i in range(max(0, a - ORG), min(TAM, b - ORG)):
+            if estado[i] == SIN_EXPLICAR:
+                estado[i] = DATOS
 
-    codigo = estado.count(1)
-    datos = estado.count(2)
-    huerfanos = estado.count(0)
-    return size, codigo, datos, huerfanos, estado
+    return estado
 
 
-def huecos(estado, org):
+def huecos(estado):
     """Agrupa los bytes sin explicar en rangos, para poder ir a mirarlos."""
     out, ini = [], None
     for i, v in enumerate(estado):
-        if v == 0 and ini is None:
+        if v == SIN_EXPLICAR and ini is None:
             ini = i
-        elif v != 0 and ini is not None:
-            out.append((org + ini, org + i))
+        elif v != SIN_EXPLICAR and ini is not None:
+            out.append((ORG + ini, ORG + i))
             ini = None
     if ini is not None:
-        out.append((org + ini, org + len(estado)))
+        out.append((ORG + ini, ORG + TAM))
     return out
 
 
@@ -98,51 +85,38 @@ def main():
         sys.exit(__doc__)
     work, src = sys.argv[1], sys.argv[2]
 
-    total = explicado = 0
-    pendientes = []
+    estado = reparte(work, src)
+    codigo = estado.count(CODIGO)
+    datos = estado.count(DATOS)
+    sin = estado.count(SIN_EXPLICAR)
+    explicado = codigo + datos
 
-    print(f"  {'modulo':16s} {'bytes':>7s} {'codigo':>7s} {'datos':>7s} {'sin explicar':>13s}")
-    print("  " + "-" * 56)
+    print("  %-24s %7s %8s" % ("", "bytes", "del total"))
+    print("  " + "-" * 42)
+    for etiqueta, n in (("codigo trazado", codigo),
+                        ("datos identificados", datos),
+                        ("sin explicar", sin)):
+        print("  %-24s %7d %7.2f %%" % (etiqueta, n, 100.0 * n / TAM))
+    print("  " + "=" * 42)
+    print("  %-24s %7d %7.2f %%" % ("explicado", explicado,
+                                    100.0 * explicado / TAM))
 
-    for nombre, org, raw, pref in MODULOS:
-        size, cod, dat, huerf, estado = revisa(work, src, nombre, org, raw, pref)
-        total += size
-        explicado += cod + dat
-        print(f"  {nombre:16s} {size:7d} {cod:7d} {dat:7d} {huerf:13d}")
-        for a, b in huecos(estado, org):
-            pendientes.append((nombre, a, b))
-
-    print("  " + "-" * 56)
-    for etiqueta, size, como in SUELTOS:
-        total += size
-        explicado += size
-        print(f"  {etiqueta:16s} {size:7d}   {como}")
-        total += 0   # ya sumado
-
-    print("  " + "-" * 56)
-    etiqueta, size, como = CARGADOR
-    total += size
-    explicado += size
-    print(f"  {etiqueta:16s} {size:7d}   {como}")
-
-    print("  " + "=" * 56)
-    sin = total - explicado
-    pct = 100.0 * explicado / total if total else 0
-    print(f"  {'TOTAL':16s} {total:7d} bytes, {explicado} explicados ({pct:.2f}%), {sin} sin explicar")
-
+    pendientes = huecos(estado)
     if pendientes:
         print()
-        print("  Sin explicar:")
-        for nombre, a, b in pendientes:
-            print(f"    {nombre:6s} 0x{a:04X}..0x{b - 1:04X}  ({b - a} bytes)")
+        print("  Sin explicar, por rangos:")
+        for a, b in pendientes:
+            print("    0x%04X..0x%04X  (%d bytes)" % (a, b - 1, b - a))
         print()
-        print("  Cada uno de estos rangos tiene que acabar dentro de una directiva D")
-        print("  del fichero de notas, con una explicacion de que es y de como se sabe.")
-        sys.exit(1)
+        print("  Cada uno de estos rangos tiene que acabar dentro de una")
+        print("  directiva D del fichero de notas, con una explicacion de que")
+        print("  es y de como se sabe.")
+        return 1
 
     print()
-    print("  OK: ni un byte de la cinta sin asignar")
+    print("  OK: ni un byte del cartucho sin asignar")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

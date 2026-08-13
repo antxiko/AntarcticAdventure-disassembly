@@ -70,6 +70,16 @@ SIGUE = 0x456D
 # el marcador se vea de arriba abajo.
 DESDE_LA_PILA = {0x58CF: (0x6000, 0x6800, 0x7000)}
 
+# Y otro sitio donde el flujo tampoco esta en un `ld hl,nn`: la BANDERA de la
+# base. 0x559A la elige de una tabla de diez punteros (0x565C) indexada con la
+# fase, y luego 0x55AD la descomprime a la VRAM 0x1F40. Mirando las
+# instrucciones de al lado solo se ve el destino, asi que sin esto el
+# reconstructor se cree que sigue con el flujo de la llamada anterior y llena
+# los sprites 58 a 61 de basura. Las diez descomprimen 64 bytes exactos -los
+# sprites 58 y 59-; aqui se pone la de la primera fase, y las diez se ven con
+# render_banderas.py.
+INDEXADAS = {0x55AD: (0x565C, 0x5F40)}
+
 # LA FUENTE NO SE PUEDE RECONSTRUIR MIRANDO LAS LLAMADAS UNA A UNA, y este es
 # el sitio donde recorrer la ROM en orden se equivoca. Por que:
 #
@@ -268,6 +278,9 @@ def main(argv):
         if a in LLAMADAS_DE_LA_FUENTE:
             continue                          # ya atendidas por la secuencia
         lee, esp = ENTRADAS[dst]
+        if a in INDEXADAS:                   # flujo elegido de una tabla
+            tabla, de = INDEXADAS[a]
+            hl = rom[tabla - ORG] | (rom[tabla + 1 - ORG] << 8)
         if hl is None:
             hl = cursor                      # llamada encadenada
         if dst == SIGUE and de is None:

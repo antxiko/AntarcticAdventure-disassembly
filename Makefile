@@ -70,6 +70,10 @@ sanity: work/antarctic.trace.json
 	@echo "=================================================================="
 	@python3 tools/check_entradas.py src/antarctic.entries src/antarctic.notes \
 	        src/antarctic.nocode
+	@echo "=================================================================="
+	@echo " Ni un byte del cartucho sin asignar"
+	@echo "=================================================================="
+	@python3 tools/presupuesto.py work src
 
 test:
 	@echo "=================================================================="

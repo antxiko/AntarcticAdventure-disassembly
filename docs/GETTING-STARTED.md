@@ -43,8 +43,8 @@ byte along the way.
 ## Without the cartridge
 
 You can still read `src/antarctic.asm` and the notes, which is where the work
-actually lives: 394 named routines, 267 comments anchored to their address, and
-62 data ranges with an explanation beside each one.
+actually lives: 394 named routines, 269 comments anchored to their address, and
+63 data ranges with an explanation beside each one.
 
 ## How it's laid out
 

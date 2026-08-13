@@ -221,11 +221,13 @@ IMAGENES = [
      "through the gaps in the picture itself"),
     ("sprites.png",
      "Los 64 sprites, cada uno del color que le da su entrada de atributo: el "
-     "pingüino en negro, la foca en negro y rojo, el pez en rojo y la sombra "
-     "en azul. Los dieciséis que no reclama nadie salen en blanco",
+     "pingüino en negro, la foca en negro y rojo, el pez en rojo, la sombra en "
+     "azul, las nubes y el fondo de la bandera en blanco, y en amarillo el "
+     "pico del pingüino de la base. No queda ni uno sin dueño",
      "All 64 sprites, each in the colour its attribute entry gives it: the "
-     "penguin black, the seal black and red, the fish red and the shadow blue. "
-     "The sixteen nobody claims come out white"),
+     "penguin black, the seal black and red, the fish red, the shadow blue, "
+     "the clouds and the flag's backing white, and in yellow the beak of the "
+     "penguin at the base. Not one is left unclaimed"),
     ("tiles-banco0.png",
      "El primero de los tres bancos de casillas: la tipografía, el logotipo de "
      "KONAMI y el rótulo de la presentación",

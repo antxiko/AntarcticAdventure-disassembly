@@ -65,8 +65,12 @@ De los siete, tres son agujeros en el hielo. Si lo pillas por el borde
 tropiezas y ruedas; si lo pillas de lleno, te caes dentro y ahí te quedas
 manoteando hasta que pulses el botón, mientras el reloj sigue corriendo, que es
 el castigo de verdad. Y de esos mismos agujeros sale el pez: cuando uno llega
-al paso siete, un bicho de cuatro sprites asoma con su arco propio, y pisarlo
-vale 300 puntos.
+al paso siete, asoma con su arco propio, y pisarlo vale 300 puntos.
+
+El pez es **un solo sprite** —el atributo 15— y tiene ocho dibujos, cuatro
+mirando a cada lado. El dibujo alterna cada dieciséis fotogramas mientras sube,
+y al empezar a caer cambia al grande, que es la forma barata de que parezca que
+se te acerca.
 
 Saltar por encima de un obstáculo también puntúa, aunque poco: treinta puntos.
 Y hay dos clases de obstáculo, las dos últimas, que se recogen en vez de
