@@ -858,3 +858,52 @@ L 0x766E PEZ_ARCO_SUBE
 L 0x768D PEZ_ARCO_BAJA
 L 0x76CC DIFICULTAD_FASE
 L 0x76DC DIFICULTAD_RESTA
+
+# --- Las trece rutinas que el mapa de direcciones NO puede portar desde
+# la segunda japonesa, porque son justo las que cambian entre versiones:
+# la capa de hardware y el reproductor de sonido. Leidas a mano.
+L 0x410C PASO_DE_JUEGO            Un paso de la maquina de estados: cuenta el fotograma en 0xE003 y despacha por 0xE000
+L 0x4480 ARRANCA_MAQUINA          Registros del VDP, mezclador del PSG y VRAM a cero. Hace lo mismo que en la segunda japonesa, pero hablandole a los chips directamente
+L 0x44A4 APAGA_LOS_TRES_CANALES   Pone a cero los registros 8, 9 y 10 del PSG, que son los tres volumenes, escribiendo el puerto a pelo
+L 0x44B7 PONE_REGISTROS_VDP       Copia los ocho registros a 0xE038 y los manda al VDP por el puerto 0x99, con el bit 0x80 del numero de registro que va sumando en D
+L 0x44DC COPIA_A_VRAM             Copia BC bytes de (HL) a la VRAM DE. Apunta con el bit 6 puesto -escritura- y suelta los bytes por el puerto 0x98
+L 0x457E LEE_Y_ESPEJA             Lee (HL) y, si C tiene el bit 0, le INVIERTE LOS BITS: el espejo horizontal del descompresor
+L 0x45FB PREPARA_EL_MANDO         Registro 15 del PSG a 0x8F, que es como se deja el puerto por el que se lee el joystick
+L 0x48B1 ESCRIBE_EN_VRAM          Escribe el byte A en la VRAM DE: apunta con el bit de escritura y lo suelta por el puerto 0x98
+L 0x48C7 APUNTA_VRAM              Manda DE al puerto 0x99 en dos escrituras, que es como se le dice al VDP donde va a escribir
+L 0x7A06 SUENA_UN_PASO            Un paso del reproductor de sonido: recorre los TRES canales, con diez bytes de estado cada uno desde 0xE010
+L 0x7A23 CANAL_SIGUE              Descuenta lo que le queda a la nota del canal y, si se acaba, coge el byte siguiente de su flujo
+L 0x7A65 CANAL_ATACA              Arranca la nota: recarga su duracion y prepara el decaimiento del volumen
+L 0x7AF7 ESCRIBE_PERIODO          Manda al PSG los dos bytes del periodo del canal, por los puertos 0xA0 y 0xA1
+L 0x4042 PARADO                   El bucle vacio de dos bytes en el que se queda el arranque: de aqui en adelante el juego entero corre dentro de la interrupcion
+L 0x4054 HTIMI_MIRA_ESTADO        Por debajo del estado 12 no se mueve nada de lo de abajo
+L 0x4067 HTIMI_LATERAL            Cuenta el tiempo y mira el signo del desplazamiento lateral
+L 0x4074 HTIMI_GUARDA_LATERAL     Guarda el lateral ya con signo en 0xE0FC
+L 0x4077 HTIMI_SIGUE              El resto de la interrupcion, que corre en todos los estados
+L 0x4092 HTIMI_SALE               Saca los registros de la pila y vuelve
+L 0x40BC GUARDA_MANDOS            0xE009 = ahora, 0xE008 = el fotograma anterior
+L 0x40C4 LEE_TECLADO              Monta con la matriz del teclado el mismo mapa de bits que trae el joystick, hablandole al PPI a pelo
+L 0x40F0 LEE_MANDOS_GRABADOS      En la demo los mandos no se leen: salen de la grabacion de 64 bytes
+L 0x4105 MANDOS_SOLO_DIRECCIONES  Se queda con las cuatro direcciones y tira los gatillos
+L 0x4176 ESTADO_05_ESPERA         Estado 5: en ESTA version es un RET pelado, o sea que la pantalla de titulo se queda quieta y NO SE PASA NUNCA A LA DEMO
+L 0x4177 CUENTA_PARA_LA_DEMO      La cuenta atras que en las versiones japonesas dispara la demo. Aqui esta entera y NO LA ALCANZA NADIE, porque el estado 5 vuelve un byte antes
+L 0x43A8 META_4_PASO              Un paso mas de la escena de la base
+L 0x4437 TECLA_GUARDA             Apunta que tecla se ha elegido y monta el menu
+L 0x4448 TECLA_SALE               Un RET suelto al que no llega nadie
+L 0x4497 VRAM_A_CERO              Rellena de ceros los 16 KB de VRAM
+L 0x44AA APAGA_CANAL              Registro tras registro, los tres volumenes a cero
+L 0x44C9 MANDA_UN_REGISTRO        Manda un registro del VDP: el valor en E y el numero con el bit 0x80 en D
+L 0x44E4 COPIA_BYTE               Suelta un byte por el puerto de datos del VDP
+L 0x4568 DESCOMPRIME_REPITE       Repite el mismo byte n veces: no lo vuelve a leer, y ese es el detalle que distingue esta rama de la de al lado
+L 0x4570 DESCOMPRIME_TIRADA       Una tirada de bytes literales, con el bit 7 quitado de la cuenta
+L 0x4573 TIRADA_BYTE              Aqui SI se relee cada vez, por eso es literal y no repeticion
+L 0x457C DESCOMPRIME_FIN          Vuelve a permitir la interrupcion y sale
+L 0x4587 ESPEJA_BIT               Los ocho bits, rotando en un sentido y metiendolos en el otro
+L 0x48BE LEE_DE_VRAM_MUERTA       Lee un byte de la VRAM. Nadie la llama: el juego solo escribe en pantalla
+L 0x7A12 CANAL_SIGUIENTE          Pasa al canal siguiente, diez bytes de estado mas alla
+L 0x7A2A CANAL_LEE_FLUJO          Coge el byte siguiente del flujo de este canal
+L 0x7A4B CANAL_NOTA               El nibble alto es la nota y el bajo lo que dura
+L 0x7AA5 VOLUMEN_MIRA_FD          El 0xFD del flujo es una orden, no un volumen
+L 0x7AB9 VOLUMEN_APLICA           Deja el volumen del canal como diga el flujo
+L 0x7AE0 VOLUMEN_ATACA            Arranca la nota y va a por su periodo
+L 0x7AF4 PERIODO_DESPLAZA         Desplaza el periodo tantas octavas como diga B
