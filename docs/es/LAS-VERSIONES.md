@@ -1,5 +1,12 @@
 # Las versiones
 
+> **Trabajo en curso.** De este cartucho hay varias compilaciones distintas, y
+> ahora mismo estamos revisando cuál es cuál y qué cambia entre ellas. Hasta que
+> esa revisión esté cerrada, lo que aquí se dice sobre **versiones y regiones**
+> puede cambiar. El listado, las cifras y todo lo demás siguen saliendo del
+> binario y son reproducibles con `make`. Publicaremos los datos completos en
+> cuanto estén comprobados.
+
 De este cartucho hay tres compilaciones distintas, y entre ellas cambian cosas
 que van bastante más allá de traducir un rótulo: cambia el color del fondo,
 cambia el recorrido, y cambia **cada una de las conversaciones que el código

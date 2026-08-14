@@ -1,5 +1,12 @@
 # Findings
 
+> **Work in progress.** There are several different builds of this cartridge,
+> and we are currently going back over which is which and what changes between
+> them. Until that review is closed, what is said here about **versions and
+> regions** may change. The listing, the numbers and everything else still come
+> from the binary and are reproducible with `make`. The complete data will be
+> published once it is verified.
+
 What turned up when the cartridge came apart, with the evidence alongside.
 Everything on this page checks out by reading the binary; what isn't settled yet
 is in [Open questions](OPEN-QUESTIONS.html).

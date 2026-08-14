@@ -1,5 +1,12 @@
 # Hallazgos
 
+> **Trabajo en curso.** De este cartucho hay varias compilaciones distintas, y
+> ahora mismo estamos revisando cuál es cuál y qué cambia entre ellas. Hasta que
+> esa revisión esté cerrada, lo que aquí se dice sobre **versiones y regiones**
+> puede cambiar. El listado, las cifras y todo lo demás siguen saliendo del
+> binario y son reproducibles con `make`. Publicaremos los datos completos en
+> cuanto estén comprobados.
+
 Lo que apareció al desmontar el cartucho, con la evidencia al lado. Todo lo de
 esta página se comprueba leyendo el binario; lo que todavía no está cerrado
 está en [Preguntas abiertas](PREGUNTAS-ABIERTAS.html).

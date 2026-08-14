@@ -1,5 +1,12 @@
 # The versions
 
+> **Work in progress.** There are several different builds of this cartridge,
+> and we are currently going back over which is which and what changes between
+> them. Until that review is closed, what is said here about **versions and
+> regions** may change. The listing, the numbers and everything else still come
+> from the binary and are reproducible with `make`. The complete data will be
+> published once it is verified.
+
 There are three different builds of this cartridge, and what changes between
 them goes well beyond translating a label: the background colour changes, the
 route changes, and so does every single conversation the code has with the

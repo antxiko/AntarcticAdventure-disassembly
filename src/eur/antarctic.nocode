@@ -1,0 +1,94 @@
+# Zonas que NO son codigo, para que el trazador no se meta en ellas.
+#
+# Esto no es una precaucion teorica: basta con una semilla mal deducida para que
+# el desensamblador lea dibujos como instrucciones, la cobertura suba y todo
+# parezca ir mejor. Cada rango de aqui viene de haber leido el codigo que lo usa.
+#
+# Convenio: [inicio, fin), el extremo derecho NO entra.
+
+# --- Las seis tablas de salto del despachador de 0x40B2.
+# Van incrustadas justo detras de su CALL, y cada una acaba exactamente donde
+# empieza su primer destino, que es lo que fija su tamano sin suponer nada.
+0x412F 0x414F   # 16 entradas, la del CALL de 0x412C
+0x41A6 0x41AC   #  3 entradas, la del CALL de 0x41A3
+0x41F5 0x41FD   #  4 entradas, la del CALL de 0x41F2
+0x4318 0x4328   #  8 entradas, la del CALL de 0x4315
+0x490E 0x491C   #  7 entradas, la del CALL de 0x490B
+0x7733 0x773B   #  4 entradas, la del CALL de 0x7730
+
+# --- Los ocho registros del VDP, que 0x44C3 copia a 0xE038 y manda con WRTVDP.
+0x44DF 0x44E7   # 02 E2 0E 7F 07 76 03 E4
+
+# --- Los seis flujos de graficos comprimidos, sacados de seguir las 29
+# llamadas al descompresor de 0x4560. Ni uno solo se solapa con el codigo que
+# alcanza el trazador, y tres de los seis acaban en el byte exacto donde
+# empieza la siguiente rutina.
+0x5839 0x584A   # la pantalla de titulo: relleno y el rotulo SOFTWARE. Pasado
+                # por el descompresor acaba en 0x584A, no en 0x584C
+0x58DB 0x5DF2   # la fuente y el logotipo de KONAMI, a los tres bancos
+0x5E22 0x6263   # dibujos y colores del banco 1
+0x6280 0x628F   # el remate del banco 1
+0x62C5 0x66C2   # dibujos y colores del banco 2
+0x675C 0x6BE9   # los patrones de sprite: pinguinos, peces y focas
+
+# --- El arbol de decorados. Cuatro punteros en 0x7241 -> cuatro grupos, cada
+# uno con otros cuatro -> dieciseis bloques que embaldosan 0x732D-0x7518 sin un
+# hueco. Ejecutados con el interprete de 0x4533 dibujan los bordes de la pista.
+0x7241 0x7519   # tablas, datos de grupo y los dieciseis bloques de decorado
+
+# --- El sonido, que corre en la interrupcion.
+0x7B38 0x7B44   # doce periodos: una octava cromatica (0,090 semitonos)
+0x7B44 0x7B52   # la tabla de al lado, que NO es una escala (15,8 semitonos)
+0x7B52 0x7B82   # 24 punteros a flujos de sonido; cierra justo en 0x7B82
+0x7B82 0x7EB7   # los flujos de sonido
+0x7EB7 0x8000   # el final de la ROM: relleno
+
+# --- 92 bloques en el MISMO formato que los decorados, comprobado pasandolos
+# por el interprete de 0x4533: cada uno pone entre 1 y 6 casillas, o sea que son
+# INCREMENTOS, no pantallas enteras. Acumulados van dibujando la escena que se
+# acerca. Ninguna instruccion los apunta con una direccion inmediata: se
+# consumen en cadena, uno detras de otro.
+0x6BE9 0x7241   # los 92 bloques incrementales de la pista
+
+# --- La zona de rotulos y banderas, 0x55D9-0x5838.
+0x55D9 0x55ED   # 10 punteros, uno por fase, a los nombres de las bases.
+                # Cierra clavada en 0x55ED; con 8, 9, 11 o 12 no cierra
+0x55ED 0x565C   # las OCHO cadenas. NEW ZEALAND (0x5611) no la apunta nadie:
+                # ninguna de sus 20 direcciones aparece como palabra en la ROM
+0x565C 0x5670   # 10 punteros a graficos comprimidos; cierra clavada en 0x5670
+0x5670 0x57B7   # los 7 graficos distintos. Los diez descomprimen a 64 bytes
+                # EXACTOS -dos sprites de 16x16- desde flujos de 11 a 59 bytes
+0x57B7 0x5839   # los rotulos de pantalla: STAGE, TIME, KONAMI 1984,
+                # PLAY SELECT, JOYSTICK, KEYBOARD, TIME OUT
+
+# --- Los huecos que quedan, cada uno con la instruccion que lo lee. No se
+# declaran "porque sobran": se declaran porque hay codigo identificado que los
+# usa, y esa referencia esta al lado.
+0x78C1 0x79C9   # tabla de punteros; 785B ld hl,78C1 la indexa con (A+8)*2
+0x4A01 0x4B01   # 491C ld hl,4A01 lo guarda en 0xE0F2 junto a la posicion de
+                # pantalla 0x3884; tambien 425E y 49A6
+0x53E1 0x54C1   # tabla de NIBBLES: 5308 la indexa y el srl a / rra x4 de 0x5305
+                # elige mitad alta o baja, dos entradas por byte
+0x755F 0x75EF   # 7528 ld hl,755F
+0x4787 0x47FF   # 474A ld hl,4787 y 4762 ld hl,47C3
+0x66EF 0x6756   # 66C2 ld hl,66EF y 66C7 ld hl,672C, dentro del descompresor de
+                # atributos de sprite que vuelca a 0x3B00
+0x5145 0x519F   # 5099 ld hl,5145, indexado por (0E0E1)*8: ocho bytes por fase
+0x554C 0x557F   # 5524 ld hl,554C, 552A ld hl,5560, 5545 ld hl,556A
+0x52CB 0x52F5   # 52B4 ld de,52CB
+0x4B84 0x4BAC   # 4BD6 ld hl,4B84
+0x4D2A 0x4D49   # 4CFE ld de,4D33
+0x6263 0x6280   # 5065 ld de,6263
+0x4000 0x4010   # la cabecera del cartucho: "AB", INIT=0x4010 y seis ceros
+0x4C80 0x4C8C   # 4C39 y 4F15 ld hl,4C80
+0x7836 0x7842   # 7800 ld de,7836 y 77BB ld hl,7838
+0x4839 0x4843   # 4816 ld hl,4839
+0x4DC8 0x4DD2   # 4DAD ld hl,4DC8
+0x4491 0x449A   # 4470 ld hl,4491
+0x411F 0x4122   # 404C ld hl,411F
+0x584A 0x588A   # LOS MANDOS GRABADOS DE LA DEMO: 64 bytes, uno cada 32
+                # fotogramas (0x4103). 41BA ld hl,584A los apunta, y la demo
+                # dura 0x073C pasos, o sea 58 de los 64. Cierra clavada en
+                # 0x588A, que es la primera instruccion de MONTA_LA_FUENTE
+0x4EED 0x4F01   # 20 bytes de valores pequenos con signo (fd fe fe ff 01 02 02 03)
+0x7B37 0x7B38   # un 0xFF suelto delante de la tabla de notas

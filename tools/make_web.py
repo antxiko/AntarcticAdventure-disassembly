@@ -27,6 +27,7 @@ DATOS = 10437
 TXT = {
     "es": dict(
         titulo="Antarctic Adventure (1984) — desensamblado comentado",
+        aviso="<b>Trabajo en curso.</b> De este cartucho hay varias compilaciones distintas, y ahora mismo estamos revisando cuál es cuál y qué cambia entre ellas. Hasta que esa revisión esté cerrada, lo que esta web dice sobre <i>versiones y regiones</i> puede cambiar. El listado, las cifras y todo lo demás siguen saliendo del binario y son reproducibles con <code>make</code>. Publicaremos los datos completos en cuanto estén comprobados.",
         claim="Un cartucho de 16 KB de 1984, desmontado byte a byte. "
               "Dentro hay un pingüino que cruza la Antártida entre diez bases "
               "de investigación, una partida de demostración que va grabada "
@@ -59,6 +60,7 @@ TXT = {
     ),
     "en": dict(
         titulo="Antarctic Adventure (1984) — a commented disassembly",
+        aviso="<b>Work in progress.</b> There are several different builds of this cartridge, and we are currently going back over which is which and what changes between them. Until that review is closed, what this site says about <i>versions and regions</i> may change. The listing, the numbers and everything else still come from the binary and are reproducible with <code>make</code>. The complete data will be published once it is verified.",
         claim="A 16 KB cartridge from 1984, taken apart byte by byte. "
               "Inside there's a penguin crossing Antarctica between ten "
               "research bases, an attract-mode game that plays back from a "
@@ -326,6 +328,8 @@ def main(argv):
   <p class="claim">{t['claim']}</p>
   <p class="ficha">{' · '.join(t['ficha'])}</p>
 </header>
+<p class="ficha" style="border:1px solid var(--oro);padding:.8em 1em;margin:1.5em 0">
+{t['aviso']}</p>
 <nav>{nav}</nav>
 <section id="numbers">
   <h2>{t['h_num']}</h2>

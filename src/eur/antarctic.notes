@@ -1,0 +1,1193 @@
+# Anotaciones de Antarctic Adventure (Konami, 1984, MSX1, RC-701).
+#
+# Cada linea esta anclada a una direccion, asi que los comentarios sobreviven a
+# un retrazado del binario. Directivas: L=etiqueta, C=comentario de linea,
+# B=cabecera de bloque, D=rango de datos.
+#
+# TODO lo que hay aqui sale de leer el codigo que lo usa, no de que "parezca".
+# Lo que sea suposicion va marcado con "(?)".
+#
+# EL MAPA DE MEMORIA, que hace falta para leer el resto: el cartucho son 16 KB
+# fijos en 0x4000-0x7FFF, o sea que aqui NO hay ni una variable. Todo el estado
+# vive en la RAM del MSX a partir de 0xE000, que INIT borra al arrancar. Las
+# direcciones 0xE0xx que aparecen por todas partes son variables, no datos del
+# cartucho.
+
+# =============================================================================
+# LA CABECERA
+# =============================================================================
+
+D 0x4000 0x4010 cabecera_del_cartucho La cabecera que lee la BIOS: "AB", INIT=0x4010, y a cero los otros tres vectores (STATEMENT, DEVICE y TEXT). Con eso la BIOS llama a 0x4010 nada mas terminar de arrancar la maquina
+
+# =============================================================================
+# ARRANQUE
+# =============================================================================
+
+B 0x4010 ############################################################
+B 0x4010 INIT - lo primero que se ejecuta del cartucho
+B 0x4010 ############################################################
+B 0x4010 La BIOS llega aqui con la maquina ya inicializada. Este INIT
+B 0x4010 no vuelve nunca: se queda dando vueltas en 0x405B y a partir
+B 0x4010 de ahi TODO el juego corre dentro de la interrupcion.
+L 0x4010 INIT             Punto de entrada del cartucho, declarado en la cabecera
+C 0x4013 Rellena de RET los 512 bytes de hooks de la BIOS (0xFD00-0xFEFF)
+C 0x4020 Pone un JP en el hook de interrupcion H.TIMI (0xFD9A)
+C 0x4025 ...y lo apunta a la rutina de abajo: desde aqui el juego es la interrupcion
+C 0x402b Pila en 0xE400, justo debajo de las variables
+C 0x402e Borra los 2 KB de 0xE000-0xE7FF, que es donde vive todo el estado
+C 0x403b Estado 1: arranca. El cerrojo de 0xE005 se pone para que la interrupcion no entre todavia
+C 0x4040 Registros del VDP, PSG y VRAM a cero
+C 0x4049 Estado 1 en 0xE000; ya puede empezar la maquina de estados
+B 0x404c ----------------------------------------------------------------------
+B 0x404c ESTOS CUATRO ESCRIBEN ENCIMA DE LA BIOS
+B 0x404c ----------------------------------------------------------------------
+B 0x404c Copia los tres bytes de 0x411F -que son C3 00 00, o sea
+B 0x404c `jp 0000h`- encima de 0x0000, que es la entrada de la BIOS y
+B 0x404c el vector de arranque de la maquina. En un MSX normal ahi hay
+B 0x404c ROM, asi que la escritura se pierde y no pasa nada.
+B 0x404c Solo lleva esto la segunda japonesa: ni la primera japonesa ni
+B 0x404c la europea tienen el LDIR, ni siquiera los tres bytes sueltos
+B 0x404c de 0x411F.
+B 0x404c Que hace: comprobado leyendo los bytes. Para que: NO SE PUEDE
+B 0x404c DEMOSTRAR desde el binario. La lectura que encaja es que sea un
+B 0x404c guardian contra correr el cartucho desde RAM, porque la
+B 0x404c escritura solo llega a alguna parte si eso de ahi no es ROM;
+B 0x404c pero es una lectura, no una medida.
+C 0x404c Origen: los tres bytes `jp 0000h` de 0x411F
+C 0x404f Destino: 0x0000, la entrada de la BIOS. Es ROM, asi que la escritura se pierde
+C 0x4057 Lee el registro de estado del VDP para descartar la interrupcion pendiente
+L 0x405B PARADO           INIT acaba aqui: bucle vacio. El juego entero corre en la interrupcion
+
+# =============================================================================
+# LA INTERRUPCION - aqui corre el juego entero, 50 o 60 veces por segundo
+# =============================================================================
+
+B 0x405D ############################################################
+B 0x405D H.TIMI - el gancho de interrupcion
+B 0x405D ############################################################
+B 0x405D La BIOS salta aqui en cada retrazado. Lo que hace, en orden:
+B 0x405D   1. atiende el sonido (siempre que el estado no sea 0)
+B 0x405D   2. si el estado es menor que 12, mueve al pinguino y el reloj
+B 0x405D   3. lee los mandos y da UN PASO de la maquina de estados
+B 0x405D El paso 3 va protegido por un cerrojo (0xE005): si la vuelta
+B 0x405D anterior aun no ha terminado, esta se salta el paso entero en
+B 0x405D vez de reentrar.
+L 0x405D H_TIMI           Rutina de interrupcion; INIT la engancha en 0xFD9A
+C 0x4062 Descarta la interrupcion leyendo el estado del VDP
+C 0x4065 Con el estado a 0 no suena nada
+C 0x406b El reproductor de sonido, que por eso va siempre a compas
+L 0x406E HT_TRAS_SONIDO   Del estado 12 en adelante (fin de partida) ya no se mueve nada
+C 0x4075 Suma el sentido de marcha y el empuje: si dan cero, el pinguino esta quieto
+C 0x407e Rutina de estar parado
+L 0x4081 HT_MUEVE         Mueve al pinguino y descuenta el tiempo
+C 0x4084 Bit 7 de 0xE081: el signo de la velocidad lateral
+L 0x408E HT_SENTIDO
+C 0x408e 0xE0FC queda a 0 o 1 segun hacia donde mira
+L 0x4091 HT_CERROJO       Cerrojo de reentrada: 0xE005 dice si ya hay una vuelta dentro
+C 0x4098 Echa el cerrojo y abre las interrupciones: el paso puede durar mas de un fotograma
+C 0x409b Lee los mandos
+C 0x409e Un paso de la maquina de estados
+C 0x40a6 Quita el cerrojo
+L 0x40AC HT_YA_DENTRO     Salida cuando la vuelta anterior sigue trabajando: este fotograma se pierde
+
+B 0x40B2 ----------------------------------------------------------------------
+B 0x40B2 EL DESPACHADOR, con la tabla incrustada detras del CALL
+B 0x40B2 ----------------------------------------------------------------------
+B 0x40B2 Se llama con el indice en A. El POP HL no recoge un dato de la
+B 0x40B2 pila: recoge la DIRECCION DE RETORNO, que es justo donde
+B 0x40B2 empieza la tabla, porque la tabla va pegada detras del CALL.
+B 0x40B2 Suma el indice por dos, lee la palabra y salta. Nunca vuelve.
+B 0x40B2 Lo llaman seis sitios, y cada tabla acaba EXACTAMENTE donde
+B 0x40B2 empieza su primer destino: eso es lo que fija su tamano sin
+B 0x40B2 tener que suponerlo.
+L 0x40B2 DESPACHA         Salta al destino A de la tabla que va detras del CALL
+C 0x40b3 La direccion de retorno es la tabla
+
+B 0x40BC ----------------------------------------------------------------------
+B 0x40BC LOS MANDOS
+B 0x40BC ----------------------------------------------------------------------
+B 0x40BC Tres fuentes distintas segun 0xE002:
+B 0x40BC   bit 6 a 0  -> no hay partida: los mandos se leen de una
+B 0x40BC                 GRABACION que va en la propia ROM (la demo)
+B 0x40BC   bit 4 a 1  -> teclado, leyendo la matriz
+B 0x40BC   bit 4 a 0  -> joystick, por el registro 14 del PSG
+B 0x40BC Las tres acaban en 0x40D5, que guarda la lectura de este
+B 0x40BC fotograma en 0xE009 y la del anterior en 0xE008.
+L 0x40BC LEE_MANDOS       Deja en 0xE009 lo pulsado ahora y en 0xE008 lo de antes
+C 0x40bf Antes del estado 7 (la demo) no se lee nada
+C 0x40cf Registro 14 del PSG: el puerto del joystick
+C 0x40d3 Bits 0-3 direcciones, 4 y 5 gatillos, en logica positiva
+L 0x40D5 GUARDA_MANDOS    0xE009 = ahora, 0xE008 = el fotograma anterior
+L 0x40DD LEE_TECLADO      Monta con las filas 7 y 8 de la matriz el mismo mapa de bits que el joystick
+C 0x40df Fila 7: flechas arriba y ...
+C 0x40e9 Fila 8: el resto de flechas y la barra espaciadora
+B 0x4103 ----------------------------------------------------------------------
+B 0x4103 LA DEMO SE JUEGA SOLA CON UNA GRABACION
+B 0x4103 ----------------------------------------------------------------------
+B 0x4103 0xE0EC apunta a una tira de bytes de la ROM (empieza en
+B 0x4103 0x584A, ver 0x41AC). Cada 32 fotogramas coge el siguiente y
+B 0x4103 lo usa de "lo pulsado"; entre medias repite el nibble bajo de
+B 0x4103 la lectura anterior. O sea que la partida de demostracion no
+B 0x4103 la juega ninguna inteligencia: va grabada.
+L 0x4103 LEE_MANDOS_GRABADOS  Los mandos de la demo, leidos de la ROM
+C 0x410a 0xE0EB es el contador; solo cada 32 fotogramas se avanza
+L 0x4118 REPITE_MANDO     Entre byte y byte se mantiene la direccion anterior
+
+# =============================================================================
+# LA MAQUINA DE ESTADOS
+# =============================================================================
+#
+# 0xE000 es el estado (0-15) y 0xE001 el paso dentro del estado. Cada
+# fotograma se ejecuta UN paso; los estados avanzan solos con las seis
+# rutinas de 0x4409-0x441C. Encadenados, los diecisiete destinos son:
+#
+#    0  parado                        8  menu: elige joystick o teclado
+#    1  arranca la presentacion       9  prepara la fase
+#    2  sube el logotipo             10  entra en la fase
+#    3  espera                       11  LA PARTIDA
+#    4  dibuja el rotulo             12  se acabo el tiempo
+#    5  espera                       13  fin de la partida -> vuelve a la demo
+#    6  cortinilla                   14  meta: bonus y siguiente fase
+#    7  la demo                      15  el mapa de la Antartida
+#
+# El recorrido normal es 1->2->...->7 (demo) -> 8 (menu) -> 9 -> 15 (mapa)
+# -> 10 -> 11 (jugar) -> 14 (meta) -> 9 otra vez, o -> 12 -> 13 -> 7.
+
+L 0x4122 PASO_DE_JUEGO    Un paso de la maquina de estados: cuenta el fotograma y despacha por 0xE000
+C 0x4122 0xE003 es el contador de fotogramas, y se usa de reloj por todo el juego
+C 0x4126 Mira si se ha pulsado 1 o 2 para empezar la partida
+
+D 0x412F 0x414F tabla_de_estados Los DIECISEIS destinos de la maquina de estados, indexados por 0xE000. Va incrustada detras del CALL de 0x412C y acaba justo donde empieza su primer destino, que es lo que fija su tamano
+
+L 0x414F ESTADO_00_PARADO   Estado 0: no hace nada. Es el que deja INIT hasta que se pone el 1
+L 0x4150 ESTADO_01_ARRANCA  Estado 1: prepara la pantalla de presentacion
+C 0x4153 0xE00A: catorce filas para que suba el logotipo
+C 0x415e Registro 7 del VDP: fondo y borde en 0xE4
+L 0x4166 ESTADO_02_LOGO     Estado 2: sube el logotipo una fila cada dos fotogramas, y al llegar descomprime la pantalla de titulo
+C 0x4169 Un fotograma si y otro no
+C 0x416f Los datos comprimidos de la pantalla de titulo
+L 0x4178 ESTADO_03_ESPERA   Estado 3: espera a que 0xE004 llegue a cero y prepara el rotulo
+L 0x4183 ESTADO_04_ROTULO   Estado 4: dibuja el rotulo columna a columna; mientras dibuja, vuelve con acarreo
+C 0x4187 "PLAY SELECT", "1 JOYSTICK" y "2 KEYBOARD"
+L 0x4191 ESTADO_05_ESPERA   Estado 5: otra espera de 0xE004 fotogramas
+L 0x4199 ESTADO_06_CORTINILLA  Estado 6: borra la pantalla por columnas; sale cuando la cortinilla vuelve negativa
+
+B 0x41A0 ----------------------------------------------------------------------
+B 0x41A0 ESTADO 7 - LA DEMO
+B 0x41A0 ----------------------------------------------------------------------
+B 0x41A0 Juega una partida entera con los mandos grabados de 0x584A y
+B 0x41A0 sin sumar puntos (0x462D se sale si el bit 6 de 0xE002 esta a
+B 0x41A0 cero). Dura 0x073C = 1852 pasos, y al acabar vuelve al titulo.
+L 0x41A0 ESTADO_07_DEMO     Estado 7: la partida de demostracion, en tres pasos
+D 0x41A6 0x41AC tabla_demo Los TRES pasos del estado 7, del CALL de 0x41A3
+L 0x41AC DEMO_0_ARRANCA     Paso 0: pone a cero la partida y arranca la grabacion
+C 0x41b2 Bit 6 a cero: no hay partida de verdad, asi que no se puntua
+C 0x41b4 1852 pasos de demostracion
+C 0x41ba Aqui empieza la tira de mandos grabados
+C 0x41c0 Y a partir de aqui, como una fase normal
+L 0x41C3 DEMO_1_CORRE       Paso 1: mientras corre la demo, escribe el aviso y descuenta
+C 0x41c3 El texto de 0x57DF pero en otro sitio: aqui empieza el cuerpo, sin la palabra de destino
+C 0x41ce 0xE133: el reloj de la fase corre
+C 0x41d1 Un paso de partida
+L 0x41E4 DEMO_2_SALE        Paso 2: cortinilla, y vuelta al estado 0
+
+B 0x41EF ----------------------------------------------------------------------
+B 0x41EF ESTADO 8 - EL MENU
+B 0x41EF ----------------------------------------------------------------------
+B 0x41EF Pinta "PLAY SELECT" con las dos opciones y hace parpadear seis
+B 0x41EF veces la que se ha elegido con la tecla 1 o la 2. Quien elige
+B 0x41EF de verdad es 0x4433, que corre en cada fotograma.
+L 0x41EF ESTADO_08_MENU     Estado 8: el menu de eleccion de mando, en cuatro pasos
+D 0x41F5 0x41FD tabla_menu Los CUATRO pasos del estado 8, del CALL de 0x41F2
+L 0x41FD MENU_0_PINTA       Paso 0: limpia y prepara el rotulo
+C 0x4208 Sonido 0x92
+L 0x420E MENU_1_ROTULO      Paso 1: dibuja el rotulo entero de una vez, sin repartirlo por fotogramas
+C 0x421b Seis parpadeos
+L 0x4221 MENU_2_PARPADEA    Paso 2: parpadea la linea elegida, ocho fotogramas encendida y ocho apagada
+C 0x4233 Bit 4 de 0xE002: 0 joystick (fila 16), 1 teclado (fila 18)
+C 0x423a Suma 0x00 o 0x40 al destino, o sea dos filas
+L 0x4243 MENU_2_ENCIENDE    La otra mitad del parpadeo: repinta el texto
+L 0x4251 MENU_3_CORTINILLA  Paso 3: cortinilla y a empezar la partida
+
+L 0x425B ESTADO_09_PREPARA  Estado 9: saca de la tabla la distancia y el tiempo de la fase que toca
+C 0x425b 0xE0E8: la fase dentro del recorrido, 0-9
+C 0x4261 Cuatro bytes por fase
+C 0x426a Centenas de metros y posicion en el mapa
+C 0x4271 Al tiempo de la fase se le resta lo que sobro de esa misma fase la vuelta anterior
+C 0x427b Menos de 0x10 guardado: no se descuenta nada
+C 0x4295 Estado 14 y el avance de abajo lo deja en 15: primero el mapa
+L 0x4289 PREPARA_AJUSTA
+L 0x428A PREPARA_GUARDA
+L 0x428B PREPARA_TIEMPO
+C 0x428b El tiempo de la fase, en BCD
+
+L 0x429D ESTADO_10_ENTRA    Estado 10: cortinilla, monta la pista y suena la musica de salida
+C 0x42a7 En la demo no suena
+L 0x42B6 ESTADO_11_PARTIDA  Estado 11: la partida. Un paso de juego por fotograma hasta que se acaba el tiempo o se llega a la meta
+C 0x42bd Un paso de partida
+C 0x42c0 0xE00C: se acabo el tiempo. 0xE00D: se ha llegado a la meta
+C 0x42cd Estado 12, se acabo el tiempo
+C 0x42d1 Estado 14, meta
+L 0x42D3 PARTIDA_CAMBIA
+L 0x42D7 PARTIDA_ERA_DEMO   Si no habia partida de verdad, vuelve al paso 1 de la demo
+
+L 0x42DC ESTADO_12_TIME_OUT Estado 12: se acabo el tiempo
+C 0x42e0 Aparca las cuatro nubes fuera de la pantalla
+C 0x42f5 Sonido 0x8C
+C 0x42f8 El rotulo "TIME OUT"
+L 0x42E8 TIME_OUT_SPRITES
+L 0x4301 ESTADO_13_FIN      Estado 13: espera a que acabe la musica y vuelve a la demo
+C 0x4301 0xE012 lo pone a cero el reproductor cuando termina
+C 0x4309 Se acabo la partida: a partir de aqui los mandos vuelven a ser los grabados
+C 0x430b Estado 7, paso 2
+L 0x430E PONE_ESTADO        Estado en L y paso en H, de una sentada
+
+B 0x4312 ----------------------------------------------------------------------
+B 0x4312 ESTADO 14 - LA META
+B 0x4312 ----------------------------------------------------------------------
+B 0x4312 Llegada a la base: la animacion, el cambio de fase, el bonus
+B 0x4312 por el tiempo que ha sobrado y la cortinilla para la siguiente.
+L 0x4312 ESTADO_14_META     Estado 14: la llegada a la base, en ocho pasos
+D 0x4318 0x4328 tabla_meta Los OCHO pasos del estado 14, del CALL de 0x4315
+L 0x4328 META_0_FRENA       Paso 0: espera a que el pinguino termine de frenar
+L 0x433B META_1_SIGUIENTE   Paso 1: sube el numero de fase y guarda el tiempo que ha sobrado. Son DOS contadores distintos y conviene no mezclarlos: 0xE0E0 es el numero que se ve en el panel, en BCD y SIN TOPE -sigue subiendo a 11, 12...-, y 0xE0E1 es el indice 0-9 de la base, que DA LA VUELTA al llegar a diez. Esa pareja es la vuelta completa: el juego arranca con 0xE0E1 = 0, que es FRANCE (los valores iniciales estan en 0x4491), y cada llegada lo sube UNO, asi que se va de una base a la siguiente hasta que en la decima se vuelve al 0 y se cierra el circuito en Francia. Como el numero del panel no se reinicia, la vuelta siguiente son las mismas diez bases pero mas dificiles, que es lo que mira 0x76F7
+C 0x433f El numero que se ve, en BCD
+C 0x4344 Y el indice 0-9, que da la vuelta al llegar a diez
+C 0x4351 Lo que sobro de tiempo se guarda en 0xE0D5+fase y se descuenta la proxima vuelta
+C 0x435f La casilla del mapa tambien avanza y da la vuelta
+C 0x4375 Periodo 0x13 en 0xE100, que es lo mas lento que hay, para la animacion
+L 0x434F META_1_GUARDA
+L 0x436A META_1_ANIMA
+L 0x437B META_2_ANDA        Paso 2: el pinguino sigue andando hasta la bandera
+L 0x4389 META_3_LLEGA       Paso 3: llega, se monta el decorado de la base y suena la musica
+C 0x439e Sonido 0x8F
+C 0x43a1 Se salta el paso 4... no: entra en el, poniendolo a mano
+L 0x43A6 META_4_SALUDA      Paso 4: la escena de la base
+L 0x43B8 META_4_FASE_ESPECIAL  Cuando 0xE0E1 vale 0 o 2, la llegada tiene un remate propio, y esos dos numeros son EL POLO SUR y FRANCIA. 0xE0E1 es el indice 0-9 de la base a la que se llega, y 0x433B lo sube UN PASO ANTES, en el paso 1 de esta misma escena, asi que aqui ya apunta a la base de destino: 0 es FRANCE y 2 es THE SOUTH POLE en la tabla de 0x55D9. El caso 2 esta MEDIDO en la partida grabada (t=270,2), con STAGE-02 en el panel y el rotulo SOUTH POLE debajo. El caso 0 es la llegada que cierra la vuelta, volviendo a FRANCE, y tambien esta MEDIDO: en la partida larga (la del cartucho con el reloj parado) cae en t=1391-1403, con STAGE-10 en el panel, el rotulo FRANCE y la bandera francesa subiendo por el mastil. En el paso 5 aparecen los mismos cuatro sprites que en el Polo -0xF0 y 0xF4 en amarillo, 0xF8 y 0xFC en negro- o sea que las dos llegadas especiales comparten remate: el pinguino inclinado saludando
+L 0x43C5 META_4_NORMAL
+L 0x43D0 META_5_ESPERA      Paso 5: espera a que se acabe la musica
+L 0x43D9 META_6_BONUS       Paso 6: cada cuatro fotogramas cambia un segundo que sobra por 100 puntos
+C 0x43e8 Cuando el reloj llega a cero se acabo el bonus
+C 0x43f4 Cien puntos por segundo
+C 0x43fc Sonido 1, el tic-tic del bonus
+L 0x43E2 BONUS_PASO
+L 0x4400 META_7_CORTINILLA  Paso 7: cortinilla y vuelta al estado 9 con la fase siguiente
+
+B 0x4409 ----------------------------------------------------------------------
+B 0x4409 LAS SEIS SALIDAS QUE HACEN AVANZAR LA MAQUINA
+B 0x4409 ----------------------------------------------------------------------
+B 0x4409 Van encadenadas de mas a menos: cada una hace lo suyo y cae en
+B 0x4409 la siguiente. Las tres de arriba pasan al ESTADO siguiente
+B 0x4409 (y ponen el paso a cero); las tres de abajo, solo al PASO
+B 0x4409 siguiente. 0xE004 es la espera en fotogramas.
+L 0x4409 ESPERA_80_Y_ESTADO Espera 80 fotogramas y pasa al estado siguiente
+L 0x440B ESPERA_A_Y_ESTADO  Espera A fotogramas y pasa al estado siguiente
+L 0x440E SIGUIENTE_ESTADO   Sube 0xE000 y pone el paso a cero
+L 0x4417 ESPERA_80_Y_PASO   Espera 80 fotogramas y pasa al paso siguiente
+L 0x4419 ESPERA_A_Y_PASO    Espera A fotogramas y pasa al paso siguiente
+L 0x441C SIGUIENTE_PASO     Sube 0xE001 dentro del mismo estado
+
+B 0x4421 ----------------------------------------------------------------------
+B 0x4421 CODIGO MUERTO: EL NUMERO DE JUGADOR
+B 0x4421 ----------------------------------------------------------------------
+B 0x4421 Escribe una cadena y detras un '1' o un '2' sacado del bit 7
+B 0x4421 de 0xE002. Nadie la llama: la palabra 0x4421 no aparece en los
+B 0x4421 16 KB. Y el bit 7 de 0xE002 no lo pone nadie tampoco, porque
+B 0x4421 los dos valores que se le escriben son 0x40 y 0x50. Es lo que
+B 0x4421 queda de un modo de dos jugadores, a juego con el rotulo fijo
+B 0x4421 "1P" del marcador.
+L 0x4421 MUERTA_JUGADOR     Codigo muerto: escribe el numero de jugador. No la llama nadie
+C 0x4427 Bit 7 de 0xE002: el jugador. Nadie lo pone
+
+B 0x4433 ----------------------------------------------------------------------
+B 0x4433 LAS TECLAS 1 Y 2, QUE ES POR DONDE SE EMPIEZA A JUGAR
+B 0x4433 ----------------------------------------------------------------------
+B 0x4433 Se mira en cada fotograma, en cualquier estado. El POP HL de
+B 0x4433 0x4459 tira la direccion de retorno, o sea que no vuelve a
+B 0x4433 quien la llamo: corta el paso de juego en seco y planta el
+B 0x4433 estado 7.
+L 0x4433 MIRA_TECLAS_1_2  Empieza la partida si se pulsa 1 (joystick) o 2 (teclado)
+C 0x4433 0xE13B: durante la llegada a la base no se puede empezar otra
+C 0x443b Con una partida en marcha tampoco
+C 0x4440 Fila 0 de la matriz: bit 1 la tecla 1, bit 2 la tecla 2
+C 0x4446 Tecla 1 -> 0x40: partida con joystick
+C 0x444c Tecla 2 -> 0x50: partida con teclado (el bit 4 es el que lo dice)
+L 0x4451 EMPIEZA_PARTIDA
+C 0x4459 Tira la direccion de retorno: no se vuelve del paso de juego
+C 0x445a Estado 7, y el avance de abajo lo deja en 8: el menu
+
+L 0x4462 MUERTA_RET       Codigo muerto: un RET suelto que no llama nadie
+L 0x4463 REINICIA_PARTIDA Deja a cero el marcador y todas las variables de partida
+C 0x4463 Borra 0x100 bytes desde 0xE043: marcador, pinguino y objetos. El record de 0xE040 se salva por tres bytes
+C 0x4470 Los nueve valores iniciales de 0xE0E0 (fase, tiempo, distancia...)
+C 0x447b Colores del banco 0 de la VRAM
+C 0x4486 Los diez huecos de tiempo sobrante, uno por fase, a 5
+L 0x448B REINICIA_HUECOS
+
+D 0x4491 0x449A valores_iniciales Los nueve bytes que 0x4470 copia a 0xE0E0: fase 1, indice 0, y el resto a cero salvo 0xE0E4=2 y 0xE0E6=0x17. Solo los cinco primeros se usan: 0x425B machaca la distancia y el tiempo en cuanto empieza la fase
+
+L 0x449A ARRANCA_MAQUINA  Registros del VDP, mezclador del PSG y VRAM a cero
+C 0x449d Registro 7 del PSG: los tres tonos abiertos, el ruido cerrado
+C 0x44aa Los 16 KB de VRAM a cero
+L 0x44B0 BORRA_VRAM       Rellena de ceros BC bytes desde DE
+L 0x44B5 BORRA_NOMBRES    Las 768 casillas de la tabla de nombres
+L 0x44BD SUENA_95         Sonido 0x95
+L 0x44D5 PONE_REGISTROS_BUCLE
+
+# =============================================================================
+# VIDEO
+# =============================================================================
+#
+# Ninguna de estas rutinas usa la BIOS para mover los datos: solo la usan para
+# APUNTAR (SETWRT/SETRD) y luego escriben a pelo por el puerto, que se guarda
+# en C' -el banco alterno- para no gastar un registro en cada vuelta.
+#
+# La disposicion de la VRAM la fijan los ocho registros de 0x44DF, y es la del
+# reves de lo corriente:
+#     0x0000  colores          0x3800  tabla de nombres
+#     0x1800  patrones de sprite   0x3B00  atributos de sprite
+#     0x2000  patrones
+
+L 0x44E7 PONE_REGISTRO_7  Escribe B en el registro 7 del VDP: color de fondo y de borde
+L 0x44EC COPIA_A_VRAM     Copia BC bytes de (HL) a la VRAM DE
+L 0x44FD RELLENA_VRAM     Escribe el byte A en BC posiciones de la VRAM desde DE
+C 0x44ff Bit 14 de la direccion: la escritura
+L 0x44F0 COPIA_A_VRAM_BUCLE
+C 0x44f2 El puerto de datos vive en C', puesto por APUNTA_VRAM
+L 0x4506 RELLENA_VRAM_BUCLE
+L 0x4512 PINTA_FRANJAS    Rellena tiras de la tabla de nombres a partir de una lista (largo, posicion), con el byte que va delante
+C 0x4514 El byte con el que se rellena, que va el primero de la lista
+C 0x4522 Posicion menor de 0x20: la fila de mas abajo
+L 0x4519 FRANJAS_BUCLE
+L 0x4527 FRANJAS_PINTA
+
+B 0x4533 ----------------------------------------------------------------------
+B 0x4533 EL INTERPRETE DE BLOQUES, que dibuja los decorados y la pista
+B 0x4533 ----------------------------------------------------------------------
+B 0x4533 Un bloque es una tira de bytes que se lee asi:
+B 0x4533   primer byte: nibble alto = columna, nibble bajo = tercio de
+B 0x4533                pantalla (0-3), que se suma a 0x78 y da la fila
+B 0x4533   luego, por cada fila: un byte de desplazamiento y detras las
+B 0x4533                casillas que se escriben seguidas
+B 0x4533   un byte >= 0xE0 cierra la fila y abre la siguiente
+B 0x4533   un 0x00 cierra el bloque
+B 0x4533 Con esto se dibujan los dieciseis bloques de decorado de
+B 0x4533 0x732D-0x7518 y los 92 trozos de pista de 0x6BE9-0x7241.
+L 0x4533 DIBUJA_BLOQUE    Interprete de los bloques de decorado y de pista
+L 0x4541 BLOQUE_FILA
+L 0x454A BLOQUE_APUNTA
+L 0x4552 BLOQUE_CASILLA
+
+B 0x4560 ----------------------------------------------------------------------
+B 0x4560 EL DESCOMPRESOR, con cuatro entradas
+B 0x4560 ----------------------------------------------------------------------
+B 0x4560 El flujo se lee asi:
+B 0x4560     0x00          se acabo todo
+B 0x4560     0x80          cierra el bloque y vuelve arriba a leer OTRO
+B 0x4560                   destino del propio flujo
+B 0x4560     n con bit7=0  repite n veces el byte siguiente
+B 0x4560     n con bit7=1  (n & 0x7F) bytes copiados tal cual
+B 0x4560 Es facil leerlo al reves, y lo que lo decide son los dos DJNZ:
+B 0x4560 el de 0x4584 vuelve DESPUES de leer el byte, asi que lo
+B 0x4560 repite; el de 0x4592 vuelve ANTES, asi que lee uno cada vez.
+B 0x4560 OJO: dos llamadas seguidas sin `ld hl` en medio siguen con el
+B 0x4560 HL que quedo, o sea con el flujo de al lado.
+L 0x4560 DESCOMPRIME        El destino de VRAM viene en el propio flujo
+L 0x4564 DESCOMPRIME_DE     El destino ya viene en DE
+L 0x4568 DESCOMPRIME_ESPEJO El destino en DE, y ademas espeja cada byte
+L 0x456A DESCOMPRIME_APUNTA
+L 0x456D DESCOMPRIME_SIGUE  El bucle
+C 0x456f Un 0x80 cierra este bloque y arriba se lee otro destino
+C 0x4574 Un 0x00 acaba
+L 0x457E DESCOMPRIME_REPITE
+C 0x4582 Dos bytes de relleno para dar tiempo al VDP entre escritura y escritura
+L 0x4588 DESCOMPRIME_TIRADA
+L 0x458B DESCOMPRIME_TIRADA_BUCLE
+L 0x4596 DESCOMPRIME_FIN
+L 0x4598 LEE_BYTE_QUIZA_ESPEJADO  Lee (HL) y, con el bit 0 de C, le da la vuelta a los bits: espejo horizontal
+L 0x45A1 ESPEJA_BUCLE
+
+B 0x45A8 ----------------------------------------------------------------------
+B 0x45A8 LAS CADENAS
+B 0x45A8 ----------------------------------------------------------------------
+B 0x45A8 Formato: palabra de destino en la VRAM, los caracteres, y de
+B 0x45A8 remate un 0xFF. Un 0xFE en medio no acaba: cambia de destino y
+B 0x45A8 sigue, que es como una sola cadena pone rotulos en cinco
+B 0x45A8 sitios de la pantalla.
+B 0x45A8 EL TEXTO VA CIFRADO A LA MANERA DE KONAMI: cada byte es su
+B 0x45A8 ASCII menos 0x20. No es cifrado de verdad, es que la fuente
+B 0x45A8 empieza en el espacio: el codigo 0x11 es el '1' y el 0x21 la
+B 0x45A8 'A'. Por eso los rotulos no se ven al mirar el volcado.
+L 0x45A8 ESCRIBE_CADENA     Escribe la cadena de (HL); el destino va en los dos primeros bytes
+L 0x45AC ESCRIBE_CADENA_EN_DE  Igual, pero el destino ya viene en DE
+C 0x45b0 0xFF: se acabo
+C 0x45b2 0xFE: sigue en otro sitio de la pantalla
+L 0x45BA REPITE_4_BYTES   Copia C veces los mismos cuatro bytes de (HL) a (DE): un atributo de sprite repetido
+L 0x45BD REPITE_4_BUCLE
+L 0x45C9 REPITE_4_FIN
+C 0x45c9 Recoge el ultimo PUSH HL en BC, que ya no hace falta
+
+B 0x45CB ----------------------------------------------------------------------
+B 0x45CB LA CORTINILLA
+B 0x45CB ----------------------------------------------------------------------
+B 0x45CB Borra la pantalla dos columnas por vuelta, una por cada lado,
+B 0x45CB cerrandose hacia el centro. 0xE004 lleva la cuenta y el bit 6
+B 0x45CB del mismo byte dice si toca la columna de la izquierda o la de
+B 0x45CB la derecha. Devuelve M cuando ya no queda nada que borrar, que
+B 0x45CB es como los estados saben que pueden seguir.
+L 0x45CB CORTINILLA       Borra la pantalla por columnas; devuelve M al terminar
+C 0x45d5 Bit 6 de 0xE004: un lado o el otro
+C 0x45e6 En partida no se toca el panel: dos filas menos y 0x40 mas abajo
+L 0x45E1 CORTINILLA_DERECHA
+L 0x45E6 CORTINILLA_COLUMNA
+L 0x45F3 CORTINILLA_BUCLE
+C 0x45f9 Baja una fila
+L 0x4600 BORRA_SPRITES    Deja a cero los 128 bytes de atributos de sprite (VRAM 0x3B00), pasando por 0xE050
+L 0x4606 BORRA_SPRITES_BUCLE
+L 0x4615 ABRE_VOLUMENES   Registro 15 del PSG a 0x8F (?)
+
+# =============================================================================
+# EL MARCADOR Y EL PANEL
+# =============================================================================
+#
+# Las dos filas de arriba, tal y como las pone la cadena de 0x57B0:
+#     fila 0:  1P. <marcador>   HI. <record>   STAGE. <fase>
+#     fila 1:  TIME. <tiempo>   <dibujo> <distancia> <dibujo>
+# Todos los numeros van en BCD, que es lo que permite sumarlos con DAA y
+# escribirlos sin dividir.
+#     0xE040-0xE042  el record (tres bytes, seis cifras)
+#     0xE043-0xE045  el marcador
+#     0xE0E3-0xE0E4  el tiempo que queda
+#     0xE0E5-0xE0E6  la distancia que queda
+
+L 0x461D LEE_GATILLOS_NUEVOS  Deja en A los gatillos que se acaban de pulsar en este fotograma
+L 0x462D SUMA_AL_MARCADOR Suma DE al marcador, en BCD, y actualiza el record
+C 0x462d Bit 6 de 0xE002 al bit de signo: en la demo no se puntua
+C 0x464a Al pasarse de 999999 el record se clava en ese tope
+L 0x4657 COMPARA_RECORD
+L 0x4667 NUEVO_RECORD
+L 0x4671 CUENTA_EL_TIEMPO Descuenta un segundo cada 64 fotogramas mientras 0xE133 diga que el reloj corre
+C 0x4676 Si el reloj esta a cero, 0xE00C avisa de que se acabo el tiempo
+L 0x4682 TIEMPO_CADA_64
+L 0x468A RESTA_UN_SEGUNDO Baja el reloj en uno, en BCD, y avisa con un pitido cuando quedan menos de once
+C 0x469f Menos de 0x11 segundos: el aviso
+C 0x46aa Sonido 9
+L 0x469A TIEMPO_MIRA_AVISO
+L 0x46AF PINTA_TIEMPO     Las cuatro cifras del reloj
+L 0x46BA PINTA_PANEL      Pinta el panel entero: rotulos, tiempo, distancia, fase, record y marcador
+L 0x46C9 PINTA_RECORD     Las seis cifras del record
+L 0x46D2 PINTA_MARCADOR   Las seis cifras del marcador
+L 0x46D8 PINTA_TRES_BYTES
+L 0x46DC AVANZA_DISTANCIA Descuenta la distancia que queda al ritmo que marca la velocidad
+C 0x46df 0xE0E9 es el contador; se recarga con la mitad del periodo de 0xE100, y esa recarga es lo que demuestra que 0xE100 es un periodo y no una velocidad
+C 0x46e8 Distancia a cero: 0xE00D avisa de que se ha llegado a la meta
+C 0x4710 Cada 400 metros (?), 0xE107
+L 0x46F5 DISTANCIA_RESTA
+L 0x4703 DISTANCIA_MIRA
+L 0x4713 DISTANCIA_PINTA
+L 0x4716 PINTA_DISTANCIA  Las cuatro cifras de la distancia
+L 0x4720 PINTA_FASE       Las dos cifras del numero de fase
+L 0x4728 PINTA_BCD        Escribe B bytes BCD de (HL) hacia abajo en la VRAM (DE) hacia arriba, dos cifras por byte
+C 0x472c Los digitos empiezan en la casilla 0x10, que es el '0' de la fuente
+
+B 0x4745 ----------------------------------------------------------------------
+B 0x4745 QUE DECORADO TOCA
+B 0x4745 ----------------------------------------------------------------------
+B 0x4745 Cuatro tablas encadenadas, y las cuatro cierran clavadas:
+B 0x4745   0x4787  dos bytes por fase; elige uno de los dos segun el
+B 0x4745           bit 4 de la distancia -> 0xE18A
+B 0x4745   0x47C3  un puntero por fase, que apunta dentro de la tabla
+B 0x4745           de abajo (las ventanas se solapan)
+B 0x4745   0x47D7  veinte punteros a las listas
+B 0x4745   0x479B  cinco listas de ocho bytes -> 0xE18B
+L 0x4745 ELIGE_DECORADO   Segun la fase y la distancia, deja en 0xE18A y 0xE18B lo que toca dibujar a los lados de la pista
+C 0x4754 Bit 4 de la distancia: uno u otro
+C 0x476d La distancia, por cuartos
+L 0x4759 DECORADO_SEGUNDA
+L 0x477B DECORADO_INDICE
+
+D 0x4787 0x479B decorado_por_fase Dos bytes por fase, diez fases: 0x474A los indexa y el bit 4 de la distancia elige cual de los dos. Acaba justo donde empiezan las listas
+D 0x479B 0x47C3 listas_de_decorado Cinco listas de ocho bytes. Es a donde apuntan los veinte punteros de 0x47D7, y acaban clavadas donde empieza la tabla de fases
+D 0x47C3 0x47D7 decorado_puntero_por_fase Diez punteros, uno por fase, que apuntan DENTRO de la tabla de al lado con ventanas que se solapan. 0x4762 lo indexa
+D 0x47D7 0x47FF decorado_punteros Veinte punteros a las cinco listas. Cierra clavado en 0x47FF, donde vuelve a haber codigo
+
+L 0x47FF HAY_SORPRESA     Mientras 0xE18E este encendido devuelve C=3, y descuenta 0xE18F hasta apagarlo
+L 0x480E SORPRESA_SI
+L 0x4811 MIRA_SORPRESA    Enciende 0xE18E en ciertos multiplos de 100 metros, con la duracion que da la tabla de al lado
+C 0x4821 Solo con 400 metros o mas por delante
+C 0x4824 Y justo en la centena exacta
+C 0x482b Una de cada cuatro centenas, corrida segun la fase
+
+D 0x4839 0x4843 duracion_sorpresa Diez bytes, uno por fase: cuanto dura lo que enciende 0x4811. La fase 1 lleva 7 y las demas entre 2 y 6
+
+# =============================================================================
+# EL ROTULO DE LA PRESENTACION
+# =============================================================================
+
+L 0x4843 PREPARA_ROTULO   Limpia la pantalla y pone en blanco los colores del tercio de abajo para el rotulo
+C 0x4846 Colores del banco 2, casillas 0x10 a 0x40
+C 0x4855 Fondo y borde a 0xE0
+L 0x4864 DIBUJA_ROTULO    Dibuja una columna del rotulo por llamada, 23 columnas de dos casillas; devuelve C mientras queda
+C 0x4869 23 columnas
+C 0x4875 Las casillas van de dos en dos: 0xB2, 0xB4, 0xB6...
+C 0x4891 Y despues, 29 fotogramas mas de pausa antes de seguir
+L 0x487B ROTULO_COLUMNA
+L 0x4889 ROTULO_ESPERA
+C 0x488a "(c)KONAMI 1984"
+L 0x4896 SUBE_LOGO        Dibuja el logotipo de 3x3 casillas una fila mas arriba cada vez, y borra el rastro que deja debajo
+C 0x489c Una fila menos en cada llamada
+C 0x48a8 Las nueve casillas van seguidas desde la 0x44
+C 0x48c4 Borra las doce casillas que quedan debajo
+L 0x48AD LOGO_FILA
+L 0x48AE LOGO_CASILLA
+
+# =============================================================================
+# EL ACCESO A LA VRAM, Y LA MITAD QUE NUNCA SE USA
+# =============================================================================
+#
+# Las cuatro rutinas de aqui van por parejas: una para escribir y su gemela
+# exacta para leer. Las dos de LEER no las llama nadie -la palabra 0x48D9 no
+# aparece ni una vez en los 16 KB, y la unica aparicion de 0x48F1 es el CALL de
+# la propia rutina muerta-. El juego solo escribe en la pantalla.
+
+L 0x48D0 ESCRIBE_BYTE_VRAM  Escribe A en la VRAM (DE)
+L 0x48D9 MUERTA_LEE_BYTE_VRAM  Codigo muerto: lee un byte de la VRAM (DE). Gemela de la de escribir, que se usa diez veces
+L 0x48E2 APUNTA_VRAM      Apunta la VRAM para ESCRIBIR y deja el puerto de datos en C'
+C 0x48ea El puerto de datos del VDP, que la BIOS guarda en 0x0006
+L 0x48F1 MUERTA_APUNTA_VRAM_LEER  Codigo muerto: apunta la VRAM para LEER. Solo la llama la otra rutina muerta
+C 0x48f8 El puerto de lectura, en 0x0007
+L 0x48FE SUMA_A_HL        HL = HL + A
+L 0x4903 SUMA_A_DE        DE = DE + A
+
+# =============================================================================
+# ESTADO 15 - EL MAPA DE LA ANTARTIDA
+# =============================================================================
+#
+# Entre fase y fase se ve el mapa del continente con el recorrido marcado y el
+# pinguino andando por el. Se pinta de arriba abajo, una fila cada dos
+# fotogramas, con los datos de 0x4A01; luego se traza el camino paso a paso con
+# los de 0x4AB0, y se marca de otro color hasta donde se ha llegado.
+
+L 0x4908 ESTADO_15_MAPA   Estado 15: el mapa, en siete pasos
+D 0x490E 0x491C tabla_mapa Los SIETE pasos del estado 15, del CALL de 0x490B
+L 0x491C MAPA_0_PREPARA   Paso 0: prepara los punteros y pinta de blanco los colores del mapa
+C 0x491c Aqui empiezan las filas del dibujo
+C 0x4922 Y esta es la casilla por la que se empieza a pintar
+L 0x4936 MAPA_1_BORDE     Paso 1: la linea de arriba del marco
+L 0x493D MAPA_2_FILA      Paso 2: una fila del mapa cada dos fotogramas, hasta el 0x00 que cierra los datos
+C 0x4945 Baja una fila
+C 0x494f Limpia la fila antes de escribirla
+C 0x4966 Un 0x00 en los datos: se acabo el dibujo
+C 0x496b 0xFF: esta fila no lleva texto
+L 0x4970 MAPA_2_GUARDA
+L 0x4974 MAPA_3_BORDE     Paso 3: la linea de abajo del marco
+L 0x4979 MAPA_BORDE
+L 0x4990 MAPA_4_TRAZO     Paso 4: prepara el trazado del recorrido
+C 0x4990 Por donde empieza el camino, en la tabla de nombres
+L 0x499D MAPA_5_TRAZA     Paso 5: un paso del recorrido cada dos fotogramas
+C 0x49a6 El paso que toca, de la lista de 0x4AB0
+C 0x49b0 Un 0x20 cierra la lista
+C 0x49b8 Hasta donde ha llegado el pinguino va de un color, y lo que falta de otro
+C 0x49c4 El RRD parte el byte: nibble bajo a B (la casilla) y nibble alto a A (la direccion)
+C 0x49c8 El nibble alto indexa el codigo de abajo, que va de cuatro en cuatro bytes
+L 0x49C0 TRAZO_PARTE
+L 0x49E0 SALTA_A_HL       El otro despachador: aqui A no indexa direcciones sino el codigo de abajo
+B 0x49E1 ----------------------------------------------------------------------
+B 0x49E1 LOS CUATRO PASOS DEL RECORRIDO
+B 0x49E1 ----------------------------------------------------------------------
+B 0x49E1 Cuatro trozos de cuatro bytes justos, para que el nibble alto
+B 0x49E1 del dato (0, 4, 8 o C) caiga clavado en uno de ellos.
+L 0x49E1 PASO_ARRIBA      Una fila menos: -0x20
+L 0x49E5 PASO_DERECHA     Una casilla mas
+L 0x49E9 PASO_ABAJO       Una fila mas: +0x20
+L 0x49ED PASO_IZQUIERDA   Una casilla menos
+L 0x49EF PASO_ARRIBA_SUMA
+L 0x49F0 PASO_SUMA
+L 0x49F4 MAPA_6_ESPERA    Paso 6: espera y salta al estado 9, que prepara la fase
+
+D 0x4A01 0x4AB0 mapa_dibujo Las filas del mapa, una detras de otra: un byte de columna y detras las casillas, o un 0xFF si la fila va vacia. El 0x00 de 0x4AAF lo cierra. Son dieciseis filas, y la ultima es el rotulo ANTARCTICA (c)KONAMI
+D 0x4AB0 0x4AD9 mapa_recorrido Los cuarenta pasos del camino: nibble alto la direccion (0 arriba, 4 derecha, 8 abajo, C izquierda) y nibble bajo la casilla que se dibuja. El 0x20 de 0x4AD8 lo cierra
+D 0x4AD9 0x4B01 tabla_de_fases Las DIEZ fases, cuatro bytes cada una: centenas de metros, casilla del mapa donde empieza, y el tiempo en BCD. Cierra clavada en 0x4B01, donde vuelve a haber codigo. Salen 1500 m/100 s, 1700/120, 1100/80, 1200/80, 1200/80, 500/40, 2600/165, 1200/90, 1500/100 y 1200/90
+
+# =============================================================================
+# RANGOS DE DATOS QUE SE COMENTAN MAS ABAJO
+# =============================================================================
+
+D 0x411F 0x4122 tres_bytes_jp_cero Los tres bytes C3 00 00 que INIT copia encima del despachador. Ver la nota de 0x404C
+D 0x44DF 0x44E7 registros_vdp Los ocho registros del VDP: 02 E2 0E 7F 07 76 03 E4. Colores en 0x0000 y patrones en 0x2000, al reves de lo corriente; nombres en 0x3800, patrones de sprite en 0x1800 y atributos de sprite en 0x3B00. Sprites de 16x16 sin ampliar, y SCREEN 2
+D 0x5839 0x584A titulo_comprimido La pantalla de titulo: relleno y el rotulo SOFTWARE en la fila 10. Pasado por el descompresor son veinte casillas en dos sitios (VRAM 0x394A y 0x396C) y el flujo se acaba en 0x584A
+D 0x584A 0x588A mandos_de_la_demo LOS MANDOS GRABADOS DE LA DEMO. Sesenta y cuatro bytes, uno cada 32 fotogramas: 0x41BA los apunta y 0x4103 los va leyendo. La demo dura 0x073C pasos, asi que gasta 58 de los 64. Cada byte lleva los mismos bits que el joystick, y se ve: 0x01 arriba, 0x09 arriba y derecha, 0x11 arriba y gatillo... La partida de demostracion no la juega ninguna inteligencia, va grabada. Cierra clavada en 0x588A, la primera instruccion de MONTA_LA_FUENTE
+D 0x58DB 0x5DF2 fuente_comprimida La fuente y el logotipo de KONAMI, que van a los tres bancos
+D 0x5E22 0x6263 dibujos_banco1 Dibujos y colores del banco 1, comprimidos
+D 0x6263 0x6280 colores_de_pista_b LOS COLORES DE LA PISTA DEL SEGUNDO TIPO DE FASE: 29 bytes que descomprimen a 112 en la VRAM 0x0F78. Van EN PAREJA con los otros 29 de 0x6246-0x6262 -que son los del primer tipo y caen dentro del rango de arriba-, y 0x5044 elige entre las dos parejas mirando el bit 0 de la tabla de 0x5195 con la fase: o 0x5DE4 y 0x6246, o 0x5DEF y 0x6263. EL PUNTERO NO SE VE MIRANDO LAS INSTRUCCIONES DE AL LADO, y por eso el reconstructor se saltaba estos bytes: 0x5065 hace `ld de,06263h`, 0x5068 lo GUARDA EN LA PILA y quien lo usa es el `pop hl` de 0x506F, dos descompresiones despues. Es el mismo truco que la fuente en 0x58CF. Cierra clavado en 0x6280, donde empieza el remate del banco 1
+D 0x6280 0x628F dibujos_banco1_resto El remate del banco 1
+D 0x62C5 0x66C2 dibujos_banco2 Dibujos y colores del banco 2, comprimidos
+D 0x675C 0x6BE9 sprites_comprimidos Los patrones de sprite: los pinguinos, los peces y las focas
+D 0x7B38 0x7B44 tabla_de_notas Doce periodos, una octava cromatica: la desviacion respecto al temperamento igual es de 0,090 semitonos, y los doce bytes de al lado dan 15,8
+
+# =============================================================================
+# LA PARTIDA
+# =============================================================================
+#
+# 0x4B4A es un paso de partida, y se llama desde el estado 11 -y desde la demo-
+# una vez por fotograma. En orden: el sonido y el decorado, luego mirar si el
+# pinguino esta en el agua (0xE140) o cayendose (0xE142), y si no, moverlo con
+# los mandos, mirar los choques, avanzar la pista y la distancia.
+#
+# EL PINGUINO SON CUATRO SPRITES de 16x16 puestos en cuadro, o sea 32x32
+# pixeles. Sus atributos viven en 0xE078-0xE087 y se copian enteros a la VRAM
+# 0x3B28 en cada fotograma. La posicion de verdad es la del primero:
+#     0xE078  Y      0xE079  X      0xE07A  patron      0xE07B  color
+# y las otras tres entradas se sacan de esa sumando 16.
+
+L 0x4B01 MONTA_LA_FASE    Prepara la fase entera: borra las variables de pista, carga los graficos y monta el decorado
+C 0x4b01 Borra 0x130 bytes de variables de pista, obstaculos y sonido
+C 0x4b12 Periodo inicial 0x10, cerca del tope lento: cada fase arranca despacio
+C 0x4b22 Segun sea la fase par o impar, una pareja de casillas u otra
+C 0x4b33 Mientras se monta la fase no se puede empezar otra partida
+C 0x4b36 Los cuatro cargadores de graficos comprimidos
+C 0x4b42 Y el montaje de la pista
+L 0x4B2E FASE_CASILLAS
+
+B 0x4B4A ############################################################
+B 0x4B4A UN PASO DE PARTIDA
+B 0x4B4A ############################################################
+L 0x4B4A PASO_DE_PARTIDA  Todo lo que pasa en un fotograma de juego
+C 0x4b50 0xE140: esta en el agua, y entonces no se juega
+C 0x4b57 0xE142: se esta cayendo
+C 0x4b61 Los mandos
+C 0x4b67 El pez
+C 0x4b78 La distancia que queda y el decorado que toca
+
+D 0x4B84 0x4BAC poses_del_pinguino Diez poses de cuatro bytes: los cuatro patrones de sprite que forman el pinguino en cada postura. 0x4BD5 las reparte de cuatro en cuatro por los atributos
+
+L 0x4BAC MUEVE_PINGUINO   Lee los mandos y mueve al pinguino, o sigue el salto si ya estaba saltando
+C 0x4bac 0xE0F9 distinto de cero: hay un salto en marcha
+C 0x4bb4 Gatillo recien pulsado: empieza el salto
+C 0x4bbb Posicion actual: E la Y, D la X
+L 0x4BC2 PINGUINO_COLOCA
+L 0x4BC3 PINGUINO_SPRITES
+L 0x4BC6 PINGUINO_A_VRAM  Vuelca los cuatro atributos del pinguino a la VRAM
+C 0x4bc9 Sprites 10 a 13
+L 0x4BD5 PONE_POSE        Copia los cuatro patrones de la pose A a los atributos, saltando de cuatro en cuatro
+L 0x4BE1 POSE_BUCLE
+L 0x4BEC COLOCA_SPRITES   Reparte HL (Y en L, X en H) por los cuatro sprites, sumando 16 a la derecha y abajo
+
+B 0x4C04 ----------------------------------------------------------------------
+B 0x4C04 EL SALTO
+B 0x4C04 ----------------------------------------------------------------------
+B 0x4C04 Once pasos, uno cada cuatro fotogramas, contados en 0xE0F9.
+B 0x4C04 Mientras dura, la Y del pinguino se corrige con la curva de
+B 0x4C04 0x4C80, que sube cuatro pixeles y baja otros cuatro; y si el
+B 0x4C04 gatillo se pulso con una direccion metida, ademas se mueve al
+B 0x4C04 doble de velocidad hacia ese lado.
+L 0x4C04 EMPIEZA_SALTO    Gatillo: suena el salto y se apunta hacia donde va
+C 0x4c06 Sonido 2
+C 0x4c0a Bits 2 y 3: izquierda y derecha
+L 0x4C13 SALTO_SENTIDO
+L 0x4C18 SIGUE_SALTO      Un paso de salto cada cuatro fotogramas
+L 0x4C1E SALTO_PASO
+C 0x4c20 Once pasos y vuelta a cero
+L 0x4C26 SALTO_POSE
+L 0x4C34 SALTO_COLOCA
+C 0x4c39 La curva del salto, que se suma a la Y
+C 0x4c4b 0xE0FB dice si el salto lleva ademas movimiento lateral
+L 0x4C50 SALTO_TERMINA
+C 0x4c59 La sombra
+C 0x4c6a Treinta puntos por saltar (?)
+L 0x4C70 SALTO_A_LA_IZQUIERDA
+L 0x4C78 SALTO_A_LA_DERECHA
+
+D 0x4C80 0x4C8C curva_del_salto Doce correcciones con signo para la Y del pinguino: -4,-3,-3,-2,-1,-1,+1,+1,+2,+3,+3,+4. Es el arco del salto, y tambien el balanceo de andar
+
+L 0x4C8C MUEVE_A_LOS_LADOS  Mueve al pinguino a izquierda o derecha segun los bits 2 y 3 de los mandos
+C 0x4c8c Sin izquierda ni derecha no hay nada que hacer
+C 0x4c92 Las dos a la vez: se mantiene el sentido que llevaba
+L 0x4C9C MUEVE_IZQUIERDA  Una columna a la izquierda; el borde esta en X=0x14
+L 0x4CA6 MANTIENE_SENTIDO Con las dos direcciones metidas sigue por donde iba, mirando los bits de 0xE0FA
+L 0x4CB3 SENTIDO_CAMBIA
+L 0x4CB9 MUEVE_DERECHA    Una columna a la derecha; el borde esta en X=0xCC
+L 0x4CC3 ANIMA_ANDAR      Las tres poses de andar, una cada ocho fotogramas. La llama la interrupcion, no el paso de partida
+C 0x4cc3 Ni saltando ni en la escena de la base
+L 0x4CD1 ANDAR_PASO
+L 0x4CE2 ANDAR_POSE
+L 0x4CE9 COLOCA_SOMBRA    Los dos sprites de debajo del pinguino, que se separan siguiendo el arco del salto o el de la caida
+C 0x4cf5 La tabla del salto, apuntada un byte antes (ver la nota de abajo)
+C 0x4cfe Y la de la caida
+L 0x4D07 SOMBRA_SEPARA
+L 0x4D17 SOMBRA_GUARDA
+L 0x4D1E SOMBRA_A_VRAM
+C 0x4d21 Sprites 20 y 21
+
+B 0x4D2A ----------------------------------------------------------------------
+B 0x4D2A TRES TABLAS QUE SE APUNTAN UN BYTE ANTES DE EMPEZAR
+B 0x4D2A ----------------------------------------------------------------------
+B 0x4D2A El indice de las tres empieza en 1, nunca en 0, asi que en vez
+B 0x4D2A de restarle uno se apunta a la direccion anterior y se deja
+B 0x4D2A que el byte 0 caiga donde caiga: 0x4D29 es el ultimo byte de un
+B 0x4D2A `jp`, 0x4D33 es el ultimo dato de la tabla de encima y 0x4EEC
+B 0x4D2A es un RET. Ninguna de las tres lee su byte cero.
+D 0x4D2A 0x4D34 arco_del_salto Diez alturas, indexadas de 1 a 10 desde 0x4D29: lo que se separa la sombra en cada paso del salto
+D 0x4D34 0x4D49 arco_de_la_caida Veintiuna alturas, indexadas de 1 a 21 desde 0x4D33 con 0xE143, que es el contador de la caida. Cierra clavada en 0x4D49
+
+# =============================================================================
+# LOS CHOQUES
+# =============================================================================
+#
+# Los obstaculos viven en 0xE112, cuatro (o cinco a partir de la fase 5) fichas
+# de seis bytes:
+#     +0  en que paso va, de 1 a 15; 0 quiere decir que la ficha esta libre
+#     +1  el tipo, 0 a 6
+#     +2  puntero al trozo de dibujo que toca ahora, y que avanza solo
+#     +4  puntero a los cuatro bytes de choque de su fila de 0x52CB
+# El paso 13 es el que queda a la altura del pinguino: solo ahi se mira si
+# choca, comparando su X (0xE079) con los pares (posicion, ancho) de la ficha.
+
+L 0x4D49 MIRA_CHOQUES     Con el pinguino en el suelo: recorre las fichas y mira si alguna esta en el paso 13 a su altura
+C 0x4d50 A partir de la fase 5 hay una ficha mas
+C 0x4d5c El paso 13 es el que esta a la altura del pinguino
+C 0x4d6d La X del pinguino
+C 0x4d75 Tipos 5 y 6: se cogen y dan puntos
+C 0x4d82 El hueco de dentro: se cae al agua
+C 0x4d8a Y el borde: tropieza
+L 0x4D5B CHOQUES_FICHA
+L 0x4D7A CHOQUES_AGUJERO
+L 0x4D86 CHOQUES_BORDE
+L 0x4D8D CHOQUES_NADA
+L 0x4D8F CHOQUES_SIGUIENTE
+L 0x4D96 MIRA_CHOQUES_SALTANDO  Lo mismo, pero en el aire: solo mira una lista propia, la de 0x4DC8
+L 0x4DA0 SALTANDO_FICHA
+L 0x4DBC SALTANDO_SIGUIENTE
+L 0x4DC2 SALTANDO_ACIERTA
+C 0x4dc2 0xE132: se ha saltado por encima, y eso se premia en 0x4C6A
+
+D 0x4DC8 0x4DD2 choque_en_el_aire Cinco pares (posicion, ancho) para los choques con el pinguino saltando: 0x58/0x30, 0x18/0x30, 0x98/0x30, 0x2C/0x58 y 0x64/0x58
+
+L 0x4DD2 MIRA_EL_PEZ      Si el pinguino pisa el pez, suena, se lo lleva y suma 300 puntos
+C 0x4ddf 0xE0 en la Y: el pez no esta en la pantalla
+C 0x4de7 Tiene que estar a menos de diez pixeles en vertical
+C 0x4dfa Sonido 7
+C 0x4e09 Trescientos puntos
+L 0x4E0F MIRA_EL_BORDE    Choque con lo que haya en 0xE090 cuando esta abajo del todo
+L 0x4E26 TROPIEZA         El pinguino tropieza y rueda hacia el lado por el que iba
+C 0x4e26 Durante la escena de la base no se tropieza
+C 0x4e2d Sonido 3
+L 0x4E3A CHOCA            Choque de frente: se cae hacia atras
+C 0x4e42 Sonido 8
+L 0x4E50 PONE_CAIDA       Deja la caida montada en 0xE142 y le pone la pose
+C 0x4e53 Pose 0x20 o 0x24 segun el lado
+C 0x4e62 Y el periodo SUBE a 0x13, o sea que al caerse se queda a la minima velocidad
+L 0x4E69 SIGUE_CAIDA      Un paso de caida cada cuatro fotogramas: rueda de lado y baja
+C 0x4e73 Tres pasos y se acaba
+C 0x4e7b El desplazamiento de este paso, apuntado un byte antes
+C 0x4e8c Bit 2 de 0xE144: hacia que lado rueda
+L 0x4E86 CAIDA_LADO
+L 0x4E9E CAIDA_COLOCA
+C 0x4ea8 Y=0x90: ya ha llegado abajo
+L 0x4EAC CAIDA_ABAJO
+C 0x4eae Sonido 4
+L 0x4EC4 CAIDA_REPINTA
+L 0x4ECB CAIDA_CUENTA
+C 0x4ecf Veintiun pasos y se acabo la caida
+L 0x4ED9 TRES_A_LA_DERECHA  Tres columnas de golpe
+L 0x4EE2 TRES_A_LA_IZQUIERDA
+L 0x4EEC RET_COMPARTIDO   Un RET que ademas hace de base de la tabla de al lado
+
+D 0x4EED 0x4F01 rodada_de_la_caida Veinte desplazamientos con signo, indexados de 1 a 20 desde 0x4EEC con 0xE143. Son tres tramos casi iguales: cada vuelta el pinguino rueda un poco menos
+
+L 0x4F01 CAIDA_TERCER_PASO  El tercer paso de la caida, que ya es levantarse
+C 0x4f15 La misma curva que el salto
+C 0x4f47 Sonido 4
+L 0x4F0C CAIDA_LEVANTA
+
+B 0x4F4B ----------------------------------------------------------------------
+B 0x4F4B CAERSE AL AGUA
+B 0x4F4B ----------------------------------------------------------------------
+B 0x4F4B Al caer al agujero se encienden OCHO sprites en vez de cuatro
+B 0x4F4B -0xE068 a 0xE087, que se vuelcan de una vez a la VRAM 0x3B18-,
+B 0x4F4B y el pinguino se queda ahi hasta que se pulsa el gatillo. El
+B 0x4F4B tiempo sigue corriendo, que es el castigo.
+L 0x4F4B CAE_AL_AGUA      Se cae por el agujero: ocho sprites y a esperar
+C 0x4f4e 0xE140: esta en el agua
+C 0x4f5c Sonido 5
+L 0x4F65 AGUA_SPRITES
+L 0x4F6D DIBUJA_EN_EL_AGUA  Coloca al pinguino asomando por el agujero, en Y=0x9F, y le PONE LAS PATAS AMARILLAS
+C 0x4f7c Saca de la pantalla el sprite de la sombra...
+C 0x4f7f ...y con este par de bytes le cambia el COLOR a 0x0A, que es amarillo, y aparca el de al lado
+B 0x4F6D ----------------------------------------------------------------------
+B 0x4F6D LAS PATAS AMARILLAS, QUE SON LA SOMBRA PINTADA DE OTRO COLOR
+B 0x4F6D ----------------------------------------------------------------------
+B 0x4F6D Mientras el pinguino chapotea en el agujero se le ven dos patas
+B 0x4F6D amarillas moviendose. No hay un sprite nuevo para eso: es el
+B 0x4F6D MISMO atributo que hace de sombra, al que estas dos
+B 0x4F6D instrucciones le cambian el color de azul oscuro a amarillo.
+B 0x4F6D Luego 0x4FC6 le va poniendo los patrones 0x70, 0x74 y 0x78,
+B 0x4F6D que son las patas en tres posturas, y al salir del agua
+B 0x4F6D 0x5012 le devuelve el patron 0xA0 y el color 4.
+B 0x4F6D Es la misma idea que las banderas o la foca: el color de un
+B 0x4F6D sprite no esta en su dibujo, esta en su entrada de atributo,
+B 0x4F6D asi que se puede cambiar sin tocar un solo byte de grafico.
+L 0x4F85 VUELCA_OCHO_SPRITES  Los ocho atributos de 0xE068 a la VRAM, sprites 6 a 13
+L 0x4F94 SIGUE_EN_EL_AGUA  Manotea hasta que se pulsa el gatillo
+C 0x4f9b Los primeros 32 fotogramas no vale pulsar
+C 0x4fa8 Las patas cambian cada ocho fotogramas
+C 0x4faf Los tres patrones de pataleo: 0x70, 0x74 y 0x78
+L 0x4FC6 AGUA_ANIMA       Mueve las patas: el patron va cambiando entre 0x70, 0x74 y 0x78, y la posicion los sigue
+L 0x4FE2 SALE_DEL_AGUA    Con el gatillo se sale, y el periodo vuelve a 0x13: se sale del agua a la minima velocidad
+L 0x5000 SALIDA_SPRITES
+L 0x501C COGE_OBJETO      LAS BANDERAS DE LA PISTA. Los tipos 5 y 6 son las dos banderas que hay plantadas en el hielo -una inclinada a cada lado- y NO se esquivan: se recogen. Al tocarlas suena, se borra la ficha, se repinta el hueco y suman 500 puntos. Lo dice tambien el reparto de 0x4D6B: los tipos 0 a 4 se van al choque y solo el 5 y el 6 caen aqui. OJO, no confundirlas con la bandera que sube por el mastil de la base, que es otra cosa y va por sprites (0x55AD)
+C 0x5028 Los trece bytes del dibujo se copian a RAM para poder rematarlos con un cero
+C 0x5034 Sonido 6
+C 0x503d Quinientos puntos
+
+# =============================================================================
+# LA PISTA
+# =============================================================================
+#
+# La pista se dibuja en dos sitios distintos: el horizonte y las dos filas de
+# alrededor son cadenas fijas, y la fila 9 se compone en RAM. 0xE14E-0xE170 es
+# esa fila: dos bytes de destino (0x3920), 32 casillas y el 0xFF de remate. Al
+# desplazarla con LDIR o LDDR la pista gira a un lado o al otro, que es como se
+# hace la curva sin mover ni un pixel de la VRAM.
+
+L 0x5044 MONTA_LA_PISTA   Monta la pista de la fase: colores, cielo, hielo, decorados y la lista de lo que va saliendo
+C 0x5044 La fase elige la pareja de colores
+C 0x5059 Dos juegos de colores comprimidos, uno para cada tipo de fase
+C 0x5076 El cielo, con la casilla 7 o la 9
+C 0x5082 Y el hielo, con la 0x0F
+C 0x5099 Ocho bytes por fase: la lista de decorados que van saliendo
+L 0x5055 PISTA_COLORES
+L 0x5068 PISTA_DESCOMPRIME
+L 0x50C2 SIGUIENTE_DECORADO  Coge el siguiente decorado de la lista de la fase; 0xFF quiere decir que ya no hay mas
+C 0x50de Los cuatro grupos de decorado
+L 0x50DD DECORADO_GRUPO
+L 0x50F2 PINTA_DECORADO   Pinta un decorado: franjas, cadena y las dieciseis casillas que se guardan en 0xE1xx
+C 0x50f9 Los ceros se cambian por la casilla del cielo de esta fase
+L 0x50F9 DECORADO_CASILLAS
+L 0x5101 DECORADO_BUCLE
+L 0x510B PINTA_FILA_DE_PISTA  Escribe la fila compuesta en 0xE14E, que va siempre a la fila 9
+L 0x511F AVANZA_DECORADO  Cada 400 metros toca decorado nuevo
+L 0x5140 DECORADO_DIBUJA
+
+D 0x5145 0x5195 decorados_por_fase Ocho bytes por fase, diez fases: la lista de decorados que van saliendo. Un 0xFF acaba la lista y los 0x77 son relleno
+D 0x5195 0x519F color_por_fase Un byte por fase: con 0 el cielo es la casilla 7 y con 1 la 9. Cierra clavada en 0x519F, donde vuelve a haber codigo
+
+L 0x519F AVANZA_LA_PISTA  Al ritmo de la velocidad, va sacando los trozos de decorado y moviendo los obstaculos
+L 0x51B0 PISTA_GRUPO_B
+L 0x51B8 PISTA_RECARGA
+L 0x51B9 PISTA_SIGUIENTE
+L 0x51C0 PISTA_GRUPO_A
+L 0x51C3 PISTA_DIBUJA     Dibuja el trozo A de la tabla que apunta HL
+L 0x51CF PISTA_MIRA
+L 0x51DA MUEVE_OBSTACULOS Da un paso a cada ficha de obstaculo y dibuja el trozo que le toca
+C 0x51e0 Cuatro fichas, y cinco a partir de la fase 5
+C 0x51fb Quince pasos y la ficha vuelve a quedar libre
+C 0x5203 El trozo de dibujo que toca, que avanza en cada paso
+L 0x51E8 OBSTACULO_FICHA
+L 0x51F3 OBSTACULO_PASO
+L 0x5201 OBSTACULO_DIBUJA
+L 0x5215 OBSTACULO_SIGUIENTE
+
+L 0x5227 CREA_OBSTACULO   Cada cierto numero de pasos mete un obstaculo nuevo en la primera ficha libre
+C 0x522a Con menos de 0x186 metros por delante ya no salen mas
+C 0x5235 0xE10E es el periodo y 0xE10F la cuenta
+C 0x5260 Que obstaculo toca sale de la lista que dejo ELIGE_DECORADO
+C 0x5271 Bit 4: el obstaculo viene emparejado con otro
+C 0x5285 Con el pinguino en la mitad derecha, el obstaculo se corre uno
+L 0x524A CREA_BUSCA_FICHA
+L 0x5256 CREA_EN_ESTA
+L 0x5281 CREA_CORRE
+L 0x528C CREA_RELLENA
+L 0x52A8 CREA_PAREJA_FIN
+L 0x52AE CREA_NADA
+L 0x52B2 RELLENA_FICHA    Copia a la ficha el tipo, el puntero de dibujo y el de choque, sacados de la tabla de al lado
+
+D 0x52CB 0x52F5 tabla_de_obstaculos Los SIETE obstaculos: los tipos 0, 1 y 2 son los agujeros -de los que salen la foca y el pez-, el 3 y el 4 los dos monticulos con los que se choca, y el 5 y el 6 LAS DOS BANDERAS que se recogen por 500 puntos. Seis bytes cada uno: los dos primeros son el puntero al primer trozo de dibujo, y los cuatro siguientes los pares (posicion, ancho) con los que se mira el choque. Los siete dibujos caen dentro de los 92 trozos de 0x6BE9-0x7241, que es lo que confirma para que son. Cierra clavada en 0x52F5
+
+L 0x52F5 MIRA_LA_CURVA    Cada 512 metros mira en la tabla de nibbles que curva toca y monta el cambio
+C 0x5305 Dos curvas por byte: el acarreo dice si toca la mitad alta o la baja
+C 0x5334 El periodo de 0xE100, dividido por cuatro, marca cada cuantos fotogramas se desplaza la pista
+L 0x5316 CURVA_MONTA
+L 0x5322 CURVA_GUARDA
+L 0x532D CURVA_RITMO
+L 0x533F PINTA_HORIZONTE  Dibuja el horizonte que corresponde a la curva
+L 0x5342 PINTA_HORIZONTE_HL
+L 0x5351 DESPLAZA_LA_PISTA  Gira la fila de 32 casillas a un lado o al otro: eso es la curva
+C 0x535c Bit 0 de 0xE194: a que lado gira
+C 0x535f Hacia la izquierda, con LDIR
+C 0x536f Hacia la derecha, con LDDR
+L 0x536F DESPLAZA_DERECHA
+L 0x537D DESPLAZA_PINTA
+L 0x5399 CURVA_ENDEREZA
+C 0x53a1 Con menos de 0x145 metros la pista se endereza para llegar a la base
+L 0x53B6 ARRASTRA_PINGUINO  En las curvas el pinguino se va de lado solo, al ritmo de la velocidad
+L 0x53DB ARRASTRA_DERECHA
+
+D 0x53E1 0x5402 curvas_por_fase Sesenta y seis curvas en treinta y tres bytes, a nibble por curva: 0x5305 elige la mitad alta o la baja. Cierra con el 0xFF de 0x5401, justo delante de los punteros
+D 0x5402 0x5412 punteros_del_horizonte Ocho punteros a los siete dibujos de horizonte (dos apuntan al mismo). Cierra clavada en 0x5412, que es el primero de ellos
+D 0x5412 0x54C1 dibujos_del_horizonte Los siete horizontes, en el formato de las cadenas: recto, curva a un lado, curva al otro, y los cuatro de la llegada a la base. Todos escriben en las filas 10 y 11. Acaba clavado en 0x54C1
+
+# =============================================================================
+# LA LLEGADA A LA BASE
+# =============================================================================
+
+L 0x54C1 RETOCA_DECORADO  Con la pista torcida, cambia las casillas del decorado para que encajen
+L 0x54C9 RETOCA_LADO
+L 0x54D9 ANDA_HASTA_LA_BASE  Dieciseis pasos subiendo por la pantalla, interpolando la X entre donde estaba y donde esta la bandera
+C 0x54d9 Un paso cada cuatro fotogramas
+C 0x54df Con C=0xFF se calcula la X de destino; con C=0 se sigue con la que habia
+C 0x54f3 Multiplicar sumando: no hay instruccion de multiplicar
+C 0x550b Una linea mas arriba en cada paso
+C 0x5517 Dieciseis pasos
+L 0x54F3 BASE_MULTIPLICA
+L 0x5508 BASE_ANDA
+L 0x551B DIBUJA_LA_BASE   Empieza a dibujar la base
+L 0x551F DIBUJA_LA_BASE_PASO  Alterna los dos bloques de la escena de la base
+L 0x5531 DIBUJA_EL_POLO   El remate del POLO SUR: descomprime cuatro sprites mas (0x6B81 -> VRAM 0x1F80, o sea los patrones 0xF0, 0xF4, 0xF8 y 0xFC), copia sus cuatro atributos de 0x6746 encima de los numeros 7 a 10 -dos en amarillo y dos en negro- y dibuja un tercer bloque de casillas. Los cuatro completan al pinguino inclinado que dibujan las casillas: el pico y la mancha de la barriga en amarillo, el ala y el lomo en negro
+
+D 0x554C 0x5560 bloque_base_a Uno de los dos bloques que se van alternando para dibujar la base
+D 0x5560 0x556A bloque_base_b El otro
+D 0x556A 0x557F bloque_base_polo El tercero, el del remate de 0x5531
+
+L 0x557F MONTA_LA_BASE    Escribe el nombre de la base y descomprime su bandera en los patrones de sprite
+C 0x557f Los dibujos de la base, a la VRAM 0x1100
+C 0x5588 El nombre que toca, de la tabla de las diez fases
+C 0x559a La bandera, indexada aparte con 0xE0E0
+C 0x55aa VRAM 0x1F40: los patrones de sprite
+C 0x55b0 Y detras de la bandera van los dos colores
+L 0x55BB SUBE_LA_BANDERA  Sube la bandera dos pixeles por llamada hasta el tope del mastil. OJO CON DONDE SE PARA: el `cp 036h / ret z` se vuelve SIN GUARDAR el valor nuevo, asi que la bandera nunca llega a Y=0x36; se queda en 0x38. Medido en la llegada a Francia de la partida grabada: 0x50, 0x48, 0x3E y 0x38, y ahi se queda clavada
+L 0x55CC BANDERA_A_VRAM   Los TRES sprites de la bandera, a la VRAM. Son doce bytes, o sea tres atributos: el patron 0xE8 con el primer color, el 0xEC con el segundo, y el 0xE4 con blanco fijo. Ese tercero no viene en el flujo comprimido -sale de la carga general de sprites- y es un rectangulo blanco macizo de 16x12 que hace de fondo. Y como en un MSX el sprite de numero mas bajo va DELANTE, el orden de dibujo es blanco, segundo color y primer color encima
+
+D 0x55D9 0x55ED punteros_de_las_bases Diez punteros, uno por fase, a los nombres de las bases. Cierra clavada en 0x55ED, que es la primera cadena; con ocho, nueve, once o doce entradas no cierra
+D 0x55ED 0x565C nombres_de_las_bases OCHO cadenas para diez fases: JAPAN, AUSTRALIA, FRANCE, NEW ZEALAND, ARGENTINA, UNITED KINGDOM, THE SOUTH POLE y USA. El reparto que sale de la tabla de arriba es FRANCE, USA, THE SOUTH POLE, USA, USA, ARGENTINA, UNITED KINGDOM, JAPAN, AUSTRALIA y AUSTRALIA. NEW ZEALAND (0x5610..0x561F) NO LA VISITA NADIE: no esta en la tabla, ninguna instruccion la apunta, y ninguna de sus dieciseis direcciones aparece como palabra en los 16 KB. En la PRIMERA version japonesa del cartucho si se visita, y es la fase 4; ver la pagina de las versiones. Los dos primeros bytes de cada cadena son el destino en la tabla de nombres de la VRAM, o sea el centrado: 0x3AC8 para las dos de catorce letras y 0x3ACE para USA
+D 0x565C 0x5670 punteros_de_banderas Diez punteros a los graficos de bandera. Cierra clavada en 0x5670
+D 0x5670 0x57B7 banderas_comprimidas Siete banderas distintas para diez ranuras. Los diez flujos miden entre 11 y 59 bytes y TODOS descomprimen a 64 bytes exactos, que son dos sprites de 16x16; detras de cada uno van sus dos colores
+D 0x57B7 0x5839 rotulos Los rotulos de pantalla, en el formato de las cadenas: el panel (1P, HI, STAGE, TIME), (c)KONAMI 1984, PLAY SELECT con JOYSTICK y KEYBOARD, y TIME OUT
+
+# =============================================================================
+# LA FUENTE Y LOS GRAFICOS
+# =============================================================================
+#
+# Todo el dibujo del juego va comprimido y se descomprime a la VRAM en cuanto
+# empieza la fase. Son cuatro tandas -0x5DF2, 0x628F, 0x6756 y 0x66C2- y entre
+# las cuatro llenan los tres bancos de patrones y de colores.
+
+L 0x588A MONTA_LA_FUENTE  Monta la fuente y los colores en los tres bancos de la pantalla. OJO: que la fuente se escriba tres veces NO quiere decir que los tres bancos acaben iguales. Cada escena descomprime luego sus dibujos ENCIMA, banco por banco, y comparando los tres en una VRAM de verdad solo quedan iguales DIECINUEVE casillas: la 0x00-0x0F, que son los cuadrados de color liso, y la 0xFD-0xFF, que estan vacias. Cada tercio de la pantalla tiene su propio juego de 256 casillas, y por eso render_tiles.py saca una hoja por banco y no una para todo
+L 0x589C MONTA_UN_BANCO   Un banco: los dieciseis primeros caracteres en color liso, el resto blanco sobre negro, y encima la fuente
+C 0x589e Los caracteres 0 a 15 se pintan de un color liso cada uno: son los que se usan para rellenar el cielo y el hielo
+C 0x58ac El resto del banco, blanco sobre negro
+C 0x58b4 Y ahora los dibujos
+C 0x58bc La misma tira veintidos veces
+C 0x58c7 Los patrones del banco que toca
+L 0x58A0 BANCO_CARACTER
+L 0x58A2 BANCO_LINEA
+L 0x58BC BANCO_REPITE
+
+L 0x5DF2 CARGA_BANCO_1    Descomprime los dibujos del banco 1
+C 0x5dfe Este va espejado: la mitad derecha del dibujo se saca dandole la vuelta a los bits de la izquierda
+C 0x5e01 Sin `ld hl` delante: sigue con el flujo que quedo
+L 0x628F CARGA_BANCO_2    Descomprime los dibujos del banco 2
+L 0x6756 CARGA_SPRITES    Descomprime los patrones de sprite
+L 0x66C2 MONTA_SPRITES_PARTIDA  Monta la tabla de atributos de sprite de la partida
+L 0x66C7 MONTA_SPRITES_BASE     La de la escena de la base
+L 0x66CA MONTA_SPRITES    Compone en 0xE050 los 128 bytes de atributos a partir de una lista (cuantos, y los cuatro bytes) y los vuelca a la VRAM
+L 0x66D1 SPRITES_BORRA
+L 0x66D8 SPRITES_BUCLE
+L 0x66E3 VUELCA_ATRIBUTOS Copia los 128 bytes de 0xE050 a la tabla de atributos de sprite
+
+D 0x66EF 0x672C atributos_de_partida La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es un SOL de puntas- y color amarillo, que no se ve nunca. COMPROBADO QUE ES UN SOL Y QUE SE VERIA: parcheando en una COPIA del cartucho los dos bytes de su posicion (0x6709 y 0x670A, la Y y la X) para sacarlo al cielo, aparece un sol amarillo de puntas sobre el azul, sin tocarle ni el dibujo ni el color. La captura y el cartucho parcheado estan fuera del repositorio, en work/, porque esto NO es una modificacion del juego sino la forma de ver lo que el juego tiene y no ensena: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia. MEDIDO sobre los diez minutos de partida grabada con un punto de observacion de escritura en 0xE088-0xE08B (tools/omsx_atributo14.tcl): las UNICAS cuatro cosas que lo tocan son barridos de la tabla entera -el ldir de 0x446E, el copiador de cuatro bytes de 0x45BE, BORRA_SPRITES en 0x4606 y el borrado previo de 0x66D1-, y ninguna va a por el. Al acabar la partida su entrada en la VRAM sigue siendo Y=0xE0, patron 0xD4, color 0x0A: cargado, coloreado y aparcado fuera del encuadre. El control -los mismos puntos en el atributo 13- recibe ademas 4426 y 41740 escrituras de las rutinas del pinguino, asi que los ceros del 14 son datos y no instrumentacion rota. Y de propina el control mide una cosa que estaba deducida: el 13 recibe 12 escrituras MAS que el 14 desde 0x45BE, que son las tres salidas del agua por cuatro bytes, o sea la cadena que rehace los sprites parandose justo antes del 14
+D 0x672C 0x6756 atributos_de_base La misma lista para la escena de la base, pero de OCHO entradas en vez de treinta: 0x66CB pone los 128 bytes a cero antes de aplicarla, asi que del atributo 8 en adelante no queda nada. Cierra clavada en 0x6756, donde vuelve a haber codigo. Sus bytes de 0x6746 los copia ademas 0x5537. Y AQUI ESTA EL UNICO SPRITE DEL PINGUINO QUE SE GIRA Y SONRIE: el atributo 7, con el patron 0xD0 en amarillo, que es el PICO. Todo lo demas de ese pinguino -la cara, los ojos, la boca roja y hasta la sombra azul de debajo- son CASILLAS, no sprites. Comprobado a t=126,6 de la partida grabada de dos maneras: la tabla de atributos solo tiene ocho entradas puestas, y comparando el fotograma real con la pantalla pintada SOLO con casillas quedan 224 pixeles sin explicar, que son 96+72+24 de la bandera y 32 del pico. Y 32 son exactamente los bits encendidos del patron 0xD0
+
+# =============================================================================
+# LA PISTA POR DENTRO
+# =============================================================================
+
+D 0x6BE9 0x7241 trozos_de_pista Los 92 trozos incrementales de la pista, en el mismo formato que los decorados: cada uno pone entre una y seis casillas, o sea que son INCREMENTOS y no pantallas enteras. Se consumen en cadena, uno por paso, y asi va creciendo lo que se acerca. Los siete obstaculos de 0x52CB empiezan cada uno en uno de estos trozos
+D 0x7241 0x7519 arbol_de_decorados Cuatro punteros en 0x7241 llevan a cuatro grupos, cada uno con otros cuatro, y los dieciseis bloques de abajo embaldosan 0x732D-0x7518 sin dejar hueco. Pasados por el interprete de 0x4533 dibujan los bordes de la pista
+
+L 0x7519 DIBUJA_LA_META   En los ultimos 100 metros, cada 32 dibuja un trozo mas de la llegada
+C 0x7519 Solo con la centena a cero, o sea en los ultimos cien metros
+C 0x7520 Y solo en los multiplos de 32
+C 0x7557 Igual que el interprete de bloques, pero con las casillas corridas 0x40
+L 0x753E META_FILA
+L 0x754F META_CASILLA
+
+D 0x755F 0x7569 punteros_de_la_meta Cinco punteros, uno por cada tramo de 32 metros del final. Cierra clavada en 0x7569, que es el primero de ellos
+D 0x7569 0x75EF bloques_de_la_meta Los cinco bloques que va dibujando 0x7519
+
+L 0x75EF SUELTA_EL_PEZ    Cuando un agujero llega al paso 7, sale el pez de dentro
+C 0x75f6 Las tres fichas de obstaculo
+C 0x75fc Solo los tipos 0, 1 y 2, que son los agujeros
+C 0x7604 Y solo en el paso 7
+L 0x75FB PEZ_BUSCA
+L 0x7607 PEZ_SIGUIENTE
+L 0x760F PEZ_SALE
+C 0x7618 Antes de que se cumpla el plazo de 0xE18A el pez sale; despues ya no
+L 0x7629 PEZ_LADO
+L 0x7632 PEZ_MONTA       Monta la entrada de atributo del pez. El DIBUJO sale de aqui: 0x90 si mira a un lado y 0x80 si al otro
+C 0x7644 CUIDADO CON ESTE `ld bc,07a66h`: 0x66, 0x64 y 0x92 son las X de los tres saltos -corto, medio y largo-, NO patrones. El patron es el que quedo en D unas instrucciones antes
+L 0x764D PEZ_SALTO_CORTO
+L 0x764F PEZ_SALTO_MEDIO
+L 0x7651 PEZ_GUARDA
+L 0x7657 PEZ_TARDE        Ya no da tiempo: se marca el agujero segun su tipo
+L 0x7665 PEZ_TIPO_0
+L 0x7668 PEZ_TIPO_1
+L 0x766B MUEVE_EL_PEZ     Un paso del pez cada dos fotogramas
+L 0x7670 PEZ_PASO         Lo coloca, lo copia a la VRAM y le lleva el arco del salto
+C 0x7673 0xE188 es lo que mira MIRA_EL_PEZ para saber si el pinguino lo pisa
+C 0x7679 Sprite 15
+L 0x769A PEZ_ARCO
+L 0x76BB PEZ_SUBE
+L 0x76BE PEZ_CAE         Al llegar al paso 0x10 del arco le SUMA 8 al byte del patron (0xE08E): el pez cambia al dibujo grande. Con eso y el bit 2 que voltea 0x76CD salen OCHO dibujos, cuatro por lado: 0x80-0x8C mirando a un lado y 0x90-0x9C al otro. Los ocho estan MEDIDOS en la partida grabada (work/sprites_medidos.txt), siempre en el color del atributo 15
+L 0x76C5 QUITA_EL_PEZ     Lo saca de la pantalla poniendole Y=0xE0
+L 0x76CD PEZ_GIRA        Cada 16 fotogramas le da la vuelta al BIT 2 del patron y le deja los dos de abajo a cero: eso es lo que anima al pez. Los tres `srl` mas el `ccf` mas los tres `rla` dejan (patron & 0xF8) | (bit2 invertido) << 2
+L 0x76E0 AJUSTA_DIFICULTAD  De la velocidad y de la fase sale cada cuantos pasos aparece el siguiente obstaculo
+C 0x76e8 0xE148: la mitad del periodo, que es el ritmo de los sprites de fondo
+C 0x76fa De la fase 10 en adelante, cuatro menos; de la 20, otros cuatro
+C 0x770a Y lo mismo por tramos de velocidad
+L 0x770A DIFICULTAD_VELOCIDAD
+L 0x771A DIFICULTAD_GUARDA
+L 0x771E DIFICULTAD_MENOS_12
+L 0x7722 DIFICULTAD_MENOS_8
+L 0x7726 DIFICULTAD_MENOS_4
+
+B 0x772B ----------------------------------------------------------------------
+B 0x772B LA VELOCIDAD
+B 0x772B ----------------------------------------------------------------------
+B 0x772B Los bits 0 y 1 de los mandos son arriba y abajo, y los cuatro
+B 0x772B destinos de la tabla son: no tocar nada, no hace nada; ARRIBA
+B 0x772B ACELERA y ABAJO FRENA; y las dos a la vez, tampoco hace nada.
+B 0x772B En 0xE100 no vive la velocidad sino su PERIODO: los fotogramas
+B 0x772B que pasan entre dos avances. Cuanto mas alto, mas lento. Va de
+B 0x772B 8 -a todo correr- a 0x13, y por eso acelerar es RESTARLE y
+B 0x772B frenar es SUMARLE. Lo confirman sus tres usos: 0x46DC recarga
+B 0x772B con el la mitad de un contador descendente, 0x5334 con su
+B 0x772B cuarta parte, y el velocimetro tiene que INVERTIRLO con un cpl
+B 0x772B (0x7781) para pintar la barra.
+B 0x772B Y no cuestan lo mismo: ganar un escalon lleva doce fotogramas y
+B 0x772B perderlo solo cuatro, o sea que se FRENA TRES VECES MAS RAPIDO
+B 0x772B de lo que se acelera. Cada rutina pone a cero el contador de la
+B 0x772B otra, asi que cambiar de idea empieza la cuenta de nuevo.
+L 0x772B MANDA_LA_VELOCIDAD  Despacha por arriba/abajo para acelerar o frenar
+D 0x7733 0x773B tabla_velocidad Los CUATRO destinos, del CALL de 0x7730: nada, acelerar, frenar, nada
+L 0x773B ACELERA          Un escalon MENOS de periodo cada doce fotogramas, hasta 8: el tope de velocidad
+L 0x7753 FRENA            Un escalon MAS cada cuatro fotogramas, hasta 0x13
+L 0x7769 NI_UNA_COSA_NI_OTRA
+L 0x776A PINTA_VELOCIMETRO  Las seis casillas del velocimetro, en la fila 0
+C 0x776a Cayendose o en el agua, la barra se queda a cero
+C 0x7791 Seis casillas
+L 0x7789 VELOCIMETRO_LLENA
+L 0x778E VELOCIMETRO_CASILLA
+L 0x7795 VELOCIMETRO_VACIA
+L 0x7799 VELOCIMETRO_A_VRAM
+L 0x77A5 LAS_NUBES        Las cuatro nubes del cielo. Suben por la pantalla al ritmo de la velocidad, se van abriendo hacia los lados y crecen de patron por el camino: es la perspectiva de acercarse a ellas y pasarles por debajo. Se apagan al llegar arriba (Y=8) y vuelven a salir
+C 0x77a5 En la demo no salen
+C 0x77bb Donde empieza cada uno
+C 0x77df El ritmo al que suben, que es la mitad del periodo del pinguino
+L 0x77B3 NUBE_NUEVA
+L 0x77D4 NUBE_SIGUIENTE
+L 0x77EB MUEVE_LAS_NUBES
+L 0x77FB NUBE_PASO
+C 0x77f4 EL 0xD1 NO ES UN PATRON: DE apunta al byte de la Y, asi que esto saca la nube por abajo cuando ha llegado arriba del todo. Los patrones de nube son solo TRES -0xE0 al asomar, 0xDC y 0xD8 segun se acerca-, y el color 0x0F se lo pone a mano 0x77CE
+L 0x781B NUBE_CRECE
+L 0x781D NUBE_RECUPERA
+L 0x781E NUBE_AVANZA
+
+D 0x7836 0x783A nubes_desplazamientos Cuanto se corre de lado cada nube en cada paso: -1, +1, -2 y +2. Con la Y subiendo y la X abriendose, las cuatro se separan del centro segun se acercan
+D 0x783A 0x7842 nubes_posiciones Por donde asoma cada nube: cuatro parejas (Y, X), las cuatro en la misma columna y a alturas distintas
+
+L 0x7842 ANIMA_LA_FOCA    Saca la foca del agujero: ocho pasos, del 7 al 14, con su fotograma sacado de la tabla de 0x78C1. Dibujada, se la reconoce: primero asoma un filo, luego la cabeza, y del paso 10 en adelante el cuerpo entero con las dos aletas
+C 0x7848 0xE181 apunta al byte de ESTADO de la ficha, asi que esto es EL PASO en que va, no el tipo
+C 0x785b paso-15+8 = paso-7: ocho entradas, para los pasos 7 a 14
+C 0x78ae Cuatro sprites, y si hace falta tambien los otros cuatro
+L 0x785B FOCA_FOTOGRAMA   Coge el fotograma del paso en que va
+L 0x787B FOCA_PASO
+L 0x7886 FOCA_AVANZA
+L 0x7893 FOCA_AVANZA_UNO
+L 0x7897 FOCA_COPIA
+L 0x789B FOCA_ENTRADA
+L 0x789D FOCA_BYTE       Copia Y, X y patron, y se SALTA el cuarto byte del atributo: el color. Por eso el color de la foca no esta en el fotograma sino en la lista de atributos de 0x66EF, que le deja el primer sprite en NEGRO y los otros tres en ROJO OSCURO. Dibujada asi es una foca con la cara oscura, porque el negro es el atributo 16 y en un MSX el numero mas bajo va delante
+L 0x78B9 FOCA_A_VRAM
+
+D 0x78C1 0x78D1 punteros_de_la_foca Ocho punteros, uno por cada paso del 7 al 14. 0x785B los indexa con paso-7, no con el tipo de obstaculo: leido de la otra manera salen punteros que se van fuera del cartucho. Cierra clavada en 0x78D3, que es el primero de ellos
+D 0x78D1 0x79BD fotogramas_de_la_foca Los ocho fotogramas, cada uno con TRES variantes que elige 0x7886 con el bit que 0x7657 encendio en 0xE183. Los tres primeros pasos llevan dos sprites (18 bytes = 3 x 2 x 3) y los cinco siguientes cuatro (36 bytes); de cada sprite van tres bytes: Y, X y patron. LAS TRES VARIANTES LLEVAN EL MISMO DIBUJO y solo cambian la X: una sale por el centro (0x78), otra se va a la derecha y otra a la izquierda, separandose mas en cada paso. Y del paso 10 al 14 los cuatro patrones son siempre C0, C4, C8 y CC: lo unico que cambia es la Y, que baja de 0x7B a 0xA1. La foca no se deforma, se acerca
+D 0x79BD 0x79C9 foca_escondida El fotograma del paso 15, con las cuatro Y a 0xE0 para sacarla de la pantalla. Cierra clavado en 0x79C9, donde vuelve a haber codigo
+
+# =============================================================================
+# EL SONIDO
+# =============================================================================
+#
+# Tres canales, uno por voz del PSG, con diez bytes de estado cada uno en
+# 0xE010, 0xE01A y 0xE024:
+#     +0 lo que queda de la nota      +5 la octava
+#     +1 lo que dura una nota         +6 el decaimiento
+#     +2 el sonido que suena          +7 el volumen
+#     +3 puntero dentro del flujo     +8 la envolvente
+#                                     +9 las vueltas dadas
+#
+# EL FLUJO: cada nota es UN BYTE, con el nibble bajo la nota de la escala
+# cromatica -indice en la tabla de doce periodos de 0x7B38- y el nibble alto la
+# duracion -indice en la OTRA tabla de doce, la de 0x7B44-. Esa segunda tabla
+# no es una escala aunque lo parezca por estar al lado: son duraciones.
+# Los bytes de control son 0xFD (cambia octava y decaimiento), 0xFE (repite) y
+# 0xFF (se acabo).
+#
+# EL NUMERO DE SONIDO ES SU PRIORIDAD: 0x79EB compara el que se pide con el que
+# suena y si es menor lo deja pasar. Y el numero dice ademas cuantos canales se
+# lleva: por debajo de 0x8A uno, hasta 0x8C dos, y de ahi arriba los tres.
+
+L 0x79C9 PIDE_SONIDO      Pone en marcha el sonido A, si su numero manda mas que el que ya suena
+L 0x79D7 PIDE_SONIDO_SIN_GUARDAR
+C 0x79dc Menos de 0x8A: un canal
+C 0x79e0 Menos de 0x8C: dos
+C 0x79e4 De ahi arriba: los tres
+C 0x79eb Si el que suena manda mas, no se toca
+C 0x79f2 La tabla de flujos
+L 0x79E7 SONIDO_UN_CANAL
+L 0x79EB SONIDO_PRIORIDAD
+L 0x79F8 SONIDO_MONTA_CANAL
+L 0x7A11 SONIDO_NO
+L 0x7A12 SONIDO_REPITE    El 0xFE: repite el trozo las veces que diga el byte de detras
+L 0x7A27 SONIDO_ENCADENA  Al acabarse un flujo puede arrancar otro
+L 0x7A30 ATIENDE_SONIDO   Un paso de los tres canales; la llama la interrupcion
+C 0x7a32 Respeta el mezclador y solo se queda con los bits que le importan
+C 0x7a3f Los tres bloques de estado, de diez en diez bytes
+L 0x7A49 SONIDO_CANAL
+L 0x7A5A PASO_DE_CANAL
+L 0x7A61 LEE_NOTA         Saca del flujo la nota que toca
+C 0x7a68 0xFE repite, 0xFF acaba
+L 0x7A82 NOTA_NORMAL
+L 0x7A9C NOTA_VOLUMEN
+L 0x7AAA CALLA_CANAL
+L 0x7AB1 NOTA_DECAE       Mientras dura la nota le va bajando el volumen
+L 0x7AC6 DECAE_MAS
+L 0x7AC9 DECAE_VOLUMEN
+L 0x7AD2 ESCRIBE_VOLUMEN
+L 0x7ADA NOTA_CONTROL     El 0xFD: cambia la octava y el decaimiento
+L 0x7AEE NOTA_MONTA
+L 0x7B15 NOTA_PERIODO
+L 0x7B29 NOTA_OCTAVA      Subir de octava es doblar el periodo tantas veces como diga
+L 0x7B2C ESCRIBE_PERIODO  Los dos registros del PSG de este canal
+
+D 0x7B37 0x7B38 byte_suelto Un 0xFF que no apunta nadie, justo delante de la tabla de notas
+D 0x7B44 0x7B52 tabla_de_duraciones Las doce duraciones, indexadas por el nibble alto de cada nota. Van de 5 a 100 fotogramas y NO son una escala, aunque esten pegadas a la que si lo es
+D 0x7B52 0x7B82 punteros_de_sonido Veinticuatro punteros a los flujos. Cierra clavada en 0x7B82, que es el primero. El del sonido 0 apunta fuera de la ROM porque no se pide nunca, y los tres ultimos apuntan al 0xFF de 0x7B82: el sonido 0x95, el que llama 0x44BD al arrancar, es un flujo que se acaba en el primer byte, o sea el silencio
+D 0x7B82 0x7EB7 flujos_de_sonido Los veintiun flujos de musica y efectos
+D 0x7EB7 0x8000 relleno_final Lo que sobra del cartucho hasta los 16 KB, que son 306 bytes de 0xFF... salvo LOS ULTIMOS VEINTITRES (0x7FE9-0x7FFF), que no son 0xFF, no son texto descifrable y no los apunta nadie. Las otras dos versiones tienen ahi 0xFF hasta el final, asi que es cosa de esta. SIN IDENTIFICAR
+
+# --- Los quince destinos internos que faltaban por nombrar.
+L 0x44C3 PONE_REGISTROS_VDP  Copia los ocho registros a 0xE038 y los manda al VDP con WRTVDP
+L 0x4D58 CHOQUES_EMPIEZA
+L 0x4E4F CAIDA_RECUPERA
+L 0x4E59 CAIDA_POSE
+L 0x5107 DECORADO_CASILLA
+L 0x5235 CREA_CUENTA
+L 0x54C6 RETOCA_DECORADO_B  La otra entrada, con el otro juego de casillas
+L 0x54D5 RETOCA_ESCRIBE
+L 0x552D BASE_DIBUJA
+L 0x7547 META_APUNTA
+L 0x763C PEZ_ALTURA
+L 0x7698 PEZ_ARCO_SUBE
+L 0x76B7 PEZ_ARCO_BAJA
+L 0x76F6 DIFICULTAD_FASE
+L 0x7706 DIFICULTAD_RESTA

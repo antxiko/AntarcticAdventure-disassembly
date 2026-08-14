@@ -1,5 +1,12 @@
 # Antarctic Adventure (Konami, 1984, MSX) — a commented disassembly
 
+> **Work in progress.** There are several different builds of this cartridge,
+> and we are currently going back over which is which and what changes between
+> them. Until that review is closed, what is said here about **versions and
+> regions** may change. The listing, the numbers and everything else still come
+> from the binary and are reproducible with `make`. The complete data will be
+> published once it is verified.
+
 A 16 KB Konami cartridge from 1984, taken apart byte by byte. All 16,384
 bytes are bounded and owned, and inside there's a penguin crossing Antarctica
 between ten research bases, an attract mode that plays back from a recording
