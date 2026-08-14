@@ -294,7 +294,7 @@ L_41D5:
 	call L_4098		;41d8
 
 ; ----------------------------------------------------------------------
-; DATOS tabla_de_saltos_41DB: Los 4 destinos del CALL de 0x41D8. Cierra clavada contra su primer destino
+; DATOS tabla_de_saltos_41DB: Los 4 destinos del CALL de 0x41BE. Cierra clavada contra su primer destino
 ;   0x41db..0x41e3  (8 bytes)
 ; ----------------------------------------------------------------------
 	defb 0e3h,041h,0f4h,041h,007h,042h,037h,042h	; 41db  .A.A.B7B
@@ -453,7 +453,7 @@ L_42F8:
 	call L_4098		;42fb
 
 ; ----------------------------------------------------------------------
-; DATOS tabla_de_saltos_42FE: Los 8 destinos del CALL de 0x42FB. Cierra clavada contra su primer destino
+; DATOS tabla_de_saltos_42FE: Los 8 destinos del CALL de 0x42E1. Cierra clavada contra su primer destino
 ;   0x42fe..0x430e  (16 bytes)
 ; ----------------------------------------------------------------------
 	defb 00eh,043h,021h,043h,061h,043h,06fh,043h,08ch,043h,0b3h,043h,0bch,043h,0e3h,043h	; 42fe  .C!CaCoC.C.C.C.C
@@ -662,7 +662,7 @@ L_4471:
 	ret			;4476
 
 ; ----------------------------------------------------------------------
-; DATOS valores_iniciales: Los nueve bytes que 0x4470 copia a 0xE0E0: fase 1, indice 0, y el resto a cero salvo 0xE0E4=2 y 0xE0E6=0x17. Solo los cinco primeros se usan: 0x425B machaca la distancia y el tiempo en cuanto empieza la fase
+; DATOS valores_iniciales: Los nueve bytes que 0x4456 copia a 0xE0E0: fase 1, indice 0, y el resto a cero salvo 0xE0E4=2 y 0xE0E6=0x17. Solo los cinco primeros se usan: 0x4241 machaca la distancia y el tiempo en cuanto empieza la fase
 ;   0x4477..0x4480  (9 bytes)
 ; ----------------------------------------------------------------------
 	defb 001h,000h,000h,000h,002h,000h,017h,000h,000h	; 4477  .........
@@ -1186,13 +1186,13 @@ L_4762:
 	ret			;476d
 
 ; ----------------------------------------------------------------------
-; DATOS decorado_por_fase: Dos bytes por fase, diez fases: 0x474A los indexa y el bit 4 de la distancia elige cual de los dos. Acaba justo donde empiezan las listas
+; DATOS decorado_por_fase: Dos bytes por fase, diez fases: 0x4731 los indexa y el bit 4 de la distancia elige cual de los dos. Acaba justo donde empiezan las listas
 ;   0x476e..0x4782  (20 bytes)
-; DATOS listas_de_decorado: Cinco listas de ocho bytes. Es a donde apuntan los veinte punteros de 0x47D7, y acaban clavadas donde empieza la tabla de fases
+; DATOS listas_de_decorado: Cinco listas de ocho bytes. Es a donde apuntan los veinte punteros de 0x47BE, y acaban clavadas donde empieza la tabla de fases
 ;   0x4782..0x47aa  (40 bytes)
-; DATOS decorado_puntero_por_fase: Diez punteros, uno por fase, que apuntan DENTRO de la tabla de al lado con ventanas que se solapan. 0x4762 lo indexa
+; DATOS decorado_puntero_por_fase: Diez punteros, uno por fase, que apuntan DENTRO de la tabla de al lado con ventanas que se solapan. 0x4749 lo indexa
 ;   0x47aa..0x47be  (20 bytes)
-; DATOS decorado_punteros: Veinte punteros a las cinco listas. Cierra clavado en 0x47FF, donde vuelve a haber codigo
+; DATOS decorado_punteros: Veinte punteros a las cinco listas. Cierra clavado en 0x47E6, donde vuelve a haber codigo
 ;   0x47be..0x47e6  (40 bytes)
 ; ----------------------------------------------------------------------
 	defb 080h,000h,0a0h,0a0h,050h,050h,0e0h,0e0h,050h,050h,000h,020h,0e0h,0e0h,020h,020h	; 476e  ....PP..PP. ..  
@@ -1245,7 +1245,7 @@ L_47F8:
 	ret			;481f
 
 ; ----------------------------------------------------------------------
-; DATOS duracion_sorpresa: Diez bytes, uno por fase: cuanto dura lo que enciende 0x4811. La fase 1 lleva 7 y las demas entre 2 y 6
+; DATOS duracion_sorpresa: Diez bytes, uno por fase: cuanto dura lo que enciende 0x47F8. La fase 1 lleva 7 y las demas entre 2 y 6
 ;   0x4820..0x482a  (10 bytes)
 ; ----------------------------------------------------------------------
 	defb 007h,002h,002h,003h,003h,004h,004h,005h,006h,006h	; 4820  ..........
@@ -1513,9 +1513,9 @@ L_49C3:
 ; ----------------------------------------------------------------------
 ; DATOS mapa_dibujo: Las filas del mapa, una detras de otra: un byte de columna y detras las casillas, o un 0xFF si la fila va vacia. El 0x00 de 0x4AAF lo cierra. Son dieciseis filas, y la ultima es el rotulo ANTARCTICA (c)KONAMI
 ;   0x49d0..0x4a7a  (170 bytes)
-; DATOS mapa_recorrido: Los cuarenta pasos del camino: nibble alto la direccion (0 arriba, 4 derecha, 8 abajo, C izquierda) y nibble bajo la casilla que se dibuja. El 0x20 de 0x4AD8 lo cierra
+; DATOS mapa_recorrido: Los cuarenta pasos del camino: nibble alto la direccion (0 arriba, 4 derecha, 8 abajo, C izquierda) y nibble bajo la casilla que se dibuja. El 0x20 de 0x4AA2 lo cierra
 ;   0x4a7a..0x4aa3  (41 bytes)
-; DATOS tabla_de_fases: Las DIEZ fases, cuatro bytes cada una: centenas de metros, casilla del mapa donde empieza, y el tiempo en BCD. Cierra clavada en 0x4B01, donde vuelve a haber codigo. Salen 1500 m/100 s, 1700/120, 1100/80, 1200/80, 1200/80, 500/40, 2600/165, 1200/90, 1500/100 y 1200/90
+; DATOS tabla_de_fases: Las DIEZ fases, cuatro bytes cada una: centenas de metros, casilla del mapa donde empieza, y el tiempo en BCD. Cierra clavada en 0x4ACB, donde vuelve a haber codigo. Salen 1500 m/100 s, 1700/120, 1100/80, 1200/80, 1200/80, 500/40, 2600/165, 1200/90, 1500/100 y 1200/90
 ;   0x4aa3..0x4acb  (40 bytes)
 ; ----------------------------------------------------------------------
 	defb 0ffh,0ceh,05eh,05fh,060h,061h,0ffh,0edh,062h,00fh,00fh,00fh,00fh,00fh,063h,064h	; 49d0  ..^_`a..b.....cd
@@ -1597,7 +1597,7 @@ L_4B14:
 	jp L_777B		;4b4b
 
 ; ----------------------------------------------------------------------
-; DATOS poses_del_pinguino: Diez poses de cuatro bytes: los cuatro patrones de sprite que forman el pinguino en cada postura. 0x4BD5 las reparte de cuatro en cuatro por los atributos
+; DATOS poses_del_pinguino: Diez poses de cuatro bytes: los cuatro patrones de sprite que forman el pinguino en cada postura. 0x4B9F las reparte de cuatro en cuatro por los atributos
 ;   0x4b4e..0x4b76  (40 bytes)
 ; ----------------------------------------------------------------------
 	defb 000h,004h,008h,00ch,010h,014h,018h,01ch,020h,024h,028h,02ch,000h,004h,030h,034h	; 4b4e  ........ $(,..04
@@ -1843,9 +1843,9 @@ L_4CE8:
 	jp L_44DC		;4cf1
 
 ; ----------------------------------------------------------------------
-; DATOS arco_del_salto: Diez alturas, indexadas de 1 a 10 desde 0x4D29: lo que se separa la sombra en cada paso del salto
+; DATOS arco_del_salto: Diez alturas, indexadas de 1 a 10 desde 0x4CF3: lo que se separa la sombra en cada paso del salto
 ;   0x4cf4..0x4cfe  (10 bytes)
-; DATOS arco_de_la_caida: Veintiuna alturas, indexadas de 1 a 21 desde 0x4D33 con 0xE143, que es el contador de la caida. Cierra clavada en 0x4D49
+; DATOS arco_de_la_caida: Veintiuna alturas, indexadas de 1 a 21 desde 0x4CFD con 0xE143, que es el contador de la caida. Cierra clavada en 0x4D13
 ;   0x4cfe..0x4d13  (21 bytes)
 ; ----------------------------------------------------------------------
 	defb 001h,002h,002h,003h,003h,003h,003h,003h,002h,002h,001h,001h,002h,002h,003h,002h	; 4cf4  ................
@@ -2118,7 +2118,7 @@ L_4EB6:
 	ret			;4eb6
 
 ; ----------------------------------------------------------------------
-; DATOS rodada_de_la_caida: Veinte desplazamientos con signo, indexados de 1 a 20 desde 0x4EEC con 0xE143. Son tres tramos casi iguales: cada vuelta el pinguino rueda un poco menos
+; DATOS rodada_de_la_caida: Veinte desplazamientos con signo, indexados de 1 a 20 desde 0x4EB6 con 0xE143. Son tres tramos casi iguales: cada vuelta el pinguino rueda un poco menos
 ;   0x4eb7..0x4ecb  (20 bytes)
 ; ----------------------------------------------------------------------
 	defb 0fdh,0feh,0feh,0ffh,001h,002h,002h,003h,0feh,0feh,0ffh,001h,002h,002h,0feh,0feh	; 4eb7  ................
@@ -2429,7 +2429,7 @@ L_510A:
 ; ----------------------------------------------------------------------
 ; DATOS decorados_por_fase: Ocho bytes por fase, diez fases: la lista de decorados que van saliendo. Un 0xFF acaba la lista y los 0x77 son relleno
 ;   0x510f..0x515f  (80 bytes)
-; DATOS color_por_fase: Un byte por fase: con 0 el cielo es la casilla 7 y con 1 la 9. Cierra clavada en 0x519F, donde vuelve a haber codigo
+; DATOS color_por_fase: Un byte por fase: con 0 el cielo es la casilla 7 y con 1 la 9. Cierra clavada en 0x5169, donde vuelve a haber codigo
 ;   0x515f..0x5169  (10 bytes)
 ; ----------------------------------------------------------------------
 	defb 002h,003h,000h,001h,077h,077h,077h,077h,003h,002h,001h,000h,077h,077h,077h,077h	; 510f  ....wwww....wwww
@@ -2653,7 +2653,7 @@ L_527C:
 	ret			;5294
 
 ; ----------------------------------------------------------------------
-; DATOS tabla_de_obstaculos: Los SIETE obstaculos: los tipos 0, 1 y 2 son los agujeros -de los que salen la foca y el pez-, el 3 y el 4 los dos monticulos con los que se choca, y el 5 y el 6 LAS DOS BANDERAS que se recogen por 500 puntos. Seis bytes cada uno: los dos primeros son el puntero al primer trozo de dibujo, y los cuatro siguientes los pares (posicion, ancho) con los que se mira el choque. Los siete dibujos caen dentro de los 92 trozos de 0x6BE9-0x7241, que es lo que confirma para que son. Cierra clavada en 0x52F5
+; DATOS tabla_de_obstaculos: Los SIETE obstaculos: los tipos 0, 1 y 2 son los agujeros -de los que salen la foca y el pez-, el 3 y el 4 los dos monticulos con los que se choca, y el 5 y el 6 LAS DOS BANDERAS que se recogen por 500 puntos. Seis bytes cada uno: los dos primeros son el puntero al primer trozo de dibujo, y los cuatro siguientes los pares (posicion, ancho) con los que se mira el choque. Los siete dibujos caen dentro de los 92 trozos de 0x6BC1-0x7219, que es lo que confirma para que son. Cierra clavada en 0x52BF
 ;   0x5295..0x52bf  (42 bytes)
 ; ----------------------------------------------------------------------
 	defb 0f1h,06eh,001h,053h,03ah,000h,0aah,06fh,001h,013h,03bh,000h,069h,070h,001h,092h	; 5295  .n.S:..o..;.ip..
@@ -2805,11 +2805,11 @@ L_53A5:
 	jp L_4B8C		;53a8
 
 ; ----------------------------------------------------------------------
-; DATOS curvas_por_fase: Sesenta y seis curvas en treinta y tres bytes, a nibble por curva: 0x5305 elige la mitad alta o la baja. Cierra con el 0xFF de 0x5401, justo delante de los punteros
+; DATOS curvas_por_fase: Sesenta y seis curvas en treinta y tres bytes, a nibble por curva: 0x52CF elige la mitad alta o la baja. Cierra con el 0xFF de 0x53CB, justo delante de los punteros
 ;   0x53ab..0x53cc  (33 bytes)
-; DATOS punteros_del_horizonte: Ocho punteros a los siete dibujos de horizonte (dos apuntan al mismo). Cierra clavada en 0x5412, que es el primero de ellos
+; DATOS punteros_del_horizonte: Ocho punteros a los siete dibujos de horizonte (dos apuntan al mismo). Cierra clavada en 0x53DC, que es el primero de ellos
 ;   0x53cc..0x53dc  (16 bytes)
-; DATOS dibujos_del_horizonte: Los siete horizontes, en el formato de las cadenas: recto, curva a un lado, curva al otro, y los cuatro de la llegada a la base. Todos escriben en las filas 10 y 11. Acaba clavado en 0x54C1
+; DATOS dibujos_del_horizonte: Los siete horizontes, en el formato de las cadenas: recto, curva a un lado, curva al otro, y los cuatro de la llegada a la base. Todos escriben en las filas 10 y 11. Acaba clavado en 0x548B
 ;   0x53dc..0x548b  (175 bytes)
 ; ----------------------------------------------------------------------
 	defb 0f8h,0ffh,0ffh,0ffh,099h,0f8h,08fh,0f9h,0f9h,0ffh,0ffh,088h,01fh,0f9h,0f9h,00fh	; 53ab  ................
@@ -2925,7 +2925,7 @@ L_54FB:
 ;   0x5516..0x552a  (20 bytes)
 ; DATOS bloque_base_b: El otro
 ;   0x552a..0x5534  (10 bytes)
-; DATOS bloque_base_polo: El tercero, el del remate de 0x5531
+; DATOS bloque_base_polo: El tercero, el del remate de 0x54FB
 ;   0x5534..0x5549  (21 bytes)
 ; ----------------------------------------------------------------------
 	defb 0e1h,0efh,0b6h,0b7h,0eeh,0b8h,0b9h,0bah,0bbh,0eeh,0beh,0bfh,0c0h,0bch,0eeh,0c3h	; 5516  ................
@@ -2985,19 +2985,19 @@ L_5596:
 	ret			;55a2
 
 ; ----------------------------------------------------------------------
-; DATOS punteros_de_las_bases: Diez punteros, uno por fase, a los nombres de las bases. Cierra clavada en 0x55ED, que es la primera cadena; con ocho, nueve, once o doce entradas no cierra
+; DATOS punteros_de_las_bases: Diez punteros, uno por fase, a los nombres de las bases. Cierra clavada en 0x55B7, que es la primera cadena; con ocho, nueve, once o doce entradas no cierra
 ;   0x55a3..0x55b7  (20 bytes)
-; DATOS nombres_de_las_bases: OCHO cadenas para diez fases: JAPAN, AUSTRALIA, FRANCE, NEW ZEALAND, ARGENTINA, UNITED KINGDOM, THE SOUTH POLE y USA. El reparto que sale de la tabla de arriba es FRANCE, USA, THE SOUTH POLE, USA, USA, ARGENTINA, UNITED KINGDOM, JAPAN, AUSTRALIA y AUSTRALIA. NEW ZEALAND (0x5610..0x561F) NO LA VISITA NADIE: no esta en la tabla, ninguna instruccion la apunta, y ninguna de sus dieciseis direcciones aparece como palabra en los 16 KB. En la PRIMERA version japonesa del cartucho si se visita, y es la fase 4; ver la pagina de las versiones. Los dos primeros bytes de cada cadena son el destino en la tabla de nombres de la VRAM, o sea el centrado: 0x3AC8 para las dos de catorce letras y 0x3ACE para USA
+; DATOS nombres_de_las_bases: OCHO cadenas para diez fases: JAPAN, AUSTRALIA, FRANCE, NEW ZEALAND, ARGENTINA, UNITED KINGDOM, THE SOUTH POLE y USA. El reparto que sale de la tabla de arriba es FRANCE, USA, THE SOUTH POLE, USA, USA, ARGENTINA, UNITED KINGDOM, JAPAN, AUSTRALIA y AUSTRALIA. NEW ZEALAND (0x55DA..0x55E9) NO LA VISITA NADIE: no esta en la tabla, ninguna instruccion la apunta, y ninguna de sus dieciseis direcciones aparece como palabra en los 16 KB. En la PRIMERA version japonesa del cartucho si se visita, y es la fase 4; ver la pagina de las versiones. Los dos primeros bytes de cada cadena son el destino en la tabla de nombres de la VRAM, o sea el centrado: 0x3AC8 para las dos de catorce letras y 0x3ACE para USA
 ;   0x55b7..0x5626  (111 bytes)
-; DATOS punteros_de_banderas: Diez punteros a los graficos de bandera. Cierra clavada en 0x5670
+; DATOS punteros_de_banderas: Diez punteros a los graficos de bandera. Cierra clavada en 0x563A
 ;   0x5626..0x563a  (20 bytes)
 ; DATOS banderas_comprimidas: Siete banderas distintas para diez ranuras. Los diez flujos miden entre 11 y 59 bytes y TODOS descomprimen a 64 bytes exactos, que son dos sprites de 16x16; detras de cada uno van sus dos colores
 ;   0x563a..0x5781  (327 bytes)
 ; DATOS rotulos: Los rotulos de pantalla, en el formato de las cadenas: el panel (1P, HI, STAGE, TIME), (c)KONAMI 1984, PLAY SELECT con JOYSTICK y KEYBOARD, y TIME OUT
 ;   0x5781..0x5803  (130 bytes)
-; DATOS titulo_comprimido: La pantalla de titulo: relleno y el rotulo SOFTWARE en la fila 10. Pasado por el descompresor son veinte casillas en dos sitios (VRAM 0x394A y 0x396C) y el flujo se acaba en 0x584A
+; DATOS titulo_comprimido: La pantalla de titulo: relleno y el rotulo SOFTWARE en la fila 10. Pasado por el descompresor son veinte casillas en dos sitios (VRAM 0x394A y 0x396C) y el flujo se acaba en 0x5818
 ;   0x5803..0x5818  (21 bytes)
-; DATOS mandos_de_la_demo: LOS MANDOS GRABADOS DE LA DEMO. Sesenta y cuatro bytes, uno cada 32 fotogramas: 0x41BA los apunta y 0x4103 los va leyendo. La demo dura 0x073C pasos, asi que gasta 58 de los 64. Cada byte lleva los mismos bits que el joystick, y se ve: 0x01 arriba, 0x09 arriba y derecha, 0x11 arriba y gatillo... La partida de demostracion no la juega ninguna inteligencia, va grabada. Cierra clavada en 0x588A, la primera instruccion de MONTA_LA_FUENTE
+; DATOS mandos_de_la_demo: LOS MANDOS GRABADOS DE LA DEMO. Sesenta y cuatro bytes, uno cada 32 fotogramas: 0x41A0 los apunta y 0x4103 los va leyendo. La demo dura 0x073C pasos, asi que gasta 58 de los 64. Cada byte lleva los mismos bits que el joystick, y se ve: 0x01 arriba, 0x09 arriba y derecha, 0x11 arriba y gatillo... La partida de demostracion no la juega ninguna inteligencia, va grabada. Cierra clavada en 0x5858, la primera instruccion de MONTA_LA_FUENTE
 ;   0x5818..0x5858  (64 bytes)
 ; ----------------------------------------------------------------------
 	defb 0cfh,055h,0eah,055h,013h,056h,0eah,055h,0eah,055h,0f2h,055h,000h,056h,0b7h,055h	; 55a3  .U.U.V.U.U.U.V.U
@@ -3206,7 +3206,7 @@ L_5DCA:
 ; ----------------------------------------------------------------------
 ; DATOS dibujos_banco1: Dibujos y colores del banco 1, comprimidos
 ;   0x5dfa..0x623b  (1089 bytes)
-; DATOS colores_de_pista_b: LOS COLORES DE LA PISTA DEL SEGUNDO TIPO DE FASE: 29 bytes que descomprimen a 112 en la VRAM 0x0F78. Van EN PAREJA con los otros 29 de 0x6246-0x6262 -que son los del primer tipo y caen dentro del rango de arriba-, y 0x5044 elige entre las dos parejas mirando el bit 0 de la tabla de 0x5195 con la fase: o 0x5DE4 y 0x6246, o 0x5DEF y 0x6263. EL PUNTERO NO SE VE MIRANDO LAS INSTRUCCIONES DE AL LADO, y por eso el reconstructor se saltaba estos bytes: 0x5065 hace `ld de,06263h`, 0x5068 lo GUARDA EN LA PILA y quien lo usa es el `pop hl` de 0x506F, dos descompresiones despues. Es el mismo truco que la fuente en 0x58CF. Cierra clavado en 0x6280, donde empieza el remate del banco 1
+; DATOS colores_de_pista_b: LOS COLORES DE LA PISTA DEL SEGUNDO TIPO DE FASE: 29 bytes que descomprimen a 112 en la VRAM 0x0F78. Van EN PAREJA con los otros 29 de 0x621E-0x623A -que son los del primer tipo y caen dentro del rango de arriba-, y 0x500E elige entre las dos parejas mirando el bit 0 de la tabla de 0x515F con la fase: o 0x5DB2 y 0x621E, o 0x5DBD y 0x623B. EL PUNTERO NO SE VE MIRANDO LAS INSTRUCCIONES DE AL LADO, y por eso el reconstructor se saltaba estos bytes: 0x502F hace `ld de,06263h`, 0x5032 lo GUARDA EN LA PILA y quien lo usa es el `pop hl` de 0x5039, dos descompresiones despues. Es el mismo truco que la fuente en 0x589D. Cierra clavado en 0x6258, donde empieza el remate del banco 1
 ;   0x623b..0x6258  (29 bytes)
 ; DATOS dibujos_banco1_resto: El remate del banco 1
 ;   0x6258..0x6267  (15 bytes)
@@ -3413,9 +3413,9 @@ L_66BB:
 	jp L_44DC		;66c4
 
 ; ----------------------------------------------------------------------
-; DATOS atributos_de_partida: La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es un SOL de puntas- y color amarillo, que no se ve nunca. COMPROBADO QUE ES UN SOL Y QUE SE VERIA: parcheando en una COPIA del cartucho los dos bytes de su posicion (0x6709 y 0x670A, la Y y la X) para sacarlo al cielo, aparece un sol amarillo de puntas sobre el azul, sin tocarle ni el dibujo ni el color. La captura y el cartucho parcheado estan fuera del repositorio, en work/, porque esto NO es una modificacion del juego sino la forma de ver lo que el juego tiene y no ensena: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia. MEDIDO sobre los diez minutos de partida grabada con un punto de observacion de escritura en 0xE088-0xE08B (tools/omsx_atributo14.tcl): las UNICAS cuatro cosas que lo tocan son barridos de la tabla entera -el ldir de 0x446E, el copiador de cuatro bytes de 0x45BE, BORRA_SPRITES en 0x4606 y el borrado previo de 0x66D1-, y ninguna va a por el. Al acabar la partida su entrada en la VRAM sigue siendo Y=0xE0, patron 0xD4, color 0x0A: cargado, coloreado y aparcado fuera del encuadre. El control -los mismos puntos en el atributo 13- recibe ademas 4426 y 41740 escrituras de las rutinas del pinguino, asi que los ceros del 14 son datos y no instrumentacion rota. Y de propina el control mide una cosa que estaba deducida: el 13 recibe 12 escrituras MAS que el 14 desde 0x45BE, que son las tres salidas del agua por cuatro bytes, o sea la cadena que rehace los sprites parandose justo antes del 14
+; DATOS atributos_de_partida: La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es un SOL de puntas- y color amarillo, que no se ve nunca. COMPROBADO QUE ES UN SOL Y QUE SE VERIA: parcheando en una COPIA del cartucho los dos bytes de su posicion (0x66E1 y 0x66E2, la Y y la X) para sacarlo al cielo, aparece un sol amarillo de puntas sobre el azul, sin tocarle ni el dibujo ni el color. La captura y el cartucho parcheado estan fuera del repositorio, en work/, porque esto NO es una modificacion del juego sino la forma de ver lo que el juego tiene y no ensena: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia. MEDIDO sobre los diez minutos de partida grabada con un punto de observacion de escritura en 0xE088-0xE08B (tools/omsx_atributo14.tcl): las UNICAS cuatro cosas que lo tocan son barridos de la tabla entera -el ldir de 0x4454, el copiador de cuatro bytes de 0x45A4, BORRA_SPRITES en 0x45EC y el borrado previo de 0x66A9-, y ninguna va a por el. Al acabar la partida su entrada en la VRAM sigue siendo Y=0xE0, patron 0xD4, color 0x0A: cargado, coloreado y aparcado fuera del encuadre. El control -los mismos puntos en el atributo 13- recibe ademas 4426 y 41740 escrituras de las rutinas del pinguino, asi que los ceros del 14 son datos y no instrumentacion rota. Y de propina el control mide una cosa que estaba deducida: el 13 recibe 12 escrituras MAS que el 14 desde 0x45A4, que son las tres salidas del agua por cuatro bytes, o sea la cadena que rehace los sprites parandose justo antes del 14
 ;   0x66c7..0x6704  (61 bytes)
-; DATOS atributos_de_base: La misma lista para la escena de la base, pero de OCHO entradas en vez de treinta: 0x66CB pone los 128 bytes a cero antes de aplicarla, asi que del atributo 8 en adelante no queda nada. Cierra clavada en 0x6756, donde vuelve a haber codigo. Sus bytes de 0x6746 los copia ademas 0x5537. Y AQUI ESTA EL UNICO SPRITE DEL PINGUINO QUE SE GIRA Y SONRIE: el atributo 7, con el patron 0xD0 en amarillo, que es el PICO. Todo lo demas de ese pinguino -la cara, los ojos, la boca roja y hasta la sombra azul de debajo- son CASILLAS, no sprites. Comprobado a t=126,6 de la partida grabada de dos maneras: la tabla de atributos solo tiene ocho entradas puestas, y comparando el fotograma real con la pantalla pintada SOLO con casillas quedan 224 pixeles sin explicar, que son 96+72+24 de la bandera y 32 del pico. Y 32 son exactamente los bits encendidos del patron 0xD0
+; DATOS atributos_de_base: La misma lista para la escena de la base, pero de OCHO entradas en vez de treinta: 0x66A3 pone los 128 bytes a cero antes de aplicarla, asi que del atributo 8 en adelante no queda nada. Cierra clavada en 0x672E, donde vuelve a haber codigo. Sus bytes de 0x671E los copia ademas 0x5501. Y AQUI ESTA EL UNICO SPRITE DEL PINGUINO QUE SE GIRA Y SONRIE: el atributo 7, con el patron 0xD0 en amarillo, que es el PICO. Todo lo demas de ese pinguino -la cara, los ojos, la boca roja y hasta la sombra azul de debajo- son CASILLAS, no sprites. Comprobado a t=126,6 de la partida grabada de dos maneras: la tabla de atributos solo tiene ocho entradas puestas, y comparando el fotograma real con la pantalla pintada SOLO con casillas quedan 224 pixeles sin explicar, que son 96+72+24 de la bandera y 32 del pico. Y 32 son exactamente los bits encendidos del patron 0xD0
 ;   0x6704..0x672e  (42 bytes)
 ; ----------------------------------------------------------------------
 	defb 00ah,0e0h,000h,07ch,000h,001h,090h,070h,000h,001h,001h,090h,080h,004h,001h,001h	; 66c7  ...|...p........
@@ -3438,9 +3438,9 @@ L_672E:
 ; ----------------------------------------------------------------------
 ; DATOS sprites_comprimidos: Los patrones de sprite: los pinguinos, los peces y las focas
 ;   0x6734..0x6bc1  (1165 bytes)
-; DATOS trozos_de_pista: Los 92 trozos incrementales de la pista, en el mismo formato que los decorados: cada uno pone entre una y seis casillas, o sea que son INCREMENTOS y no pantallas enteras. Se consumen en cadena, uno por paso, y asi va creciendo lo que se acerca. Los siete obstaculos de 0x52CB empiezan cada uno en uno de estos trozos
+; DATOS trozos_de_pista: Los 92 trozos incrementales de la pista, en el mismo formato que los decorados: cada uno pone entre una y seis casillas, o sea que son INCREMENTOS y no pantallas enteras. Se consumen en cadena, uno por paso, y asi va creciendo lo que se acerca. Los siete obstaculos de 0x5295 empiezan cada uno en uno de estos trozos
 ;   0x6bc1..0x7219  (1624 bytes)
-; DATOS arbol_de_decorados: Cuatro punteros en 0x7241 llevan a cuatro grupos, cada uno con otros cuatro, y los dieciseis bloques de abajo embaldosan 0x732D-0x7518 sin dejar hueco. Pasados por el interprete de 0x4533 dibujan los bordes de la pista
+; DATOS arbol_de_decorados: Cuatro punteros en 0x7219 llevan a cuatro grupos, cada uno con otros cuatro, y los dieciseis bloques de abajo embaldosan 0x7305-0x74F0 sin dejar hueco. Pasados por el interprete de 0x4523 dibujan los bordes de la pista
 ;   0x7219..0x74f1  (728 bytes)
 ; ----------------------------------------------------------------------
 	defb 000h,058h,00dh,000h,083h,003h,00fh,01fh,003h,000h,08ah,003h,00fh,01bh,037h,06fh	; 6734  .X............7o
@@ -3723,9 +3723,9 @@ L_7527:
 	jr L_7527		;7533
 
 ; ----------------------------------------------------------------------
-; DATOS punteros_de_la_meta: Cinco punteros, uno por cada tramo de 32 metros del final. Cierra clavada en 0x7569, que es el primero de ellos
+; DATOS punteros_de_la_meta: Cinco punteros, uno por cada tramo de 32 metros del final. Cierra clavada en 0x753F, que es el primero de ellos
 ;   0x7535..0x753f  (10 bytes)
-; DATOS bloques_de_la_meta: Los cinco bloques que va dibujando 0x7519
+; DATOS bloques_de_la_meta: Los cinco bloques que va dibujando 0x74F1
 ;   0x753f..0x75c5  (134 bytes)
 ; ----------------------------------------------------------------------
 	defb 07ah,075h,057h,075h,049h,075h,044h,075h,03fh,075h,021h,0efh,090h,091h,000h,021h	; 7535  zuWuIuDu?u!....!
@@ -3962,7 +3962,7 @@ L_7701:
 	call L_4098		;7706
 
 ; ----------------------------------------------------------------------
-; DATOS tabla_de_saltos_7709: Los 4 destinos del CALL de 0x7706. Cierra clavada contra su primer destino
+; DATOS tabla_de_saltos_7709: Los 4 destinos del CALL de 0x76DC. Cierra clavada contra su primer destino
 ;   0x7709..0x7711  (8 bytes)
 ; ----------------------------------------------------------------------
 	defb 03fh,077h,011h,077h,029h,077h,03fh,077h	; 7709  ?w.w)w?w
@@ -4231,11 +4231,11 @@ L_788F:
 	jp L_44DC		;7894
 
 ; ----------------------------------------------------------------------
-; DATOS punteros_de_la_foca: Ocho punteros, uno por cada paso del 7 al 14. 0x785B los indexa con paso-7, no con el tipo de obstaculo: leido de la otra manera salen punteros que se van fuera del cartucho. Cierra clavada en 0x78D3, que es el primero de ellos
+; DATOS punteros_de_la_foca: Ocho punteros, uno por cada paso del 7 al 14. 0x7831 los indexa con paso-7, no con el tipo de obstaculo: leido de la otra manera salen punteros que se van fuera del cartucho. Cierra clavada en 0x78A9, que es el primero de ellos
 ;   0x7897..0x78a7  (16 bytes)
-; DATOS fotogramas_de_la_foca: Los ocho fotogramas, cada uno con TRES variantes que elige 0x7886 con el bit que 0x7657 encendio en 0xE183. Los tres primeros pasos llevan dos sprites (18 bytes = 3 x 2 x 3) y los cinco siguientes cuatro (36 bytes); de cada sprite van tres bytes: Y, X y patron. LAS TRES VARIANTES LLEVAN EL MISMO DIBUJO y solo cambian la X: una sale por el centro (0x78), otra se va a la derecha y otra a la izquierda, separandose mas en cada paso. Y del paso 10 al 14 los cuatro patrones son siempre C0, C4, C8 y CC: lo unico que cambia es la Y, que baja de 0x7B a 0xA1. La foca no se deforma, se acerca
+; DATOS fotogramas_de_la_foca: Los ocho fotogramas, cada uno con TRES variantes que elige 0x785C con el bit que 0x762D encendio en 0xE183. Los tres primeros pasos llevan dos sprites (18 bytes = 3 x 2 x 3) y los cinco siguientes cuatro (36 bytes); de cada sprite van tres bytes: Y, X y patron. LAS TRES VARIANTES LLEVAN EL MISMO DIBUJO y solo cambian la X: una sale por el centro (0x78), otra se va a la derecha y otra a la izquierda, separandose mas en cada paso. Y del paso 10 al 14 los cuatro patrones son siempre C0, C4, C8 y CC: lo unico que cambia es la Y, que baja de 0x7B a 0xA1. La foca no se deforma, se acerca
 ;   0x78a7..0x7993  (236 bytes)
-; DATOS foca_escondida: El fotograma del paso 15, con las cuatro Y a 0xE0 para sacarla de la pantalla. Cierra clavado en 0x79C9, donde vuelve a haber codigo
+; DATOS foca_escondida: El fotograma del paso 15, con las cuatro Y a 0xE0 para sacarla de la pantalla. Cierra clavado en 0x799F, donde vuelve a haber codigo
 ;   0x7993..0x799f  (12 bytes)
 ; ----------------------------------------------------------------------
 	defb 0a9h,078h,0bbh,078h,0cdh,078h,0dfh,078h,003h,079h,027h,079h,04bh,079h,06fh,079h	; 7897  .x.x.x.x.y'yKyoy
@@ -4498,7 +4498,7 @@ L_7AF7:
 ;   0x7b07..0x7b13  (12 bytes)
 ; DATOS tabla_de_duraciones: Las doce duraciones, indexadas por el nibble alto de cada nota. Van de 5 a 100 fotogramas y NO son una escala, aunque esten pegadas a la que si lo es
 ;   0x7b13..0x7b21  (14 bytes)
-; DATOS punteros_de_sonido: Veinticuatro punteros a los flujos. Cierra clavada en 0x7B82, que es el primero. El del sonido 0 apunta fuera de la ROM porque no se pide nunca, y los tres ultimos apuntan al 0xFF de 0x7B82: el sonido 0x95, el que llama 0x44BD al arrancar, es un flujo que se acaba en el primer byte, o sea el silencio
+; DATOS punteros_de_sonido: Veinticuatro punteros a los flujos. Cierra clavada en 0x7B51, que es el primero. El del sonido 0 apunta fuera de la ROM porque no se pide nunca, y los tres ultimos apuntan al 0xFF de 0x7B51: el sonido 0x95, el que llama 0x44BD al arrancar, es un flujo que se acaba en el primer byte, o sea el silencio
 ;   0x7b21..0x7b51  (48 bytes)
 ; DATOS flujos_de_sonido: Los veintiun flujos de musica y efectos
 ;   0x7b51..0x7e86  (821 bytes)
