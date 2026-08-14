@@ -19,30 +19,34 @@ And the length works out too. The demo runs 0x073C steps, which at one byte
 every 32 is 58 of the 64 that are there. The run ends exactly where the next
 routine's first instruction begins.
 
-## The first thing the cartridge does is write over itself
+## The first thing the cartridge does is write over the BIOS
 
 Between bringing the machine up and starting the game sit these four
 instructions:
 
 ```asm
     ld hl,0411fh      ; source: three bytes that read C3 00 00, i.e. jp 0000h
-    ld de,DESPACHA    ; destination: 0x40B2, the whole game's dispatcher
+    ld de,00000h      ; destination: 0x0000, the BIOS entry point
     ld bc,00003h
     ldir
 ```
 
-On a cartridge that does absolutely nothing, because that half of the memory
-map is ROM and the write goes nowhere. But if the cartridge were running from a
-copy in RAM, the dispatcher would turn into a jump to zero and the machine
-would reset on the first frame, since the game loop calls it right away.
+On an MSX that does absolutely nothing, because 0x0000 is ROM and the write
+goes nowhere.
 
-It's a guard against copies in memory, and the cartridge's other two builds
-finish the story: neither of them carries these four instructions, not even the
-three loose bytes. Only this one does. And three dumps of this same version go
-around differing **in this instruction alone**: one with the destination at
-0x40B2, another with it at 0x0000, and a third with the `ldir` turned into two
-`nop`s. It's a discreet one: it checks nothing and warns about nothing, because
-on the real cartridge it's an instruction you never notice.
+What's striking is that **this instruction is the only thing telling apart the
+dumps of this version that go around**. There's another with the destination
+set to 0x40B2, the game's dispatcher, and there it does bite: running from a
+copy in RAM, the dispatcher would turn into a jump to zero and the machine
+would reset on the first frame, since the game loop calls it right away. And
+there's a third with the `ldir` turned into two `nop`s.
+
+The cartridge's other two builds carry none of this: neither the first Japanese
+version nor the European one has these four instructions, not even the three
+loose bytes. What all that fits is a guard against copies in memory, a discreet
+one — it checks nothing and warns about nothing, because on the real cartridge
+it's an instruction you never notice — though what it's for can't be proved
+from the binary.
 
 ## There's a base you never reach
 

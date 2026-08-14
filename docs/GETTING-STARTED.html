@@ -85,7 +85,7 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 <h2 id="what-you-need">What you need</h2>
 <p><code>pasmo</code> and <code>z80dasm</code> to assemble and disassemble, and Python 3 for the tools. That&#x27;s all: nothing to install, no environment to set up.</p>
 <p>The cartridge isn&#x27;t distributed with this repository, only the documentation work, so you&#x27;ll need your own copy named <code>antarctic.rom</code> in the project root. It&#x27;s exactly 16384 bytes and has to give this sha256:</p>
-<pre><code>17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126</code></pre>
+<pre><code>a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452</code></pre>
 <p>If yours doesn&#x27;t, it&#x27;s a different version and the listing won&#x27;t reassemble. <code>make comprueba</code> tells you in one line.</p>
 <h2 id="the-commands">The commands</h2>
 <pre><code>make          # trace, build the listing and check everything
@@ -94,8 +94,8 @@ make graficos # decompress the artwork and dump it to PNG</code></pre>
 <p>Plain <code>make</code> runs the whole cycle and fails if anything doesn&#x27;t add up: if the listing stops reproducing the cartridge byte for byte, if the tracer has walked into a range declared as data, or if an entry point falls inside one.</p>
 <h2 id="the-test-that-settles-it">The test that settles it</h2>
 <p>The only thing that makes a disassembly trustworthy is that it gives the original back. Here that&#x27;s <code>make verify</code>, which assembles the published listing and compares the sha256 against the cartridge:</p>
-<pre><code>ensamblado : 16384 bytes  17f4dd65...8065126
-original   : 16384 bytes  17f4dd65...8065126
+<pre><code>ensamblado : 16384 bytes  a33f9298...dc3c452
+original   : 16384 bytes  a33f9298...dc3c452
 OK: reproducible byte a byte</code></pre>
 <p>As long as that line shows up, no comment in this repository can have eaten a byte along the way.</p>
 <h2 id="without-the-cartridge">Without the cartridge</h2>

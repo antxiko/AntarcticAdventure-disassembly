@@ -85,7 +85,7 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 <h2 id="lo-que-hace-falta">Lo que hace falta</h2>
 <p><code>pasmo</code> y <code>z80dasm</code> para ensamblar y desensamblar, y Python 3 para las herramientas. Nada más: no hay dependencias que instalar ni entorno que montar.</p>
 <p>El cartucho no se distribuye con este repositorio, solo el trabajo de documentación, así que hace falta tu propia copia con el nombre <code>antarctic.rom</code> en la raíz del proyecto. Son 16384 bytes exactos y tiene que dar este sha256:</p>
-<pre><code>17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126</code></pre>
+<pre><code>a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452</code></pre>
 <p>Si el tuyo no da eso, es otra versión y el listado no reensamblará. <code>make comprueba</code> te lo dice en una línea.</p>
 <h2 id="las-ordenes">Las órdenes</h2>
 <pre><code>make          # traza, genera el listado y lo comprueba todo
@@ -94,8 +94,8 @@ make graficos # descomprime los dibujos y los saca a PNG</code></pre>
 <p><code>make</code> a secas hace el ciclo entero y falla si algo no cuadra: si el listado deja de reproducir el cartucho byte a byte, si el trazador se ha metido en una zona declarada como datos, o si un punto de entrada cae dentro de esa zona.</p>
 <h2 id="la-prueba-que-decide">La prueba que decide</h2>
 <p>Lo único que convierte un desensamblado en algo fiable es que vuelva a dar el original. Aquí eso es <code>make verify</code>, y lo que hace es ensamblar el listado publicado y comparar el sha256 con el del cartucho:</p>
-<pre><code>ensamblado : 16384 bytes  17f4dd65...8065126
-original   : 16384 bytes  17f4dd65...8065126
+<pre><code>ensamblado : 16384 bytes  a33f9298...dc3c452
+original   : 16384 bytes  a33f9298...dc3c452
 OK: reproducible byte a byte</code></pre>
 <p>Mientras esa línea salga, ni un comentario de este repositorio puede haberse comido un byte por el camino.</p>
 <h2 id="sin-el-cartucho">Sin el cartucho</h2>

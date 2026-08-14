@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Comprobaciones sobre el listado generado.
 
-Ninguna de estas necesita el cartucho: se hacen sobre src/antarctic.asm y
-src/antarctic.notes, que van en el repositorio. Lo que vigilan es que el
+Ninguna de estas necesita el cartucho: se hacen sobre src/jap2/antarctic.asm y
+src/jap2/antarctic.notes, que van en el repositorio. Lo que vigilan es que el
 listado no se degrade sin que nadie se entere -que no vuelvan a aparecer
 etiquetas sin nombre, ni bloques de datos sin identificar, ni comentarios que
 se queden por el camino-.
@@ -12,8 +12,8 @@ import re
 import unittest
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ASM = os.path.join(RAIZ, "src", "antarctic.asm")
-NOTES = os.path.join(RAIZ, "src", "antarctic.notes")
+ASM = os.path.join(RAIZ, "src", "jap2", "antarctic.asm")
+NOTES = os.path.join(RAIZ, "src", "jap2", "antarctic.notes")
 
 
 def asm():
@@ -174,8 +174,8 @@ class TestNadaDeOtroJuego(unittest.TestCase):
 
     def test_el_listado_no_habla_de_otro_juego(self):
         malos = self._barre([ASM, NOTES,
-                             os.path.join(RAIZ, "src", "antarctic.entries"),
-                             os.path.join(RAIZ, "src", "antarctic.nocode")])
+                             os.path.join(RAIZ, "src", "jap2", "antarctic.entries"),
+                             os.path.join(RAIZ, "src", "jap2", "antarctic.nocode")])
         self.assertEqual(malos, [], "material de otro proyecto: %s"
                          % "; ".join(malos))
 

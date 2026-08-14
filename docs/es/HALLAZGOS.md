@@ -19,32 +19,34 @@ Y encaja hasta en la duración. La demo dura 0x073C pasos, que a un byte cada
 32 son 58 bytes de los 64 que hay. La tira acaba exactamente donde empieza la
 primera instrucción de la rutina siguiente.
 
-## Lo primero que hace el cartucho es escribir sobre sí mismo
+## Lo primero que hace el cartucho es escribir encima de la BIOS
 
 Entre inicializar la máquina y arrancar el juego hay estas cuatro
 instrucciones:
 
 ```asm
     ld hl,0411fh      ; origen: tres bytes que son C3 00 00, o sea jp 0000h
-    ld de,DESPACHA    ; destino: 0x40B2, el despachador de todo el juego
+    ld de,00000h      ; destino: 0x0000, la entrada de la BIOS
     ld bc,00003h
     ldir
 ```
 
-En un cartucho eso no hace absolutamente nada, porque esa mitad del mapa de
-memoria es ROM y la escritura se pierde por el camino. Pero si el cartucho
-estuviera copiado en RAM, el despachador quedaría convertido en un salto a cero
-y la máquina se reiniciaría en el primer fotograma, porque el bucle de juego lo
-llama nada más empezar.
+En un MSX eso no hace absolutamente nada, porque en 0x0000 hay ROM y la
+escritura se pierde por el camino.
 
-Es una protección contra copias en memoria, y las otras dos compilaciones del
-cartucho terminan de contarlo: ninguna de las dos lleva estas cuatro
-instrucciones, ni siquiera los tres bytes sueltos. Solo las lleva esta. Y de
-esta misma versión circulan tres volcados que se diferencian **únicamente en
-esta instrucción**: uno con el destino en 0x40B2, otro con el destino en
-0x0000, y un tercero con el `ldir` convertido en dos `nop`. Es de las
-discretas: no comprueba nada ni avisa de nada, porque en el cartucho de verdad
-es una instrucción que no se nota.
+Lo llamativo es que **esa instrucción es lo único que separa entre sí a los
+volcados de esta versión que circulan por ahí**. Hay otro con el destino puesto
+en 0x40B2, que es el despachador del juego, y ahí sí muerde: corriendo desde
+una copia en RAM, el despachador quedaría convertido en un salto a cero y la
+máquina se reiniciaría en el primer fotograma, porque el bucle de juego lo llama
+nada más empezar. Y hay un tercero con el `ldir` convertido en dos `nop`.
+
+Las otras dos compilaciones del cartucho no llevan nada de esto: ni la primera
+japonesa ni la europea tienen estas cuatro instrucciones, ni siquiera los tres
+bytes sueltos. Lo que encaja con todo junto es una protección contra copias en
+memoria, de las discretas —no comprueba nada ni avisa de nada, porque en el
+cartucho de verdad es una instrucción que no se nota—, aunque el para qué no se
+demuestra desde el binario.
 
 ## Hay una base a la que no se llega nunca
 

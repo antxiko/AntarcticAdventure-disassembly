@@ -87,14 +87,15 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 <p>Left alone, the game starts a session that plays itself. There&#x27;s no intelligence behind it: there are 64 bytes at 0x584A carrying exactly the same bits the joystick returns, and the input reader takes one every 32 frames. In between it holds the previous direction, so the recording runs at a very coarse rate and still does the job.</p>
 <p>You can see it in the bytes themselves: <code>01</code> is up, <code>09</code> up and right, <code>11</code> up and button. Not one value falls outside the controller&#x27;s bit map.</p>
 <p>And the length works out too. The demo runs 0x073C steps, which at one byte every 32 is 58 of the 64 that are there. The run ends exactly where the next routine&#x27;s first instruction begins.</p>
-<h2 id="the-first-thing-the-cartridge-does-is-write-over-itself">The first thing the cartridge does is write over itself</h2>
+<h2 id="the-first-thing-the-cartridge-does-is-write-over-the-bios">The first thing the cartridge does is write over the BIOS</h2>
 <p>Between bringing the machine up and starting the game sit these four instructions:</p>
 <pre><code>    ld hl,0411fh      ; source: three bytes that read C3 00 00, i.e. jp 0000h
-    ld de,DESPACHA    ; destination: 0x40B2, the whole game&#x27;s dispatcher
+    ld de,00000h      ; destination: 0x0000, the BIOS entry point
     ld bc,00003h
     ldir</code></pre>
-<p>On a cartridge that does absolutely nothing, because that half of the memory map is ROM and the write goes nowhere. But if the cartridge were running from a copy in RAM, the dispatcher would turn into a jump to zero and the machine would reset on the first frame, since the game loop calls it right away.</p>
-<p>It&#x27;s a guard against copies in memory, and the cartridge&#x27;s other two builds finish the story: neither of them carries these four instructions, not even the three loose bytes. Only this one does. And three dumps of this same version go around differing <b>in this instruction alone</b>: one with the destination at 0x40B2, another with it at 0x0000, and a third with the <code>ldir</code> turned into two <code>nop</code>s. It&#x27;s a discreet one: it checks nothing and warns about nothing, because on the real cartridge it&#x27;s an instruction you never notice.</p>
+<p>On an MSX that does absolutely nothing, because 0x0000 is ROM and the write goes nowhere.</p>
+<p>What&#x27;s striking is that <b>this instruction is the only thing telling apart the dumps of this version that go around</b>. There&#x27;s another with the destination set to 0x40B2, the game&#x27;s dispatcher, and there it does bite: running from a copy in RAM, the dispatcher would turn into a jump to zero and the machine would reset on the first frame, since the game loop calls it right away. And there&#x27;s a third with the <code>ldir</code> turned into two <code>nop</code>s.</p>
+<p>The cartridge&#x27;s other two builds carry none of this: neither the first Japanese version nor the European one has these four instructions, not even the three loose bytes. What all that fits is a guard against copies in memory, a discreet one — it checks nothing and warns about nothing, because on the real cartridge it&#x27;s an instruction you never notice — though what it&#x27;s for can&#x27;t be proved from the binary.</p>
 <h2 id="there-s-a-base-you-never-reach">There&#x27;s a base you never reach</h2>
 <p>The cartridge carries eight base names and the route has ten stops. Seven of those names cover the ten —the United States turns up three times and Australia twice— and the eighth, <b>NEW ZEALAND</b>, is asked for by nobody.</p>
 <p>Checked three separate ways, because one check isn&#x27;t enough here:</p>

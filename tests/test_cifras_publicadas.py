@@ -14,8 +14,8 @@ import re
 import unittest
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ASM = os.path.join(RAIZ, "src", "antarctic.asm")
-NOTES = os.path.join(RAIZ, "src", "antarctic.notes")
+ASM = os.path.join(RAIZ, "src", "jap2", "antarctic.asm")
+NOTES = os.path.join(RAIZ, "src", "jap2", "antarctic.notes")
 MAKEWEB = os.path.join(RAIZ, "tools", "make_web.py")
 
 TOTAL = 16384
@@ -101,7 +101,7 @@ class TestCifras(unittest.TestCase):
                           "%s no publica los %d rangos" % (pagina, n))
 
     def test_el_sha_del_cartucho_es_el_mismo_por_todas_partes(self):
-        SHA = "17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126"
+        SHA = "a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452"
         for fichero in ("Makefile", "README.md", "README.es.md",
                         "docs/es/EMPEZAR.md", "docs/GETTING-STARTED.md"):
             self.assertIn(SHA, lee(os.path.join(RAIZ, fichero)),
@@ -132,7 +132,7 @@ class TestLasDiezFases(unittest.TestCase):
 
     def test_las_distancias_y_los_tiempos_son_los_del_cartucho(self):
         """Y que no salgan de la cabeza de nadie: se leen de la ROM."""
-        rom = os.path.join(RAIZ, "antarctic.rom")
+        rom = os.path.join(RAIZ, "antarctic-jap2.rom")
         if not os.path.exists(rom):
             self.skipTest("sin el cartucho no se puede comprobar")
         with open(rom, "rb") as f:

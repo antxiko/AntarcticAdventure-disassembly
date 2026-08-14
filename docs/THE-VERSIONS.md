@@ -6,19 +6,18 @@ route changes, and so does the way the code talks to the video chip.
 
 ## Which ROM this is
 
-This disassembly is of the **second Japanese version**, which is worth saying
-up front because it isn't the one you'd expect. Specifically, of a dump of that
-version with two bytes altered: the ones at 0x4050-0x4051, which are the
-destination of the boot-time copy discussed at the end of this page.
+The one disassembled and commented from top to bottom here is the **second
+Japanese version**, which is worth saying up front because it isn't the one
+you'd expect. The other two are, for now, compared byte by byte but not
+disassembled.
 
-    the dump used here   17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126
-    second Japanese      a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
-    first Japanese       087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
-    European             9b13aaa66661b69a8a9a19656d2d9fd052ddae11aba752e84ebb38b03137739a
+    first Japanese     087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
+    second Japanese    a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
+    European           9b13aaa66661b69a8a9a19656d2d9fd052ddae11aba752e84ebb38b03137739a
 
-All four files are 16384 bytes on the nose, and none of them is distributed
-here. If you have them, `tools/compara_versiones.py` prints everything this
-page claims in one go.
+All three files are 16384 bytes on the nose, and none of them is distributed
+here. If you have them, `make compara` prints everything this page claims in
+one go.
 
 A warning, because a lot of dirty dumps of this game go around: some are 32 KB
 with the same 16 KB repeated twice, some are the same file under another name,
@@ -108,23 +107,24 @@ the second Japanese, which is dark blue.
 
 Which brings us to the thing only the second Japanese version has. Its INIT
 copies three bytes from 0x411F — which are `C3 00 00`, that is, `jp 0000h` —
-over the top of another address. In the dump this disassembly uses, that
-address is 0x40B2, the game's dispatcher, the routine every table-driven jump
-goes through and which gets called on the very first frame:
+over the top of 0x0000, the BIOS entry point and the machine's boot vector:
 
-    ld hl,411Fh / ld de,40B2h / ld bc,0003h / ldir
+    ld hl,411Fh / ld de,0000h / ld bc,0003h / ldir
 
-In a cartridge nothing happens, because the page the cartridge lives in is ROM
-and the write is lost. But running from RAM, the dispatcher would turn into a
-jump to zero and the machine would reset before showing anything. It's copy
-protection, and a good one: it checks nothing and warns about nothing, because
-on the real cartridge it's an instruction you never notice.
+That's ROM, so the write is lost and nothing happens.
 
-The two bytes separating this dump from the other one of the same version are
-exactly that copy's destination, which over there is 0x0000. And a third dump
-of this same version goes around with the whole `ldir` turned into two `nop`s.
+The striking part shows up when you compare dumps: **that instruction is the
+only thing telling apart the ones of this version that go around**. There's one
+with the destination set to 0x40B2, the game's dispatcher, the routine every
+table-driven jump goes through and which gets called on the very first frame —
+and there it does bite, because running from RAM the dispatcher would turn into
+a jump to zero and the machine would reset before showing anything. And there's
+a third with the whole `ldir` turned into two `nop`s.
+
 Three variants of the same binary differing only in that one instruction give a
-fairly clear idea of what it's for.
+fairly clear idea of what it's for: copy protection, of the discreet sort,
+since it checks nothing and warns about nothing. What it's for, mind you, can't
+be proved from the binary.
 
 Neither the first Japanese version nor the European carries any of this: the
 copy doesn't exist anywhere in those two, not even the three loose bytes.

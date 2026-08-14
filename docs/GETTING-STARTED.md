@@ -9,7 +9,7 @@ The cartridge isn't distributed with this repository, only the documentation
 work, so you'll need your own copy named `antarctic.rom` in the project root.
 It's exactly 16384 bytes and has to give this sha256:
 
-    17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126
+    a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
 
 If yours doesn't, it's a different version and the listing won't reassemble.
 `make comprueba` tells you in one line.
@@ -32,8 +32,8 @@ The only thing that makes a disassembly trustworthy is that it gives the
 original back. Here that's `make verify`, which assembles the published listing
 and compares the sha256 against the cartridge:
 
-    ensamblado : 16384 bytes  17f4dd65...8065126
-    original   : 16384 bytes  17f4dd65...8065126
+    ensamblado : 16384 bytes  a33f9298...dc3c452
+    original   : 16384 bytes  a33f9298...dc3c452
     OK: reproducible byte a byte
 
 As long as that line shows up, no comment in this repository can have eaten a

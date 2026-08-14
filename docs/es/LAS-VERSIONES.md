@@ -6,19 +6,17 @@ cambia el recorrido, y cambia hasta la manera de hablarle al chip gráfico.
 
 ## Cuál es la ROM de aquí
 
-Este desensamblado está hecho sobre la **segunda versión japonesa**, y conviene
-decirlo de entrada porque no es la que uno esperaría. En concreto, sobre un
-volcado de esa versión que lleva dos bytes tocados: los de 0x4050-0x4051, que
-son el destino de la copia del arranque de la que se habla al final.
+La que está desensamblada y comentada de arriba abajo es la **segunda versión
+japonesa**, y conviene decirlo de entrada porque no es la que uno esperaría.
+Las otras dos, por ahora, están comparadas byte a byte pero no desensambladas.
 
-    volcado de aquí     17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126
-    segunda japonesa    a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
     primera japonesa    087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
+    segunda japonesa    a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
     europea             9b13aaa66661b69a8a9a19656d2d9fd052ddae11aba752e84ebb38b03137739a
 
-Los cuatro ficheros son de 16384 bytes clavados, y aquí no se distribuye
-ninguno. Si los tienes, `tools/compara_versiones.py` saca de una pasada todo lo
-que cuenta esta página.
+Los tres ficheros son de 16384 bytes clavados, y aquí no se distribuye ninguno.
+Si los tienes, `make compara` saca de una pasada todo lo que cuenta esta
+página.
 
 Un aviso, porque de este juego circulan muchos volcados sucios: los hay de
 32 KB con los mismos 16 KB repetidos dos veces, copias del mismo fichero con
@@ -108,24 +106,25 @@ que es azul oscuro.
 ## La copia de tres bytes del arranque
 
 Y llegamos a lo que solo tiene la segunda japonesa. Su INIT copia tres bytes de
-0x411F —que son `C3 00 00`, o sea `jp 0000h`— encima de otra dirección. En el
-volcado de este desensamblado esa dirección es 0x40B2, que es el despachador
-del juego, la rutina por la que pasan todos los saltos por tabla y a la que se
-llama en el primer fotograma:
+0x411F —que son `C3 00 00`, o sea `jp 0000h`— encima de 0x0000, que es la
+entrada de la BIOS y el vector de arranque de la máquina:
 
-    ld hl,411Fh / ld de,40B2h / ld bc,0003h / ldir
+    ld hl,411Fh / ld de,0000h / ld bc,0003h / ldir
 
-En un cartucho no pasa nada, porque la página donde vive el cartucho es ROM y
-la escritura se pierde. Pero corriendo desde RAM, el despachador se convertiría
-en un salto a cero y la máquina se reiniciaría antes de enseñar nada. Es una
-protección contra copias, y de las buenas: no comprueba nada ni avisa de nada,
-porque en el cartucho de verdad es una instrucción que no se nota.
+Ahí hay ROM, así que la escritura se pierde y no pasa nada.
 
-Los dos bytes que separan este volcado del otro de la misma versión son
-justamente el destino de esa copia, que allí es 0x0000. Y por ahí circula
-además un tercer volcado, otra vez de esta misma versión, con el `ldir` entero
-convertido en dos `nop`. Tres variantes del mismo binario que solo se
-diferencian en esa instrucción dan una idea bastante clara de para qué está.
+Lo llamativo llega al comparar volcados: **esa instrucción es lo único que
+separa entre sí a los que circulan de esta versión**. Hay uno con el destino
+puesto en 0x40B2, que es el despachador del juego, la rutina por la que pasan
+todos los saltos por tabla y a la que se llama en el primer fotograma; ahí sí
+muerde, porque corriendo desde RAM el despachador se convertiría en un salto a
+cero y la máquina se reiniciaría antes de enseñar nada. Y hay un tercero con el
+`ldir` entero convertido en dos `nop`.
+
+Tres variantes del mismo binario que solo se diferencian en esa instrucción dan
+una idea bastante clara de para qué está: es una protección contra copias, de
+las discretas, porque no comprueba nada ni avisa de nada. El para qué, eso sí,
+no se demuestra desde el binario.
 
 Ni la primera japonesa ni la europea llevan nada de esto: la copia no existe en
 ninguna parte de esas dos, ni siquiera los tres bytes sueltos.

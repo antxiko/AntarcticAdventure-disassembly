@@ -35,8 +35,8 @@ direcciones que empiezan por 0xE0 y que no son datos.
 salir exactamente el original:
 
 ```
-  ensamblado : 16384 bytes  17f4dd65...8065126
-  original   : 16384 bytes  17f4dd65...8065126
+  ensamblado : 16384 bytes  a33f9298...dc3c452
+  original   : 16384 bytes  a33f9298...dc3c452
 OK: reproducible byte a byte
 ```
 
@@ -63,9 +63,10 @@ lo que decimos de ellos. Así que van dos comprobaciones más al lado:
 
 - **La demo va grabada.** 64 bytes con exactamente los bits del joystick,
   leídos uno cada 32 fotogramas. No hay ninguna inteligencia detrás.
-- **Lo primero que hace el cartucho es escribir sobre sí mismo**, copiando un
-  `jp 0000h` encima de su propio despachador. En cartucho no hace nada; desde
-  una copia en RAM reiniciaría la máquina en el primer fotograma.
+- **Lo primero que hace el cartucho es escribir encima de la BIOS**, copiando
+  un `jp 0000h` sobre 0x0000. Ahí hay ROM, así que no pasa nada; y esa
+  instrucción es lo único que separa entre sí a los volcados de esta versión
+  que circulan por ahí.
 - **Hay una base de investigación que no visita nadie**: NEW ZEALAND está ahí,
   escrita, y ninguna instrucción la apunta. En la primera versión japonesa del
   cartucho sí se visita, y es la quinta parada del recorrido.
@@ -94,7 +95,7 @@ lo que el jugador ve. Una cosa depende de eso, y están con las demás en
 
 Hacen falta `pasmo`, `z80dasm` y Python 3. El cartucho **no** se distribuye
 aquí: pon tu propia copia en la raíz con el nombre `antarctic.rom`, 16384 bytes,
-sha256 `17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126`.
+sha256 `a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452`.
 
 ```sh
 make          # traza, genera el listado y lo comprueba todo

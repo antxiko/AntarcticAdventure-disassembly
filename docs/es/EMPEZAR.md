@@ -10,7 +10,7 @@ documentación, así que hace falta tu propia copia con el nombre
 `antarctic.rom` en la raíz del proyecto. Son 16384 bytes exactos y tiene que
 dar este sha256:
 
-    17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126
+    a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
 
 Si el tuyo no da eso, es otra versión y el listado no reensamblará. `make
 comprueba` te lo dice en una línea.
@@ -33,8 +33,8 @@ Lo único que convierte un desensamblado en algo fiable es que vuelva a dar el
 original. Aquí eso es `make verify`, y lo que hace es ensamblar el listado
 publicado y comparar el sha256 con el del cartucho:
 
-    ensamblado : 16384 bytes  17f4dd65...8065126
-    original   : 16384 bytes  17f4dd65...8065126
+    ensamblado : 16384 bytes  a33f9298...dc3c452
+    original   : 16384 bytes  a33f9298...dc3c452
     OK: reproducible byte a byte
 
 Mientras esa línea salga, ni un comentario de este repositorio puede haberse

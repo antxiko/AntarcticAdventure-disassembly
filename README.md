@@ -34,8 +34,8 @@ is full of addresses starting 0xE0 that aren't data at all.
 gives back exactly the original:
 
 ```
-  ensamblado : 16384 bytes  17f4dd65...8065126
-  original   : 16384 bytes  17f4dd65...8065126
+  ensamblado : 16384 bytes  a33f9298...dc3c452
+  original   : 16384 bytes  a33f9298...dc3c452
 OK: reproducible byte a byte
 ```
 
@@ -62,9 +62,10 @@ what we say about them does. So two more checks run alongside:
 
 - **The attract mode is a recording.** 64 bytes carrying exactly the joystick's
   own bits, read one every 32 frames. No intelligence behind it at all.
-- **The first thing the cartridge does is write over itself**, copying
-  `jp 0000h` on top of its own dispatcher. On a cartridge that does nothing;
-  from a copy in RAM it would reset the machine on the first frame.
+- **The first thing the cartridge does is write over the BIOS**, copying
+  `jp 0000h` on top of 0x0000. That's ROM, so nothing happens; and that
+  instruction is the only thing telling apart the dumps of this version that go
+  around.
 - **There's a research base nobody visits**: NEW ZEALAND is in there, spelled
   out, and not one instruction points at it. On the first Japanese version of
   the cartridge you do go there, and it's the fifth stop on the route.
@@ -94,7 +95,7 @@ rest on
 
 You need `pasmo`, `z80dasm` and Python 3. The cartridge is **not** distributed
 here: put your own copy in the project root as `antarctic.rom`, 16384 bytes,
-sha256 `17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126`.
+sha256 `a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452`.
 
 ```sh
 make          # trace, build the listing and check everything

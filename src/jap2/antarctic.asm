@@ -1,5 +1,5 @@
 ; ==========================================================================
-; ANTARCTIC ADVENTURE - Konami (1984) - MSX1 - cartucho de 16 KB
+; ANTARCTIC ADVENTURE - Konami (1984) - MSX1 - cartucho de 16 KB - segunda version japonesa
 ; ==========================================================================
 ; Generado por tools/mkasm.py a partir del trazado de flujo real.
 ; Los comentarios provienen de tools/../src/*.notes y estan anclados a
@@ -58,27 +58,28 @@ INIT:		; Punto de entrada del cartucho, declarado en la cabecera
 
 ; ----------------------------------------------------------------------
 ; ----------------------------------------------------------------------
-; ESTOS CUATRO SON UN LDIR CONTRA LA PROPIA ROM
+; ESTOS CUATRO ESCRIBEN ENCIMA DE LA BIOS
 ; ----------------------------------------------------------------------
 ; Copia los tres bytes de 0x411F -que son C3 00 00, o sea
-; `jp 0000h`- encima de 0x40B2, que es el despachador de aqui
-; abajo. En un cartucho eso no hace nada: la pagina 1 es ROM y
-; la escritura se pierde. Pero si el cartucho estuviera copiado
-; en RAM, el despachador quedaria convertido en un salto a 0 y
-; la maquina se reiniciaria en el primer fotograma, porque
-; 0x4122 lo llama enseguida.
-; Es una proteccion contra copias en RAM, y las otras dos
-; compilaciones lo confirman: ni la primera japonesa ni la
-; europea llevan este LDIR en ninguna parte, ni siquiera los
-; tres bytes sueltos. Solo lo lleva esta, la segunda japonesa.
-; Y de esta misma version circulan TRES volcados que se
-; diferencian unicamente en esta instruccion: este, con el
-; destino en 0x40B2; otro con el destino en 0x0000; y un tercero
-; con el `ldir` entero convertido en dos `nop`.
-; Ver la pagina de las versiones.
+; `jp 0000h`- encima de 0x0000, que es la entrada de la BIOS y
+; el vector de arranque de la maquina. En un MSX normal ahi hay
+; ROM, asi que la escritura se pierde y no pasa nada.
+; Solo lleva esto la segunda japonesa: ni la primera japonesa ni
+; la europea tienen el LDIR, ni siquiera los tres bytes sueltos
+; de 0x411F.
+; Y ESTA INSTRUCCION ES LO UNICO que separa a los volcados de
+; esta version que circulan: hay otro con el destino puesto en
+; 0x40B2, que es el despachador de aqui abajo -y ahi si muerde,
+; porque en una copia en RAM el juego se mataria solo en el
+; primer fotograma, ya que 0x4122 lo llama enseguida-, y un
+; tercero con el `ldir` convertido en dos `nop`.
+; Que hace: comprobado leyendo los bytes. Para que: lo que encaja
+; con tres volcados que solo se diferencian aqui es una
+; proteccion contra copias, pero eso no se demuestra desde el
+; binario. Ver la pagina de las versiones.
 ; ----------------------------------------------------------------------
 	ld hl,0411fh		;404c   ; Origen: los tres bytes `jp 0000h` de 0x411F
-	ld de,DESPACHA		;404f   ; Destino: 0x40B2, el despachador. Es ROM, asi que no pasa nada
+	ld de,00000h		;404f   ; Destino: 0x0000, la entrada de la BIOS. Es ROM, asi que la escritura se pierde
 	ld bc,00003h		;4052
 	ldir			;4055
 	call 0013eh		;4057   ; BIOS RDVDP - Reads VDP status register | Lee el registro de estado del VDP para descartar la interrupcion pendiente
