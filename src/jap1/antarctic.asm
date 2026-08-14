@@ -820,7 +820,7 @@ MANDA_UN_REGISTRO:		; Manda un registro del VDP: el valor en E y el numero con e
 	ret			;44d5
 
 ; ----------------------------------------------------------------------
-; DATOS registros_vdp: Los ocho registros del VDP: 02 E2 0E 7F 07 76 03 E4. Colores en 0x0000 y patrones en 0x2000, al reves de lo corriente; nombres en 0x3800, patrones de sprite en 0x1800 y atributos de sprite en 0x3B00. Sprites de 16x16 sin ampliar, y SCREEN 2
+; DATOS registros_vdp: Los ocho registros del VDP: 02 E2 0E 7F 07 76 03 E1. El ultimo es el registro 7, tinta y fondo: aqui el fondo y el borde son NEGROS. Colores en 0x0000 y patrones en 0x2000, al reves de lo corriente; nombres en 0x3800, patrones de sprite en 0x1800 y atributos de sprite en 0x3B00. Sprites de 16x16 sin ampliar, y SCREEN 2
 ;   0x44d6..0x44de  (8 bytes)
 ; ----------------------------------------------------------------------
 	defb 002h,0e2h,00eh,07fh,007h,076h,003h,0e1h	; 44d6  .....v..
@@ -3221,7 +3221,7 @@ BANDERA_A_VRAM:		; Los TRES sprites de la bandera, a la VRAM. Son doce bytes, o 
 ;   0x5605..0x574c  (327 bytes)
 ; DATOS punteros_de_banderas: Diez punteros a los graficos de bandera. Cierra clavada en 0x5605
 ;   0x560b..0x5605  (-6 bytes)
-; DATOS rotulos: Los rotulos de pantalla, en el formato de las cadenas: el panel (1P, HI, STAGE, TIME), (c)KONAMI 1984, PLAY SELECT con JOYSTICK y KEYBOARD, y TIME OUT
+; DATOS rotulos: Los rotulos de pantalla, en el formato de las cadenas: el panel (1P, HI, STAGE, TIME), el logotipo de KONAMI con su 1984 -las letras del logotipo son dibujos propios, no la fuente-, PLAY SELECT con JOYSTICK y KEYBOABD -asi, con una B donde va la R: la errata es de esta version-, y TIME OUT
 ;   0x574c..0x57ce  (130 bytes)
 ; DATOS titulo_comprimido: La pantalla de titulo: relleno y el rotulo SOFTWARE en la fila 10. Pasado por el descompresor son veinte casillas en dos sitios (VRAM 0x394A y 0x396C) y el flujo se acaba en 0x57E3
 ;   0x57ce..0x57e3  (21 bytes)
@@ -4748,7 +4748,7 @@ ESCRIBE_PERIODO:		; Manda al PSG los dos bytes del periodo del canal, por los pu
 ;   0x7af2..0x7b22  (48 bytes)
 ; DATOS flujos_de_sonido: Los veintiun flujos de musica y efectos
 ;   0x7b22..0x7e57  (821 bytes)
-; DATOS relleno_final: Lo que sobra del cartucho hasta los 16 KB
+; DATOS relleno_final: Lo que sobra del cartucho hasta los 16 KB: 425 bytes, todos 0xFF, sin una sola excepcion
 ;   0x7e57..0x8000  (425 bytes)
 ; ----------------------------------------------------------------------
 	defb 0ffh,06ah,064h,05fh,059h,054h,050h,04bh,047h,043h,03fh,03ch,038h,008h,010h,020h	; 7ad7  .jd_YTPKGC?<8.. 

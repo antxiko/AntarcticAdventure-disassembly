@@ -72,7 +72,7 @@ D 0x7B13 0x7B21 tabla_de_duraciones Las doce duraciones, indexadas por el nibble
 # por contenido. Los limites son los del hueco de ESTA version, acotado por
 # codigo trazado a los dos lados; el nombre y la explicacion vienen de jap2
 # y sus direcciones interiores estan SIN TRADUCIR.
-D 0x44D4 0x44DC registros_vdp Los ocho registros del VDP: 02 E2 0E 7F 07 76 03 E4. Colores en 0x0000 y patrones en 0x2000, al reves de lo corriente; nombres en 0x3800, patrones de sprite en 0x1800 y atributos de sprite en 0x3B00. Sprites de 16x16 sin ampliar, y SCREEN 2
+D 0x44D4 0x44DC registros_vdp Los ocho registros del VDP: 02 E2 0E 7F 07 76 03 E1. El ultimo es el registro 7, tinta y fondo: aqui el fondo y el borde son NEGROS. Colores en 0x0000 y patrones en 0x2000, al reves de lo corriente; nombres en 0x3800, patrones de sprite en 0x1800 y atributos de sprite en 0x3B00. Sprites de 16x16 sin ampliar, y SCREEN 2
 D 0x47AA 0x47BE decorado_puntero_por_fase Diez punteros, uno por fase, que apuntan DENTRO de la tabla de al lado con ventanas que se solapan. 0x4749 lo indexa
 D 0x47BE 0x47E6 decorado_punteros Veinte punteros a las cinco listas. Cierra clavado en 0x47E6, donde vuelve a haber codigo
 D 0x49D0 0x4A7A mapa_dibujo Las filas del mapa, una detras de otra: un byte de columna y detras las casillas, o un 0xFF si la fila va vacia. El 0x00 de 0x4AAF lo cierra. Son dieciseis filas, y la ultima es el rotulo ANTARCTICA (c)KONAMI
@@ -80,7 +80,7 @@ D 0x5295 0x52BF tabla_de_obstaculos Los SIETE obstaculos: los tipos 0, 1 y 2 son
 D 0x53CC 0x53DC punteros_del_horizonte Ocho punteros a los siete dibujos de horizonte (dos apuntan al mismo). Cierra clavada en 0x53DC, que es el primero de ellos
 D 0x55A3 0x55B7 punteros_de_las_bases Diez punteros, uno por fase, a los nombres de las bases. Cierra clavada en 0x55B7, que es la primera cadena; con ocho, nueve, once o doce entradas no cierra
 D 0x5626 0x563A punteros_de_banderas Diez punteros a los graficos de bandera. Cierra clavada en 0x563A
-D 0x5781 0x5803 rotulos Los rotulos de pantalla, en el formato de las cadenas: el panel (1P, HI, STAGE, TIME), (c)KONAMI 1984, PLAY SELECT con JOYSTICK y KEYBOARD, y TIME OUT
+D 0x5781 0x5803 rotulos Los rotulos de pantalla, en el formato de las cadenas: el panel (1P, HI, STAGE, TIME), el logotipo de KONAMI con su 1984 -las letras del logotipo son dibujos propios, no la fuente-, PLAY SELECT con JOYSTICK y KEYBOARD, TIME OUT, y el VIDEO CARTRIDGE de la portada
 D 0x5803 0x5818 titulo_comprimido La pantalla de titulo: relleno y el rotulo SOFTWARE en la fila 10. Pasado por el descompresor son veinte casillas en dos sitios (VRAM 0x394A y 0x396C) y el flujo se acaba en 0x5818
 D 0x58A9 0x5DCA fuente_comprimida La fuente y el logotipo de KONAMI, que van a los tres bancos
 D 0x7219 0x74F1 arbol_de_decorados Cuatro punteros en 0x7219 llevan a cuatro grupos, cada uno con otros cuatro, y los dieciseis bloques de abajo embaldosan 0x7305-0x74F0 sin dejar hueco. Pasados por el interprete de 0x4523 dibujan los bordes de la pista
@@ -90,7 +90,7 @@ D 0x78A7 0x7993 fotogramas_de_la_foca Los ocho fotogramas, cada uno con TRES var
 D 0x7B06 0x7B07 byte_suelto Un 0xFF que no apunta nadie, justo delante de la tabla de notas
 D 0x7B21 0x7B51 punteros_de_sonido Veinticuatro punteros a los flujos. Cierra clavada en 0x7B51, que es el primero. El del sonido 0 apunta fuera de la ROM porque no se pide nunca, y los tres ultimos apuntan al 0xFF de 0x7B51: el sonido 0x95, el que llama 0x44BD al arrancar, es un flujo que se acaba en el primer byte, o sea el silencio
 D 0x7B51 0x7E86 flujos_de_sonido Los veintiun flujos de musica y efectos
-D 0x7E86 0x8000 relleno_final Lo que sobra del cartucho hasta los 16 KB
+D 0x7E86 0x8000 relleno_final Lo que sobra del cartucho hasta los 16 KB: 378 bytes, todos 0xFF, sin una sola excepcion
 
 # --- Etiquetas y comentarios portados de src/jap2 con
 # tools/porta_comentarios.py: cada uno va donde el mapa de

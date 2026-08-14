@@ -4819,7 +4819,7 @@ ESCRIBE_PERIODO:		; Los dos registros del PSG de este canal
 ;   0x7b52..0x7b82  (48 bytes)
 ; DATOS flujos_de_sonido: Los veintiun flujos de musica y efectos
 ;   0x7b82..0x7eb7  (821 bytes)
-; DATOS relleno_final: Lo que sobra del cartucho hasta los 16 KB
+; DATOS relleno_final: Lo que sobra del cartucho hasta los 16 KB, que son 306 bytes de 0xFF... salvo LOS ULTIMOS VEINTITRES (0x7FE9-0x7FFF), que no son 0xFF, no son texto descifrable y no los apunta nadie. Las otras dos versiones tienen ahi 0xFF hasta el final, asi que es cosa de esta. SIN IDENTIFICAR
 ;   0x7eb7..0x8000  (329 bytes)
 ; ----------------------------------------------------------------------
 	defb 0ffh,06ah,064h,05fh,059h,054h,050h,04bh,047h,043h,03fh,03ch,038h,008h,010h,020h	; 7b37  .jd_YTPKGC?<8.. 

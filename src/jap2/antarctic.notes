@@ -1173,7 +1173,7 @@ D 0x7B37 0x7B38 byte_suelto Un 0xFF que no apunta nadie, justo delante de la tab
 D 0x7B44 0x7B52 tabla_de_duraciones Las doce duraciones, indexadas por el nibble alto de cada nota. Van de 5 a 100 fotogramas y NO son una escala, aunque esten pegadas a la que si lo es
 D 0x7B52 0x7B82 punteros_de_sonido Veinticuatro punteros a los flujos. Cierra clavada en 0x7B82, que es el primero. El del sonido 0 apunta fuera de la ROM porque no se pide nunca, y los tres ultimos apuntan al 0xFF de 0x7B82: el sonido 0x95, el que llama 0x44BD al arrancar, es un flujo que se acaba en el primer byte, o sea el silencio
 D 0x7B82 0x7EB7 flujos_de_sonido Los veintiun flujos de musica y efectos
-D 0x7EB7 0x8000 relleno_final Lo que sobra del cartucho hasta los 16 KB
+D 0x7EB7 0x8000 relleno_final Lo que sobra del cartucho hasta los 16 KB, que son 306 bytes de 0xFF... salvo LOS ULTIMOS VEINTITRES (0x7FE9-0x7FFF), que no son 0xFF, no son texto descifrable y no los apunta nadie. Las otras dos versiones tienen ahi 0xFF hasta el final, asi que es cosa de esta. SIN IDENTIFICAR
 
 # --- Los quince destinos internos que faltaban por nombrar.
 L 0x44C3 PONE_REGISTROS_VDP  Copia los ocho registros a 0xE038 y los manda al VDP con WRTVDP
