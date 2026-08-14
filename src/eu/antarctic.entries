@@ -1,0 +1,79 @@
+# Puntos de entrada. Arrancado con tools/arranca_version.py y
+# COMPLETADO A MANO: lo de aqui es lo que se deduce solo.
+#
+# El unico que declara el cartucho es INIT: la BIOS lee la
+# cabecera "AB" y lo llama tras inicializar la maquina.
+0x4010   # INIT, de la cabecera del cartucho
+0x4044   # H.TIMI: la rutina de interrupcion. La engancha INIT
+         # y la llama la BIOS 50 o 60 veces por segundo, asi que
+         # ningun trazador estatico llega sin esto.
+
+# --- Destinos de las tablas de salto del despachador de 0x4098.
+# La tabla va INCRUSTADA detras del CALL, asi que el trazador no
+# puede seguirla. Cada una cierra clavada contra su primer destino,
+# y eso valida el tamano sin suponer nada:
+#   CALL 0x4116 -> tabla 0x4119, 16 entradas
+#   CALL 0x4189 -> tabla 0x418C,  3 entradas
+#   CALL 0x41D8 -> tabla 0x41DB,  4 entradas
+#   CALL 0x42FB -> tabla 0x42FE,  8 entradas
+#   CALL 0x48DC -> tabla 0x48DF,  7 entradas
+#   CALL 0x7706 -> tabla 0x7709,  4 entradas
+0x4139   # destino de tabla de saltos
+0x413A   # destino de tabla de saltos
+0x414B   # destino de tabla de saltos
+0x415D   # destino de tabla de saltos
+0x4168   # destino de tabla de saltos
+0x4176   # destino de tabla de saltos
+0x417F   # destino de tabla de saltos
+0x4186   # destino de tabla de saltos
+0x4192   # destino de tabla de saltos
+0x41A9   # destino de tabla de saltos
+0x41CA   # destino de tabla de saltos
+0x41D5   # destino de tabla de saltos
+0x41E3   # destino de tabla de saltos
+0x41F4   # destino de tabla de saltos
+0x4207   # destino de tabla de saltos
+0x4237   # destino de tabla de saltos
+0x4241   # destino de tabla de saltos
+0x4283   # destino de tabla de saltos
+0x429C   # destino de tabla de saltos
+0x42C2   # destino de tabla de saltos
+0x42E7   # destino de tabla de saltos
+0x42F8   # destino de tabla de saltos
+0x430E   # destino de tabla de saltos
+0x4321   # destino de tabla de saltos
+0x4361   # destino de tabla de saltos
+0x436F   # destino de tabla de saltos
+0x438C   # destino de tabla de saltos
+0x43B3   # destino de tabla de saltos
+0x43BC   # destino de tabla de saltos
+0x43E3   # destino de tabla de saltos
+0x48D9   # destino de tabla de saltos
+0x48ED   # destino de tabla de saltos
+0x4907   # destino de tabla de saltos
+0x490E   # destino de tabla de saltos
+0x4945   # destino de tabla de saltos
+0x495F   # destino de tabla de saltos
+0x496C   # destino de tabla de saltos
+0x49C3   # destino de tabla de saltos
+0x7711   # destino de tabla de saltos
+0x7729   # destino de tabla de saltos
+0x773F   # destino de tabla de saltos
+
+# --- ANADIDO A MANO. Ojo: volver a lanzar arranca_version.py pisa este fichero.
+
+# El segundo despachador, el de 0x49AF, que es de otra clase: un JP (HL) pelado
+# con HL = 0x49B0 + A. O sea que A no indexa una tabla de DIRECCIONES sino
+# CODIGO incrustado, con paso de cuatro bytes. Los cuatro casos cargan un valor
+# distinto en A y caen todos en el mismo call 48D4h.
+0x49B0   # caso 0: ld a,0E0h
+0x49B4   # caso 1: ld a,001h
+0x49B8   # caso 2: ld a,020h
+0x49BC   # caso 3: ld a,0FFh
+
+# --- CODIGO AL QUE NO LLEGA NADIE. Son rutinas de verdad, no datos: el
+# trazador no las alcanza porque ninguna instruccion las llama.
+0x48BE   # lee un byte de la VRAM: call 48C7h / in a,(098h) / ei / ret
+0x4404   # trozo suelto: call 458Eh / ld a,(0E002h) / rlca ... (nadie lo llama)
+0x4448   # un RET suelto
+0x4177   # ld hl,0E004h / dec (hl) / ret nz / jp 43ECh, sin quien lo llame

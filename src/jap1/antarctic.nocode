@@ -1,0 +1,48 @@
+# Zonas que NO son codigo, para que el trazador no se meta en
+# ellas. Arrancado con tools/arranca_version.py: las tablas de
+# salto salen de su propia regla de cierre, y los rangos de datos
+# de buscar en esta ROM el contenido de los ya identificados en
+# src/jap2.
+#
+# FALTA todo lo que lleva direcciones absolutas dentro, que no se
+# puede portar por contenido. El presupuesto de bytes dice cuanto.
+#
+# Convenio: [inicio, fin), el extremo derecho NO entra.
+
+0x4000 0x4010   # cabecera_del_cartucho
+0x4119 0x4139   # tabla_de_saltos_4119
+0x418B 0x4191   # tabla_de_saltos_418B
+0x41DA 0x41E2   # tabla_de_saltos_41DA
+0x42FD 0x430D   # tabla_de_saltos_42FD
+0x4479 0x4482   # valores_iniciales
+0x4770 0x4784   # decorado_por_fase
+0x4784 0x47AC   # listas_de_decorado
+0x4822 0x482C   # duracion_sorpresa
+0x48E1 0x48EF   # tabla_de_saltos_48E1
+0x4B55 0x4B7D   # poses_del_pinguino
+0x4C51 0x4C5D   # curva_del_salto
+0x4CFB 0x4D05   # arco_del_salto
+0x4D05 0x4D1A   # arco_de_la_caida
+0x4D99 0x4DA3   # choque_en_el_aire
+0x4EBE 0x4ED2   # rodada_de_la_caida
+0x53BE 0x546D   # dibujos_del_horizonte
+0x54F8 0x550C   # bloque_base_a
+0x550C 0x5516   # bloque_base_b
+0x5516 0x552B   # bloque_base_polo
+0x5605 0x574C   # banderas_comprimidas
+0x57E3 0x5823   # mandos_de_la_demo
+0x5DCB 0x620C   # dibujos_banco1
+0x620C 0x6229   # colores_de_pista_b
+0x6229 0x6238   # dibujos_banco1_resto
+0x626E 0x666B   # dibujos_banco2
+0x6698 0x66D5   # atributos_de_partida
+0x66D5 0x66FF   # atributos_de_base
+0x6705 0x6B92   # sprites_comprimidos
+0x6B92 0x71EA   # trozos_de_pista
+0x7510 0x7596   # bloques_de_la_meta
+0x76DA 0x76E2   # tabla_de_saltos_76DA
+0x77DD 0x77E1   # nubes_desplazamientos
+0x77E1 0x77E9   # nubes_posiciones
+0x7964 0x7970   # foca_escondida
+0x7AD8 0x7AE4   # tabla_de_notas
+0x7AE4 0x7AF2   # tabla_de_duraciones

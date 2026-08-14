@@ -26,13 +26,15 @@ ORG = 0x4000
 
 
 def rangos_de_notas(path):
-    """Los rangos D del fichero de notas: inicio, fin y nombre."""
+    """Los rangos D del fichero de notas: inicio, fin, nombre y explicacion."""
     out = []
     with open(path, encoding="utf-8") as f:
         for ln in f:
-            m = re.match(r"^D\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\s+(\S+)", ln)
+            m = re.match(r"^D\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\s+(\S+)\s*(.*)",
+                         ln.rstrip("\n"))
             if m:
-                out.append((int(m.group(1), 16), int(m.group(2), 16), m.group(3)))
+                out.append((int(m.group(1), 16), int(m.group(2), 16),
+                            m.group(3), m.group(4)))
     return sorted(out)
 
 
@@ -48,7 +50,7 @@ def main():
     rangos = rangos_de_notas(os.path.join(src_o, "antarctic.notes"))
 
     hallados, ambiguos, perdidos = [], [], []
-    for a, b, nombre in rangos:
+    for a, b, nombre, _ in rangos:
         trozo = origen[a - ORG:b - ORG]
         if len(trozo) < 4:
             perdidos.append((a, b, nombre, "demasiado corto para buscarlo"))

@@ -1,0 +1,54 @@
+# Zonas que NO son codigo, para que el trazador no se meta en
+# ellas. Arrancado con tools/arranca_version.py: las tablas de
+# salto salen de su propia regla de cierre, y los rangos de datos
+# de buscar en esta ROM el contenido de los ya identificados en
+# src/jap2.
+#
+# FALTA todo lo que lleva direcciones absolutas dentro, que no se
+# puede portar por contenido. El presupuesto de bytes dice cuanto.
+#
+# Convenio: [inicio, fin), el extremo derecho NO entra.
+
+0x4000 0x4010   # cabecera_del_cartucho
+0x4119 0x4139   # tabla_de_saltos_4119
+0x418C 0x4192   # tabla_de_saltos_418C
+0x41DB 0x41E3   # tabla_de_saltos_41DB
+0x42FE 0x430E   # tabla_de_saltos_42FE
+0x4477 0x4480   # valores_iniciales
+0x476E 0x4782   # decorado_por_fase
+0x4782 0x47AA   # listas_de_decorado
+0x4820 0x482A   # duracion_sorpresa
+0x48DF 0x48ED   # tabla_de_saltos_48DF
+0x4A7A 0x4AA3   # mapa_recorrido
+0x4AA3 0x4ACB   # tabla_de_fases
+0x4B4E 0x4B76   # poses_del_pinguino
+0x4C4A 0x4C56   # curva_del_salto
+0x4CF4 0x4CFE   # arco_del_salto
+0x4CFE 0x4D13   # arco_de_la_caida
+0x4D92 0x4D9C   # choque_en_el_aire
+0x4EB7 0x4ECB   # rodada_de_la_caida
+0x510F 0x515F   # decorados_por_fase
+0x515F 0x5169   # color_por_fase
+0x53AB 0x53CC   # curvas_por_fase
+0x53DC 0x548B   # dibujos_del_horizonte
+0x5516 0x552A   # bloque_base_a
+0x552A 0x5534   # bloque_base_b
+0x5534 0x5549   # bloque_base_polo
+0x55B7 0x5626   # nombres_de_las_bases
+0x563A 0x5781   # banderas_comprimidas
+0x5818 0x5858   # mandos_de_la_demo
+0x5DFA 0x623B   # dibujos_banco1
+0x623B 0x6258   # colores_de_pista_b
+0x6258 0x6267   # dibujos_banco1_resto
+0x629D 0x669A   # dibujos_banco2
+0x66C7 0x6704   # atributos_de_partida
+0x6704 0x672E   # atributos_de_base
+0x6734 0x6BC1   # sprites_comprimidos
+0x6BC1 0x7219   # trozos_de_pista
+0x753F 0x75C5   # bloques_de_la_meta
+0x7709 0x7711   # tabla_de_saltos_7709
+0x780C 0x7810   # nubes_desplazamientos
+0x7810 0x7818   # nubes_posiciones
+0x7993 0x799F   # foca_escondida
+0x7B07 0x7B13   # tabla_de_notas
+0x7B13 0x7B21   # tabla_de_duraciones
