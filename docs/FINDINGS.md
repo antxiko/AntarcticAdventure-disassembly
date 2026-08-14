@@ -36,9 +36,13 @@ map is ROM and the write goes nowhere. But if the cartridge were running from a
 copy in RAM, the dispatcher would turn into a jump to zero and the machine
 would reset on the first frame, since the game loop calls it right away.
 
-That it does this is settled by reading the bytes. Why it does it can't be
-proved from the binary, and the reasonable reading is a guard against copies in
-memory; but that's a reading, not a fact.
+It's a guard against copies in memory, and the cartridge's other two builds
+finish the story: neither of them carries these four instructions, not even the
+three loose bytes. Only this one does. And three dumps of this same version go
+around differing **in this instruction alone**: one with the destination at
+0x40B2, another with it at 0x0000, and a third with the `ldir` turned into two
+`nop`s. It's a discreet one: it checks nothing and warns about nothing, because
+on the real cartridge it's an instruction you never notice.
 
 ## There's a base you never reach
 

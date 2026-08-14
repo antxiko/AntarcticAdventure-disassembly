@@ -48,13 +48,14 @@ B 0x404c la escritura se pierde. Pero si el cartucho estuviera copiado
 B 0x404c en RAM, el despachador quedaria convertido en un salto a 0 y
 B 0x404c la maquina se reiniciaria en el primer fotograma, porque
 B 0x404c 0x4122 lo llama enseguida.
-B 0x404c Que hace: comprobado leyendo los bytes. Para que: es una
-B 0x404c proteccion contra copias en RAM (?), no se puede demostrar
-B 0x404c desde el binario.
-B 0x404c Las otras dos versiones del cartucho lo situan: la primera
-B 0x404c japonesa no lleva este LDIR en ninguna parte, y la segunda lo
-B 0x404c lleva apuntando a 0x0000. O sea que aparece despues, y entre
-B 0x404c una version y la siguiente alguien le cambia la punteria.
+B 0x404c Es una proteccion contra copias en RAM, y las otras dos
+B 0x404c compilaciones lo confirman: ni la primera japonesa ni la
+B 0x404c europea llevan este LDIR en ninguna parte, ni siquiera los
+B 0x404c tres bytes sueltos. Solo lo lleva esta, la segunda japonesa.
+B 0x404c Y de esta misma version circulan TRES volcados que se
+B 0x404c diferencian unicamente en esta instruccion: este, con el
+B 0x404c destino en 0x40B2; otro con el destino en 0x0000; y un tercero
+B 0x404c con el `ldir` entero convertido en dos `nop`.
 B 0x404c Ver la pagina de las versiones.
 C 0x404c Origen: los tres bytes `jp 0000h` de 0x411F
 C 0x404f Destino: 0x40B2, el despachador. Es ROM, asi que no pasa nada

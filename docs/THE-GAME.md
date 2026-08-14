@@ -12,18 +12,25 @@ distance, the map square where it starts and the time you're given. The table
 ends exactly where code starts again, which is what fixes its size without
 anyone having to guess.
 
-| Stage | Base | Distance | Time |
+| Stage | Distance | Time | Base you reach |
 |---|---|---|---|
-| 1 | FRANCE | 1500 m | 100 s |
-| 2 | USA | 1700 m | 120 s |
-| 3 | THE SOUTH POLE | 1100 m | 80 s |
-| 4 | USA | 1200 m | 80 s |
-| 5 | USA | 1200 m | 80 s |
-| 6 | ARGENTINA | 500 m | 40 s |
-| 7 | UNITED KINGDOM | 2600 m | 165 s |
-| 8 | JAPAN | 1200 m | 90 s |
-| 9 | AUSTRALIA | 1500 m | 100 s |
-| 10 | AUSTRALIA | 1200 m | 90 s |
+| 1 | 1500 m | 100 s | USA |
+| 2 | 1700 m | 120 s | THE SOUTH POLE |
+| 3 | 1100 m | 80 s | USA |
+| 4 | 1200 m | 80 s | USA |
+| 5 | 1200 m | 80 s | ARGENTINA |
+| 6 | 500 m | 40 s | UNITED KINGDOM |
+| 7 | 2600 m | 165 s | JAPAN |
+| 8 | 1200 m | 90 s | AUSTRALIA |
+| 9 | 1500 m | 100 s | AUSTRALIA |
+| 10 | 1200 m | 90 s | FRANCE |
+
+Careful pairing those two columns up, because they run off different counters
+one step apart. Distance and time come from the index in 0xE0E8, which during
+stage *k* holds *k−1*; the base name comes from the one in 0xE0E1, and the
+arrival scene bumps it **before** writing it out, so it points at where you're
+getting to, not where you came from. That's why FRANCE, index 0, is both the
+base you set off from and the one at the end: the lap closes on stage 10.
 
 The sixth is the game's sprint, half a kilometre, and the seventh its marathon:
 2600 metres with nearly three minutes to do it in. Past the tenth the counter

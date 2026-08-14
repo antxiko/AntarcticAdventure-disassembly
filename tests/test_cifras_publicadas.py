@@ -111,18 +111,45 @@ class TestCifras(unittest.TestCase):
 class TestLasDiezFases(unittest.TestCase):
     """Las dos paginas del juego tienen que contar el mismo recorrido."""
 
-    FASES = [("FRANCE", "1500", "100"), ("USA", "1700", "120"),
-             ("THE SOUTH POLE", "1100", "80"), ("USA", "1200", "80"),
-             ("USA", "1200", "80"), ("ARGENTINA", "500", "40"),
-             ("UNITED KINGDOM", "2600", "165"), ("JAPAN", "1200", "90"),
-             ("AUSTRALIA", "1500", "100"), ("AUSTRALIA", "1200", "90")]
+    # OJO CON EL DESPLAZAMIENTO, que es donde se cae todo el mundo: la distancia
+    # y el tiempo de la fase k salen de la entrada k-1 de la tabla de 0x4AD9
+    # (indexada por 0xE0E8), y el nombre de la base sale de 0xE0E1, que la
+    # escena de llegada SUBE ANTES de escribirlo. O sea que la fase k LLEGA a la
+    # base de indice k, y por eso FRANCE -el indice 0- es la de la fase 10 y no
+    # la de la 1.
+    FASES = [("1500", "100", "USA"), ("1700", "120", "THE SOUTH POLE"),
+             ("1100", "80", "USA"), ("1200", "80", "USA"),
+             ("1200", "80", "ARGENTINA"), ("500", "40", "UNITED KINGDOM"),
+             ("2600", "165", "JAPAN"), ("1200", "90", "AUSTRALIA"),
+             ("1500", "100", "AUSTRALIA"), ("1200", "90", "FRANCE")]
 
     def test_las_dos_tablas_dicen_lo_mismo(self):
         for pagina in ("docs/es/EL-JUEGO.md", "docs/THE-GAME.md"):
             texto = lee(os.path.join(RAIZ, pagina))
-            for i, (base, dist, tiempo) in enumerate(self.FASES, 1):
-                fila = "| %d | %s | %s m | %s s |" % (i, base, dist, tiempo)
+            for i, (dist, tiempo, base) in enumerate(self.FASES, 1):
+                fila = "| %d | %s m | %s s | %s |" % (i, dist, tiempo, base)
                 self.assertIn(fila, texto, "%s: falta la fila %s" % (pagina, fila))
+
+    def test_las_distancias_y_los_tiempos_son_los_del_cartucho(self):
+        """Y que no salgan de la cabeza de nadie: se leen de la ROM."""
+        rom = os.path.join(RAIZ, "antarctic.rom")
+        if not os.path.exists(rom):
+            self.skipTest("sin el cartucho no se puede comprobar")
+        with open(rom, "rb") as f:
+            d = f.read()
+        # Cuatro bytes por fase, y todo en decimal empaquetado: centenas de
+        # metros, la casilla del mapa donde empieza, y el tiempo en dos bytes.
+        def bcd(b):
+            return (b >> 4) * 10 + (b & 0x0F)
+
+        for i, (dist, tiempo, _) in enumerate(self.FASES, 1):
+            e = 0x4AD9 - 0x4000 + 4 * (i - 1)   # la fase k usa la entrada k-1
+            metros = bcd(d[e]) * 100
+            segundos = bcd(d[e + 3]) * 100 + bcd(d[e + 2])
+            self.assertEqual(int(dist), metros,
+                             "fase %d: la distancia publicada no es la del cartucho" % i)
+            self.assertEqual(int(tiempo), segundos,
+                             "fase %d: el tiempo publicado no es el del cartucho" % i)
 
 
 if __name__ == "__main__":

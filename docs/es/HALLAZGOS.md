@@ -37,9 +37,14 @@ estuviera copiado en RAM, el despachador quedaría convertido en un salto a cero
 y la máquina se reiniciaría en el primer fotograma, porque el bucle de juego lo
 llama nada más empezar.
 
-Que hace eso está comprobado leyendo los bytes. Para qué lo hace no se puede
-demostrar desde el binario, y lo más razonable es que sea una protección contra
-copias en memoria; pero eso es una lectura, no un hecho.
+Es una protección contra copias en memoria, y las otras dos compilaciones del
+cartucho terminan de contarlo: ninguna de las dos lleva estas cuatro
+instrucciones, ni siquiera los tres bytes sueltos. Solo las lleva esta. Y de
+esta misma versión circulan tres volcados que se diferencian **únicamente en
+esta instrucción**: uno con el destino en 0x40B2, otro con el destino en
+0x0000, y un tercero con el `ldir` convertido en dos `nop`. Es de las
+discretas: no comprueba nada ni avisa de nada, porque en el cartucho de verdad
+es una instrucción que no se nota.
 
 ## Hay una base a la que no se llega nunca
 

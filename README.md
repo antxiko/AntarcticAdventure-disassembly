@@ -77,9 +77,9 @@ what we say about them does. So two more checks run alongside:
 There's more, with the evidence, on
 [the findings page](https://antxiko.github.io/AntarcticAdventure-disassembly/FINDINGS.html).
 
-There are three different builds of this cartridge, and the second Japanese one
-is the European release bar two bytes. What changes between them — from the
-background colour to how they reach the video chip — is on
+There are three different builds of this cartridge, and the one taken apart
+here is the **second Japanese version**. What changes between them — the
+background colour, the route, even how they talk to the video chip — is on
 [the versions page](https://antxiko.github.io/AntarcticAdventure-disassembly/THE-VERSIONS.html).
 
 ## What's still open

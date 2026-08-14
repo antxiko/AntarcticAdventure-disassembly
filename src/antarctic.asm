@@ -67,13 +67,14 @@ INIT:		; Punto de entrada del cartucho, declarado en la cabecera
 ; en RAM, el despachador quedaria convertido en un salto a 0 y
 ; la maquina se reiniciaria en el primer fotograma, porque
 ; 0x4122 lo llama enseguida.
-; Que hace: comprobado leyendo los bytes. Para que: es una
-; proteccion contra copias en RAM (?), no se puede demostrar
-; desde el binario.
-; Las otras dos versiones del cartucho lo situan: la primera
-; japonesa no lleva este LDIR en ninguna parte, y la segunda lo
-; lleva apuntando a 0x0000. O sea que aparece despues, y entre
-; una version y la siguiente alguien le cambia la punteria.
+; Es una proteccion contra copias en RAM, y las otras dos
+; compilaciones lo confirman: ni la primera japonesa ni la
+; europea llevan este LDIR en ninguna parte, ni siquiera los
+; tres bytes sueltos. Solo lo lleva esta, la segunda japonesa.
+; Y de esta misma version circulan TRES volcados que se
+; diferencian unicamente en esta instruccion: este, con el
+; destino en 0x40B2; otro con el destino en 0x0000; y un tercero
+; con el `ldir` entero convertido en dos `nop`.
 ; Ver la pagina de las versiones.
 ; ----------------------------------------------------------------------
 	ld hl,0411fh		;404c   ; Origen: los tres bytes `jp 0000h` de 0x411F

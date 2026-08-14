@@ -94,7 +94,7 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
     ld bc,00003h
     ldir</code></pre>
 <p>En un cartucho eso no hace absolutamente nada, porque esa mitad del mapa de memoria es ROM y la escritura se pierde por el camino. Pero si el cartucho estuviera copiado en RAM, el despachador quedaría convertido en un salto a cero y la máquina se reiniciaría en el primer fotograma, porque el bucle de juego lo llama nada más empezar.</p>
-<p>Que hace eso está comprobado leyendo los bytes. Para qué lo hace no se puede demostrar desde el binario, y lo más razonable es que sea una protección contra copias en memoria; pero eso es una lectura, no un hecho.</p>
+<p>Es una protección contra copias en memoria, y las otras dos compilaciones del cartucho terminan de contarlo: ninguna de las dos lleva estas cuatro instrucciones, ni siquiera los tres bytes sueltos. Solo las lleva esta. Y de esta misma versión circulan tres volcados que se diferencian <b>únicamente en esta instrucción</b>: uno con el destino en 0x40B2, otro con el destino en 0x0000, y un tercero con el <code>ldir</code> convertido en dos <code>nop</code>. Es de las discretas: no comprueba nada ni avisa de nada, porque en el cartucho de verdad es una instrucción que no se nota.</p>
 <h2 id="hay-una-base-a-la-que-no-se-llega-nunca">Hay una base a la que no se llega nunca</h2>
 <p>El cartucho lleva ocho nombres de base y el recorrido tiene diez paradas. Siete de esos nombres cubren las diez —Estados Unidos sale tres veces y Australia dos— y el octavo, <b>NEW ZEALAND</b>, no lo pide nadie.</p>
 <p>Comprobado por tres caminos distintos, porque una sola comprobación aquí no basta:</p>

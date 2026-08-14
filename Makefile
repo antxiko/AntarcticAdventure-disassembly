@@ -18,7 +18,7 @@ $(ROM):
 	@echo "=================================================================="
 	@echo " Falta $(ROM), y este repositorio NO lo distribuye."
 	@echo ""
-	@echo " Es el cartucho europeo de Antarctic Adventure (Konami, 1984),"
+	@echo " Es Antarctic Adventure (Konami, 1984), segunda version japonesa,"
 	@echo " 16384 bytes exactos. Ponlo aqui con ese nombre. Para comprobar"
 	@echo " que es el mismo:"
 	@echo "     shasum -a 256 $(ROM)"

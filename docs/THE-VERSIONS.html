@@ -82,53 +82,43 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 </style>
 <div class="w"><nav class="top"><a href="index.html">Home</a><a href="GETTING-STARTED.html">Start</a><a href="THE-GAME.html">The game</a><a href="THE-CARTRIDGE.html">The cartridge</a><a href="THE-CODE.html">The code</a><a href="FINDINGS.html">Findings</a><a href="THE-VERSIONS.html" style=color:var(--tinta)>The versions</a><a href="OPEN-QUESTIONS.html">Open questions</a><a href="es/LAS-VERSIONES.html" style="margin-left:auto;color:var(--oro)">Castellano</a></nav>
 <h1 id="the-versions">The versions</h1>
-<p>There are three different builds of this cartridge: two that sell in Japan and the one that leaves the country. This disassembly is of the last one, the European release, and it turns out to cover one of the Japanese ones too, because there are exactly two bytes between them.</p>
-<p>All three files are 16384 bytes on the nose:</p>
-<pre><code>first Japanese    087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
-second Japanese   a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
-European          17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126</code></pre>
-<p>None of them is distributed here. If you have all three, <code>tools/compara_versiones.py</code> prints everything this page claims in one go, which is what it&#x27;s for.</p>
-<p>One warning first: there are a lot of dirty dumps of this game going around. Some are 32 KB with the same 16 KB repeated twice, some are the same file under another name, and at least one is the European build with a couple of bytes changed by somebody who wanted to run it from RAM. Start with the sha256, always.</p>
-<h2 id="the-second-japanese-build-and-the-european-one-are-the-same-binary">The second Japanese build and the European one are the same binary</h2>
-<p>They differ in <b>two bytes</b> and nothing else. The bytes are at 0x4050 and 0x4051, inside the boot code, and what they change is where a three-byte copy lands:</p>
-<pre><code>second Japanese   ld hl,411Fh / ld de,0000h / ld bc,0003h / ldir
-European          ld hl,411Fh / ld de,40B2h / ld bc,0003h / ldir</code></pre>
-<p>Everything else — the code, the compressed artwork, the text, the music, the recorded attract game — is byte for byte the same. So this disassembly describes both equally well, and all you need to read it as the Japanese one is to swap that <code>40B2h</code> for <code>0000h</code>. We&#x27;ll come back to that LDIR at the end, because it has a story.</p>
-<h2 id="the-first-one-is-another-cartridge-altogether">The first one is another cartridge altogether</h2>
-<p>No small edits here: 15443 of the 16384 bytes are different, 94 % of the cartridge, and the code has moved around from top to bottom. It&#x27;s a separate build. What&#x27;s interesting is that nearly everything that changed points the same way.</p>
-<h3 id="it-assumes-where-the-video-chip-lives">It assumes where the video chip lives</h3>
-<p>The first version has the VDP ports written into the instructions themselves: fourteen accesses with the port number baked into the opcode, like</p>
+<p>There are three different builds of this cartridge, and what changes between them goes well beyond translating a label: the background colour changes, the route changes, and so does the way the code talks to the video chip.</p>
+<h2 id="which-rom-this-is">Which ROM this is</h2>
+<p>This disassembly is of the <b>second Japanese version</b>, which is worth saying up front because it isn&#x27;t the one you&#x27;d expect. Specifically, of a dump of that version with two bytes altered: the ones at 0x4050-0x4051, which are the destination of the boot-time copy discussed at the end of this page.</p>
+<pre><code>the dump used here   17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126
+second Japanese      a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
+first Japanese       087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
+European             9b13aaa66661b69a8a9a19656d2d9fd052ddae11aba752e84ebb38b03137739a</code></pre>
+<p>All four files are 16384 bytes on the nose, and none of them is distributed here. If you have them, <code>tools/compara_versiones.py</code> prints everything this page claims in one go.</p>
+<p>A warning, because a lot of dirty dumps of this game go around: some are 32 KB with the same 16 KB repeated twice, some are the same file under another name, and several have a couple of bytes changed. Start with the sha256, always, and don&#x27;t trust the filename.</p>
+<h2 id="the-three-at-a-glance">The three at a glance</h2>
+<table><tr><th></th><th>first Japanese</th><th>European</th><th>second Japanese</th></tr><tr><td>background and border</td><td>black</td><td>black</td><td><b>dark blue</b></td></tr><tr><td>VDP accesses with the port in the opcode</td><td>14</td><td>14</td><td><b>0</b></td></tr><tr><td>accesses with the port read from the BIOS</td><td>0</td><td>0</td><td><b>8</b></td></tr><tr><td>system hooks neutralised at boot</td><td>no</td><td>no</td><td><b>yes</b></td></tr><tr><td>three-byte copy at boot</td><td>no</td><td>no</td><td><b>yes</b></td></tr><tr><td>title screen label</td><td><code>VIDEO CARTRIDGE</code></td><td><code>VIDEO CARTRIDGE</code></td><td>**<code>KONAMI</code>**</td></tr><tr><td>NEW ZEALAND</td><td><b>you go there</b></td><td>sits unused</td><td>sits unused</td></tr><tr><td>the South Pole</td><td><b>four graphics of its own</b></td><td><code>THE SOUTH POLE</code></td><td><code>THE SOUTH POLE</code></td></tr></table>
+<p>None of the three resembles another in the binary: 14869 bytes differ between the first and the European, 15350 between the European and the second, and 15443 between the first and the second. These are separate builds with the code moved around, not variants with a patch on top.</p>
+<p>What&#x27;s interesting is how they group. On the game&#x27;s map the European goes with the second Japanese; on how it treats the machine it goes with the first. The changes arrive in two batches, and the European sits in the middle.</p>
+<h2 id="first-batch-the-map-changes">First batch: the map changes</h2>
+<p>All three carry the same eight base-name strings inside, plus a table of ten pointers handing them out across the ten stages. The first version hands them out like this:</p>
+<pre><code>JAPAN, AUSTRALIA, AUSTRALIA, FRANCE, NEW ZEALAND, the Pole,
+USA, USA, ARGENTINA, UNITED KINGDOM</code></pre>
+<p>and the other two like this:</p>
+<pre><code>FRANCE, USA, the Pole, USA, USA, ARGENTINA,
+UNITED KINGDOM, JAPAN, AUSTRALIA, AUSTRALIA</code></pre>
+<p>It&#x27;s the same trip round the world rotated by three, with one real change: where the first sends you to New Zealand, the others repeat the United States. The NEW ZEALAND string stays in the cartridge, whole, with nothing pointing at it. That index, by the way, is the base you <b>arrive at</b>: index 0 is where you set off from and also where the lap closes, on the tenth stage.</p>
+<p>Two more text changes come in the same batch. The label for the Pole base, which on the first version isn&#x27;t letters at all but four graphics of its own — patterns 0xCE to 0xD1, which turn up in no other word in the game — gets spelled out as <code>THE SOUTH POLE</code>. And each string starts carrying two bytes in front giving the exact spot on screen where it goes, which is what centres it: 0x3AC8 for the fourteen-letter ones, 0x3ACE for the three letters of USA.</p>
+<h2 id="second-batch-the-machine-changes">Second batch: the machine changes</h2>
+<p>This is where the second Japanese version parts company with the other two, and everything that changes points the same way: it stops assuming what the MSX underneath looks like.</p>
+<p>The first two have the video chip&#x27;s ports written into the instructions themselves. Their routine for writing one register is this, in full:</p>
 <pre><code>di / ld a,e / out (099h),a / ld a,d / out (099h),a / ret</code></pre>
-<p>which is its entire routine for writing one of the chip&#x27;s registers. On a 1984 Japanese MSX that works and that&#x27;s that.</p>
-<p>In the other two there isn&#x27;t a single one left. All eight video-data accesses become <code>out (c),a</code>, with the port number in C, and that number isn&#x27;t written anywhere: it&#x27;s read from the BIOS work area, where the machine records which port is actually its own.</p>
+<p>and there are fourteen more accesses in the same style alongside it. The second Japanese version doesn&#x27;t have a single one. All eight video-data accesses become <code>out (c),a</code>, with the port number in C, and that number isn&#x27;t written anywhere: it&#x27;s read from the BIOS work area, where the machine records which port is actually its own.</p>
 <pre><code>ld a,(00006h)   ; the VDP data port, which the BIOS keeps there
 ld c,a</code></pre>
-<p>The registers go through the standard BIOS call instead, and so does pointing at video memory. This isn&#x27;t one stray tweak: somebody went through site by site removing the assumption that the chip sits where it usually sits.</p>
-<h3 id="and-it-assumes-nothing-else-is-plugged-in">And it assumes nothing else is plugged in</h3>
-<p>The boot code has two more differences of the same kind. The first version hooks its interrupt routine and gets going; the other two, before hooking it, <b>fill the system&#x27;s 512 bytes of reserved hooks with RETs</b>, disabling whatever any attached extension had put there. And to clear the interrupt left pending at power-on, the first one reads the video port directly while the other two call the BIOS.</p>
-<h3 id="the-background-is-black">The background is black</h3>
-<p>Background and border colour come from register 7 of the video chip, and all three set it at boot and never touch it again for the rest of the game.</p>
-<pre><code>first Japanese   0xE1  -&gt; grey ink, black background and border
-the other two    0xE4  -&gt; grey ink, dark blue background and border</code></pre>
-<p>So the Konami screen on the first one comes up over black, and on the other two over blue.</p>
-<h3 id="new-zealand-exists-and-you-go-there">New Zealand exists, and you go there</h3>
-<p>All three carry the same eight strings with the base names inside, plus a table of ten pointers handing those eight out across the ten stages of the route. The hand-out isn&#x27;t the same:</p>
-<pre><code>first Japanese   JAPAN, AUSTRALIA, AUSTRALIA, FRANCE, NEW ZEALAND,
-                 the Pole, USA, USA, ARGENTINA, UNITED KINGDOM
-the other two    FRANCE, USA, the Pole, USA, USA, ARGENTINA,
-                 UNITED KINGDOM, JAPAN, AUSTRALIA, AUSTRALIA</code></pre>
-<p>It&#x27;s the same trip round the world rotated by three — the first one starts in Japan and the others in France — with a single real change: where the first sends you to New Zealand, the others repeat the United States. The NEW ZEALAND string is still sitting in the cartridge, at 0x5610, with nothing pointing at it. Whole and unused, taking up its sixteen bytes.</p>
-<h3 id="the-south-pole-is-written-in-japanese">The South Pole is written in Japanese</h3>
-<p>On the first version the label for the Pole base isn&#x27;t letters at all: it&#x27;s four graphics of its own, patterns 0xCE to 0xD1, which don&#x27;t turn up in any other word in the game. On the other two that slot holds <code>THE SOUTH POLE</code>, spelled out with the same alphabet as everything else.</p>
-<p>Along the way the title screen label changes too — <code>VIDEO CARTRIDGE</code> on the first, <code>KONAMI</code> on the others — and so does the way the names are stored: on the last two each string is preceded by two bytes giving the exact spot on screen where it goes, which is what centres it (0x3AC8 for the fourteen-letter ones, 0x3ACE for the three letters of USA), and on the first those two bytes aren&#x27;t there.</p>
-<h2 id="the-ldir-that-does-nothing">The LDIR that does nothing</h2>
-<p>Back to those two bytes. What that LDIR does is copy three bytes from 0x411F — which are <code>C3 00 00</code>, that is, <code>jp 0000h</code> — over the top of 0x40B2. And 0x40B2 is the game&#x27;s dispatcher, the routine every table-driven jump goes through, and it gets called on the very first frame.</p>
-<p>In a cartridge nothing happens, because the page the cartridge lives in is ROM and the write is simply lost. But if the game were running from RAM, the dispatcher would turn into a jump to zero and the machine would reset before showing anything.</p>
-<p>Lining the three versions up says a fair bit:</p>
-<pre><code>first Japanese    doesn&#x27;t carry that LDIR anywhere
-second Japanese   carries it, aimed at 0x0000
-European          carries it, aimed at 0x40B2</code></pre>
-<p>So it appears later, and between one version and the next somebody re-aims it. <b>What it does is verified by reading the bytes; what it&#x27;s for can&#x27;t be proven from the binary.</b> The obvious reading is that it&#x27;s protection against RAM copies, and it helps that a dump goes around which is exactly the European build with those two bytes turned into <code>nop</code>s — precisely what you&#x27;d do to get rid of it. But that&#x27;s a reading, not a measurement.</p>
+<p>The registers go through the standard BIOS call instead, and so does pointing at video memory. And the boot code does something the other two don&#x27;t: before hooking its interrupt routine, it <b>fills the system&#x27;s 512 bytes of reserved hooks with RETs</b>, disabling whatever any attached extension had put there.</p>
+<p>The background comes along for the ride. Background and border colour come from register 7 of the chip, and all three set it at boot and never touch it again for the rest of the game: 0xE1 on the first two, which is black, and 0xE4 on the second Japanese, which is dark blue.</p>
+<h2 id="the-three-byte-copy-at-boot">The three-byte copy at boot</h2>
+<p>Which brings us to the thing only the second Japanese version has. Its INIT copies three bytes from 0x411F — which are <code>C3 00 00</code>, that is, <code>jp 0000h</code> — over the top of another address. In the dump this disassembly uses, that address is 0x40B2, the game&#x27;s dispatcher, the routine every table-driven jump goes through and which gets called on the very first frame:</p>
+<pre><code>ld hl,411Fh / ld de,40B2h / ld bc,0003h / ldir</code></pre>
+<p>In a cartridge nothing happens, because the page the cartridge lives in is ROM and the write is lost. But running from RAM, the dispatcher would turn into a jump to zero and the machine would reset before showing anything. It&#x27;s copy protection, and a good one: it checks nothing and warns about nothing, because on the real cartridge it&#x27;s an instruction you never notice.</p>
+<p>The two bytes separating this dump from the other one of the same version are exactly that copy&#x27;s destination, which over there is 0x0000. And a third dump of this same version goes around with the whole <code>ldir</code> turned into two <code>nop</code>s. Three variants of the same binary differing only in that one instruction give a fairly clear idea of what it&#x27;s for.</p>
+<p>Neither the first Japanese version nor the European carries any of this: the copy doesn&#x27;t exist anywhere in those two, not even the three loose bytes.</p>
 <h2 id="what-we-don-t-know">What we don&#x27;t know</h2>
-<p>The four graphics the first version writes the South Pole with still haven&#x27;t been read. They&#x27;re in the cartridge compressed like the rest of the artwork, and getting them out would need that version&#x27;s own addresses.</p>
+<p>The four graphics the first version writes the South Pole with still haven&#x27;t been read. They&#x27;re compressed like the rest of the artwork, and getting them out would need that version&#x27;s own addresses.</p>
 <footer><p><em>Antarctic Adventure</em> was published by Konami in 1984, reference RC-701. The cartridge credits nobody by name: the only signature in it, on the title screen, is <b>&copy;KONAMI 1984</b>. All rights in the game remain with their holders. This is preservation, study and documentation work.</p></footer></div>

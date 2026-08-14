@@ -1,148 +1,137 @@
 # Las versiones
 
-Del cartucho hay tres compilaciones distintas: dos que se venden en Japón y la
-que sale de allí. Este desensamblado está hecho sobre la última, la europea, y
-resulta que también sirve para una de las japonesas, porque entre las dos hay
-exactamente dos bytes de diferencia.
+De este cartucho hay tres compilaciones distintas, y entre ellas cambian cosas
+que van bastante más allá de traducir un rótulo: cambia el color del fondo,
+cambia el recorrido, y cambia hasta la manera de hablarle al chip gráfico.
 
-Los tres ficheros son de 16384 bytes clavados:
+## Cuál es la ROM de aquí
 
-    primera japonesa   087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
-    segunda japonesa   a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
-    europea            17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126
+Este desensamblado está hecho sobre la **segunda versión japonesa**, y conviene
+decirlo de entrada porque no es la que uno esperaría. En concreto, sobre un
+volcado de esa versión que lleva dos bytes tocados: los de 0x4050-0x4051, que
+son el destino de la copia del arranque de la que se habla al final.
 
-Aquí no se distribuye ninguno. Si los tienes los tres,
-`tools/compara_versiones.py` saca de una pasada todo lo que cuenta esta página,
-que para eso está.
+    volcado de aquí     17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126
+    segunda japonesa    a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
+    primera japonesa    087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
+    europea             9b13aaa66661b69a8a9a19656d2d9fd052ddae11aba752e84ebb38b03137739a
 
-Y un aviso antes de nada: de este juego circulan muchos volcados sucios.
-Los hay de 32 KB con los mismos 16 KB repetidos dos veces, copias del mismo
-fichero con otro nombre, y alguno que es la europea con un par de bytes tocados
-por alguien que quería correrla desde RAM. Lo primero es siempre el sha256.
+Los cuatro ficheros son de 16384 bytes clavados, y aquí no se distribuye
+ninguno. Si los tienes, `tools/compara_versiones.py` saca de una pasada todo lo
+que cuenta esta página.
 
-## La segunda japonesa y la europea son el mismo binario
+Un aviso, porque de este juego circulan muchos volcados sucios: los hay de
+32 KB con los mismos 16 KB repetidos dos veces, copias del mismo fichero con
+otro nombre, y varios con un par de bytes cambiados. Lo primero es siempre el
+sha256, y no fiarse del nombre.
 
-Difieren en **dos bytes** y en nada más. Están en 0x4050 y 0x4051, dentro del
-arranque, y lo que cambian es el destino de una copia de tres bytes:
+## Las tres, de un vistazo
 
-    segunda japonesa   ld hl,411Fh / ld de,0000h / ld bc,0003h / ldir
-    europea            ld hl,411Fh / ld de,40B2h / ld bc,0003h / ldir
+|  | primera japonesa | europea | segunda japonesa |
+|---|---|---|---|
+| fondo y borde | negro | negro | **azul oscuro** |
+| accesos al VDP con el puerto en el opcode | 14 | 14 | **0** |
+| accesos con el puerto leído de la BIOS | 0 | 0 | **8** |
+| ganchos del sistema neutralizados al arrancar | no | no | **sí** |
+| copia de tres bytes en el arranque | no | no | **sí** |
+| rótulo de portada | `VIDEO CARTRIDGE` | `VIDEO CARTRIDGE` | **`KONAMI`** |
+| NEW ZEALAND | **se visita** | está sin usar | está sin usar |
+| el Polo Sur | **cuatro dibujos propios** | `THE SOUTH POLE` | `THE SOUTH POLE` |
 
-Todo lo demás —el código, los gráficos comprimidos, los textos, la música, la
-partida de demostración— es byte por byte lo mismo. Así que este desensamblado
-describe las dos igual de bien, y lo único que hay que saber para leerlo como
-la japonesa es cambiar ese `40B2h` por un `0000h`. De ese LDIR hablamos al
-final, porque tiene su gracia.
+Ninguna de las tres se parece a otra en el binario: entre la primera y la
+europea hay 14869 bytes distintos, entre la europea y la segunda 15350, y entre
+la primera y la segunda 15443. Son compilaciones separadas, con el código
+movido de sitio, no variantes con un parche.
 
-## La primera es otro cartucho
+Lo interesante es cómo se agrupan. En el mapa del juego, la europea va con la
+segunda japonesa; en la manera de tratar la máquina, va con la primera. O sea
+que los cambios llegan en dos tandas, y la europea está en medio.
 
-Aquí ya no hay retoques: 15443 de los 16384 bytes son distintos, un 94 % del
-cartucho, y el código está movido de sitio de arriba abajo. Es otra
-compilación. Lo interesante es que casi todo lo que cambia va en la misma
-dirección.
+## Primera tanda: cambia el mapa
 
-### Da por hecho dónde está el chip gráfico
+Las tres llevan dentro las mismas ocho cadenas con los nombres de las bases y
+una tabla de diez punteros que las reparte entre las diez fases. La primera
+versión reparte así:
 
-La primera versión lleva los puertos del VDP escritos dentro de las propias
-instrucciones: catorce accesos con el número de puerto metido en el opcode,
-del estilo de
+    JAPÓN, AUSTRALIA, AUSTRALIA, FRANCIA, NUEVA ZELANDA, el Polo,
+    EE. UU., EE. UU., ARGENTINA, REINO UNIDO
+
+y las otras dos así:
+
+    FRANCIA, EE. UU., el Polo, EE. UU., EE. UU., ARGENTINA,
+    REINO UNIDO, JAPÓN, AUSTRALIA, AUSTRALIA
+
+Es la misma vuelta al mundo girada tres puestos, con un solo cambio de verdad:
+donde la primera manda a Nueva Zelanda, las otras repiten Estados Unidos. La
+cadena de NEW ZEALAND se queda en el cartucho, entera y sin que nadie la
+apunte. Ese índice, por cierto, es la base **a la que se llega**: el 0 es de
+donde sales y también donde se cierra la vuelta, en la décima fase.
+
+En la misma tanda cambian otras dos cosas del texto. El rótulo de la base del
+Polo, que en la primera no son letras sino cuatro dibujos propios —los patrones
+0xCE a 0xD1, que no salen en ninguna otra palabra del juego—, pasa a estar
+deletreado como `THE SOUTH POLE`. Y cada cadena empieza a llevar delante dos
+bytes con el sitio exacto de la pantalla donde va escrita, que es lo que la
+centra: 0x3AC8 para las de catorce letras, 0x3ACE para las tres de EE. UU.
+
+## Segunda tanda: cambia la máquina
+
+Aquí es donde la segunda japonesa se separa de las otras dos, y todo lo que
+cambia va en la misma dirección: dejar de dar por hecho cómo es el MSX que hay
+debajo.
+
+Las dos primeras llevan los puertos del chip gráfico escritos dentro de las
+propias instrucciones. Su rutina de escribir un registro es esta entera:
 
     di / ld a,e / out (099h),a / ld a,d / out (099h),a / ret
 
-que es su rutina entera de escribir un registro del chip. En un MSX japonés de
-1984 eso funciona y ya está.
-
-En las otras dos no queda ni uno. Los ocho accesos a los datos del vídeo pasan
-a `out (c),a`, con el número de puerto en C, y ese número no está escrito en
-ninguna parte: se lee de la zona de trabajo de la BIOS, que es donde la máquina
-apunta cuál es el suyo.
+y con ella hay catorce accesos más del mismo estilo. La segunda japonesa no
+tiene ni uno. Los ocho accesos a los datos del vídeo pasan a `out (c),a`, con
+el número de puerto en C, y ese número no está escrito en ninguna parte: se lee
+de la zona de trabajo de la BIOS, que es donde la máquina apunta cuál es el
+suyo.
 
     ld a,(00006h)   ; el puerto de datos del VDP, que la BIOS guarda ahí
     ld c,a
 
-Los registros pasan a mandarse con la llamada estándar de la BIOS, y el
-apuntado de la memoria de vídeo también. No es un retoque suelto: alguien fue
-sitio por sitio quitando la suposición de que el chip está donde suele estar.
+Los registros pasan a mandarse con la llamada estándar de la BIOS y el apuntado
+de la memoria de vídeo también. Y el arranque hace algo más que las otras dos
+no hacen: antes de enganchar su rutina de interrupción, **rellena de RET los
+512 bytes de ganchos que el sistema tiene reservados**, o sea que desactiva lo
+que hubiera puesto ahí cualquier extensión conectada.
 
-### Y da por hecho que no hay nada más enchufado
+De paso, el fondo. El color de fondo y de borde sale del registro 7 del chip, y
+las tres lo dejan puesto en el arranque y no lo vuelven a tocar en toda la
+partida: 0xE1 en las dos primeras, que es negro, y 0xE4 en la segunda japonesa,
+que es azul oscuro.
 
-El mismo arranque tiene otras dos diferencias del mismo estilo. La primera
-versión engancha su rutina de interrupción y a correr; las otras dos, antes de
-engancharla, **rellenan de RET los 512 bytes de ganchos que el sistema tiene
-reservados**, o sea que desactivan lo que hubiera puesto ahí cualquier
-extensión conectada. Y para descartar la interrupción que queda pendiente al
-arrancar, la primera lee el puerto del vídeo a pelo y las otras llaman a la
-BIOS.
+## La copia de tres bytes del arranque
 
-### El fondo es negro
+Y llegamos a lo que solo tiene la segunda japonesa. Su INIT copia tres bytes de
+0x411F —que son `C3 00 00`, o sea `jp 0000h`— encima de otra dirección. En el
+volcado de este desensamblado esa dirección es 0x40B2, que es el despachador
+del juego, la rutina por la que pasan todos los saltos por tabla y a la que se
+llama en el primer fotograma:
 
-El color de fondo y de borde sale del registro 7 del chip gráfico, y las tres
-lo dejan puesto en el arranque y no lo vuelven a tocar en toda la partida.
-
-    primera japonesa   0xE1  -> tinta gris, fondo y borde negros
-    las otras dos      0xE4  -> tinta gris, fondo y borde azul oscuro
-
-Así que la pantalla de Konami de la primera sale sobre negro y la de las otras
-dos sobre azul.
-
-### Nueva Zelanda existe y se visita
-
-Las tres llevan dentro las mismas ocho cadenas con los nombres de las bases, y
-una tabla de diez punteros que reparte esas ocho entre las diez fases del
-recorrido. El reparto no es el mismo:
-
-    primera japonesa   JAPÓN, AUSTRALIA, AUSTRALIA, FRANCIA, NUEVA ZELANDA,
-                       el Polo, EE. UU., EE. UU., ARGENTINA, REINO UNIDO
-    las otras dos      FRANCIA, EE. UU., el Polo, EE. UU., EE. UU., ARGENTINA,
-                       REINO UNIDO, JAPÓN, AUSTRALIA, AUSTRALIA
-
-Es la misma vuelta al mundo girada tres puestos —la primera empieza en Japón y
-las otras en Francia— con un solo cambio de verdad: donde la primera manda a
-Nueva Zelanda, las otras repiten Estados Unidos. La cadena de NEW ZEALAND sigue
-guardada en el cartucho, en 0x5610, y no la apunta nadie. Ahí sigue, entera y
-sin estrenar, ocupando sus dieciséis bytes.
-
-### El Polo Sur está escrito en japonés
-
-En la primera, el rótulo de la base del Polo no son letras: son cuatro dibujos
-propios, los patrones 0xCE a 0xD1, que no salen en ninguna otra palabra del
-juego. En las otras dos ese hueco lo ocupa `THE SOUTH POLE`, deletreado con el
-mismo alfabeto que el resto.
-
-Por el camino cambia también el rótulo de la portada, que en la primera dice
-`VIDEO CARTRIDGE` y en las otras `KONAMI`, y la manera de guardar los nombres:
-en las dos últimas cada cadena lleva delante dos bytes con el sitio exacto de
-la pantalla donde va escrita, que es lo que la centra —0x3AC8 para las de
-catorce letras, 0x3ACE para las tres de EE. UU.—, y en la primera esos dos
-bytes no están.
-
-## El LDIR que no hace nada
-
-Volvamos a los dos bytes del principio. Lo que hace ese LDIR es copiar tres
-bytes de 0x411F —que son `C3 00 00`, o sea `jp 0000h`— encima de 0x40B2. Y
-0x40B2 es el despachador del juego, la rutina por la que pasan todos los saltos
-por tabla, a la que se llama en el primer fotograma.
+    ld hl,411Fh / ld de,40B2h / ld bc,0003h / ldir
 
 En un cartucho no pasa nada, porque la página donde vive el cartucho es ROM y
-la escritura se pierde por el camino. Pero si el juego estuviera corriendo
-desde RAM, el despachador se convertiría en un salto a cero y la máquina se
-reiniciaría antes de enseñar nada.
+la escritura se pierde. Pero corriendo desde RAM, el despachador se convertiría
+en un salto a cero y la máquina se reiniciaría antes de enseñar nada. Es una
+protección contra copias, y de las buenas: no comprueba nada ni avisa de nada,
+porque en el cartucho de verdad es una instrucción que no se nota.
 
-Las tres versiones puestas en fila dicen bastante:
+Los dos bytes que separan este volcado del otro de la misma versión son
+justamente el destino de esa copia, que allí es 0x0000. Y por ahí circula
+además un tercer volcado, otra vez de esta misma versión, con el `ldir` entero
+convertido en dos `nop`. Tres variantes del mismo binario que solo se
+diferencian en esa instrucción dan una idea bastante clara de para qué está.
 
-    primera japonesa   no lleva ese LDIR en ninguna parte
-    segunda japonesa   lo lleva, apuntando a 0x0000
-    europea            lo lleva, apuntando a 0x40B2
-
-O sea que aparece después, y entre una versión y la siguiente alguien le cambia
-la puntería. **Qué hace está comprobado leyendo los bytes; para qué está no se
-puede demostrar desde el binario.** La lectura obvia es que sea una protección
-contra copias en RAM, y suma que por ahí circule un volcado que es exactamente
-la europea con esos dos bytes convertidos en `nop`, que es justo lo que haría
-quien quisiera quitársela de encima. Pero eso es una lectura, no una medida.
+Ni la primera japonesa ni la europea llevan nada de esto: la copia no existe en
+ninguna parte de esas dos, ni siquiera los tres bytes sueltos.
 
 ## Lo que no sabemos
 
 Los cuatro dibujos con los que la primera versión escribe el Polo Sur siguen
-sin leerse. Están en el cartucho comprimidos como el resto de los gráficos y
-harían falta las direcciones de esa versión para sacarlos.
+sin leerse. Están comprimidos como el resto de los gráficos y harían falta las
+direcciones de esa versión para sacarlos.

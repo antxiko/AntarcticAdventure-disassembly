@@ -78,9 +78,9 @@ lo que decimos de ellos. Así que van dos comprobaciones más al lado:
 Hay más, con la evidencia al lado, en
 [la página de hallazgos](https://antxiko.github.io/AntarcticAdventure-disassembly/es/HALLAZGOS.html).
 
-De este cartucho hay tres compilaciones distintas, y la segunda japonesa es la
-europea salvo dos bytes. Lo que cambia de una a otra —desde el color del fondo
-hasta cómo llegan al chip gráfico— está en
+De este cartucho hay tres compilaciones distintas, y esta que se desensambla
+aquí es la **segunda versión japonesa**. Lo que cambia de una a otra —el color
+del fondo, el recorrido, y hasta cómo le hablan al chip gráfico— está en
 [la página de las versiones](https://antxiko.github.io/AntarcticAdventure-disassembly/es/LAS-VERSIONES.html).
 
 ## Lo que queda abierto

@@ -12,18 +12,25 @@ distancia del tramo, la casilla del mapa donde empieza y el tiempo que dan
 para hacerlo. La tabla acaba exactamente donde vuelve a haber código, que es lo
 que fija su tamaño sin tener que suponerlo.
 
-| Fase | Base | Distancia | Tiempo |
+| Fase | Distancia | Tiempo | Base a la que se llega |
 |---|---|---|---|
-| 1 | FRANCE | 1500 m | 100 s |
-| 2 | USA | 1700 m | 120 s |
-| 3 | THE SOUTH POLE | 1100 m | 80 s |
-| 4 | USA | 1200 m | 80 s |
-| 5 | USA | 1200 m | 80 s |
-| 6 | ARGENTINA | 500 m | 40 s |
-| 7 | UNITED KINGDOM | 2600 m | 165 s |
-| 8 | JAPAN | 1200 m | 90 s |
-| 9 | AUSTRALIA | 1500 m | 100 s |
-| 10 | AUSTRALIA | 1200 m | 90 s |
+| 1 | 1500 m | 100 s | USA |
+| 2 | 1700 m | 120 s | THE SOUTH POLE |
+| 3 | 1100 m | 80 s | USA |
+| 4 | 1200 m | 80 s | USA |
+| 5 | 1200 m | 80 s | ARGENTINA |
+| 6 | 500 m | 40 s | UNITED KINGDOM |
+| 7 | 2600 m | 165 s | JAPAN |
+| 8 | 1200 m | 90 s | AUSTRALIA |
+| 9 | 1500 m | 100 s | AUSTRALIA |
+| 10 | 1200 m | 90 s | FRANCE |
+
+Ojo con emparejar las dos columnas, que van con contadores distintos y
+desplazados uno. La distancia y el tiempo salen del índice de 0xE0E8, que
+durante la fase *k* vale *k−1*; el nombre de la base sale del de 0xE0E1, y la
+escena de llegada lo sube **antes** de escribirlo, así que apunta a donde
+llegas y no de donde vienes. Por eso FRANCE, que es el índice 0, es a la vez la
+base de la que sales y la del final: la vuelta se cierra en la fase 10.
 
 La sexta es la carrera corta del juego, medio kilómetro, y la séptima la larga:
 2600 metros con casi tres minutos por delante. Al pasar la décima el contador

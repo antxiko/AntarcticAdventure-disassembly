@@ -32,7 +32,7 @@ TXT = {
               "de investigación, una partida de demostración que va grabada "
               "como un pianola, y una base a la que no se llega nunca.",
         ficha=["Konami · <b>1984</b>", "Cartucho de <b>16 KB</b>",
-               "MSX1 · <b>RC-701</b>", "Volcado <b>europeo</b>"],
+               "MSX1 · <b>RC-701</b>", "Volcado <b>japonés, 2.ª versión</b>"],
         nav=[("#numbers", "Las cifras"), ("#findings", "Hallazgos"),
              ("#screens", "Los gráficos")],
         docnav=[("EMPEZAR.html", "Empezar"), ("EL-JUEGO.html", "El juego"),
@@ -64,7 +64,7 @@ TXT = {
               "research bases, an attract-mode game that plays back from a "
               "recording like a pianola roll, and one base you never get to.",
         ficha=["Konami · <b>1984</b>", "A <b>16 KB</b> cartridge",
-               "MSX1 · <b>RC-701</b>", "<b>European</b> dump"],
+               "MSX1 · <b>RC-701</b>", "<b>Japanese 2nd</b> version dump"],
         nav=[("#numbers", "The numbers"), ("#findings", "What turned up"),
              ("#screens", "The graphics")],
         docnav=[("GETTING-STARTED.html", "Getting started"),
