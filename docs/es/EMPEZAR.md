@@ -20,7 +20,6 @@ comprueba` te lo dice en una línea.
 ```sh
 make          # traza, genera el listado y lo comprueba todo
 make verify   # solo la prueba de fuego: ¿vuelve a salir el cartucho?
-make web      # regenera la web de docs/, imágenes incluidas
 make graficos # descomprime los dibujos y los saca a PNG
 ```
 

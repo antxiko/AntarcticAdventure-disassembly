@@ -1,0 +1,134 @@
+<title>Las versiones — Antarctic Adventure (1984)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,640px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Portada</a><a href="EMPEZAR.html">Empezar</a><a href="EL-JUEGO.html">El juego</a><a href="EL-CARTUCHO.html">El cartucho</a><a href="EL-CODIGO.html">El código</a><a href="HALLAZGOS.html">Hallazgos</a><a href="LAS-VERSIONES.html" style=color:var(--tinta)>Las versiones</a><a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a><a href="../THE-VERSIONS.html" style="margin-left:auto;color:var(--oro)">English</a></nav>
+<h1 id="las-versiones">Las versiones</h1>
+<p>Del cartucho hay tres compilaciones distintas: dos que se venden en Japón y la que sale de allí. Este desensamblado está hecho sobre la última, la europea, y resulta que también sirve para una de las japonesas, porque entre las dos hay exactamente dos bytes de diferencia.</p>
+<p>Los tres ficheros son de 16384 bytes clavados:</p>
+<pre><code>primera japonesa   087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
+segunda japonesa   a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
+europea            17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126</code></pre>
+<p>Aquí no se distribuye ninguno. Si los tienes los tres, <code>tools/compara_versiones.py</code> saca de una pasada todo lo que cuenta esta página, que para eso está.</p>
+<p>Y un aviso antes de nada: de este juego circulan muchos volcados sucios. Los hay de 32 KB con los mismos 16 KB repetidos dos veces, copias del mismo fichero con otro nombre, y alguno que es la europea con un par de bytes tocados por alguien que quería correrla desde RAM. Lo primero es siempre el sha256.</p>
+<h2 id="la-segunda-japonesa-y-la-europea-son-el-mismo-binario">La segunda japonesa y la europea son el mismo binario</h2>
+<p>Difieren en <b>dos bytes</b> y en nada más. Están en 0x4050 y 0x4051, dentro del arranque, y lo que cambian es el destino de una copia de tres bytes:</p>
+<pre><code>segunda japonesa   ld hl,411Fh / ld de,0000h / ld bc,0003h / ldir
+europea            ld hl,411Fh / ld de,40B2h / ld bc,0003h / ldir</code></pre>
+<p>Todo lo demás —el código, los gráficos comprimidos, los textos, la música, la partida de demostración— es byte por byte lo mismo. Así que este desensamblado describe las dos igual de bien, y lo único que hay que saber para leerlo como la japonesa es cambiar ese <code>40B2h</code> por un <code>0000h</code>. De ese LDIR hablamos al final, porque tiene su gracia.</p>
+<h2 id="la-primera-es-otro-cartucho">La primera es otro cartucho</h2>
+<p>Aquí ya no hay retoques: 15443 de los 16384 bytes son distintos, un 94 % del cartucho, y el código está movido de sitio de arriba abajo. Es otra compilación. Lo interesante es que casi todo lo que cambia va en la misma dirección.</p>
+<h3 id="da-por-hecho-donde-esta-el-chip-grafico">Da por hecho dónde está el chip gráfico</h3>
+<p>La primera versión lleva los puertos del VDP escritos dentro de las propias instrucciones: catorce accesos con el número de puerto metido en el opcode, del estilo de</p>
+<pre><code>di / ld a,e / out (099h),a / ld a,d / out (099h),a / ret</code></pre>
+<p>que es su rutina entera de escribir un registro del chip. En un MSX japonés de 1984 eso funciona y ya está.</p>
+<p>En las otras dos no queda ni uno. Los ocho accesos a los datos del vídeo pasan a <code>out (c),a</code>, con el número de puerto en C, y ese número no está escrito en ninguna parte: se lee de la zona de trabajo de la BIOS, que es donde la máquina apunta cuál es el suyo.</p>
+<pre><code>ld a,(00006h)   ; el puerto de datos del VDP, que la BIOS guarda ahí
+ld c,a</code></pre>
+<p>Los registros pasan a mandarse con la llamada estándar de la BIOS, y el apuntado de la memoria de vídeo también. No es un retoque suelto: alguien fue sitio por sitio quitando la suposición de que el chip está donde suele estar.</p>
+<h3 id="y-da-por-hecho-que-no-hay-nada-mas-enchufado">Y da por hecho que no hay nada más enchufado</h3>
+<p>El mismo arranque tiene otras dos diferencias del mismo estilo. La primera versión engancha su rutina de interrupción y a correr; las otras dos, antes de engancharla, <b>rellenan de RET los 512 bytes de ganchos que el sistema tiene reservados</b>, o sea que desactivan lo que hubiera puesto ahí cualquier extensión conectada. Y para descartar la interrupción que queda pendiente al arrancar, la primera lee el puerto del vídeo a pelo y las otras llaman a la BIOS.</p>
+<h3 id="el-fondo-es-negro">El fondo es negro</h3>
+<p>El color de fondo y de borde sale del registro 7 del chip gráfico, y las tres lo dejan puesto en el arranque y no lo vuelven a tocar en toda la partida.</p>
+<pre><code>primera japonesa   0xE1  -&gt; tinta gris, fondo y borde negros
+las otras dos      0xE4  -&gt; tinta gris, fondo y borde azul oscuro</code></pre>
+<p>Así que la pantalla de Konami de la primera sale sobre negro y la de las otras dos sobre azul.</p>
+<h3 id="nueva-zelanda-existe-y-se-visita">Nueva Zelanda existe y se visita</h3>
+<p>Las tres llevan dentro las mismas ocho cadenas con los nombres de las bases, y una tabla de diez punteros que reparte esas ocho entre las diez fases del recorrido. El reparto no es el mismo:</p>
+<pre><code>primera japonesa   JAPÓN, AUSTRALIA, AUSTRALIA, FRANCIA, NUEVA ZELANDA,
+                   el Polo, EE. UU., EE. UU., ARGENTINA, REINO UNIDO
+las otras dos      FRANCIA, EE. UU., el Polo, EE. UU., EE. UU., ARGENTINA,
+                   REINO UNIDO, JAPÓN, AUSTRALIA, AUSTRALIA</code></pre>
+<p>Es la misma vuelta al mundo girada tres puestos —la primera empieza en Japón y las otras en Francia— con un solo cambio de verdad: donde la primera manda a Nueva Zelanda, las otras repiten Estados Unidos. La cadena de NEW ZEALAND sigue guardada en el cartucho, en 0x5610, y no la apunta nadie. Ahí sigue, entera y sin estrenar, ocupando sus dieciséis bytes.</p>
+<h3 id="el-polo-sur-esta-escrito-en-japones">El Polo Sur está escrito en japonés</h3>
+<p>En la primera, el rótulo de la base del Polo no son letras: son cuatro dibujos propios, los patrones 0xCE a 0xD1, que no salen en ninguna otra palabra del juego. En las otras dos ese hueco lo ocupa <code>THE SOUTH POLE</code>, deletreado con el mismo alfabeto que el resto.</p>
+<p>Por el camino cambia también el rótulo de la portada, que en la primera dice <code>VIDEO CARTRIDGE</code> y en las otras <code>KONAMI</code>, y la manera de guardar los nombres: en las dos últimas cada cadena lleva delante dos bytes con el sitio exacto de la pantalla donde va escrita, que es lo que la centra —0x3AC8 para las de catorce letras, 0x3ACE para las tres de EE. UU.—, y en la primera esos dos bytes no están.</p>
+<h2 id="el-ldir-que-no-hace-nada">El LDIR que no hace nada</h2>
+<p>Volvamos a los dos bytes del principio. Lo que hace ese LDIR es copiar tres bytes de 0x411F —que son <code>C3 00 00</code>, o sea <code>jp 0000h</code>— encima de 0x40B2. Y 0x40B2 es el despachador del juego, la rutina por la que pasan todos los saltos por tabla, a la que se llama en el primer fotograma.</p>
+<p>En un cartucho no pasa nada, porque la página donde vive el cartucho es ROM y la escritura se pierde por el camino. Pero si el juego estuviera corriendo desde RAM, el despachador se convertiría en un salto a cero y la máquina se reiniciaría antes de enseñar nada.</p>
+<p>Las tres versiones puestas en fila dicen bastante:</p>
+<pre><code>primera japonesa   no lleva ese LDIR en ninguna parte
+segunda japonesa   lo lleva, apuntando a 0x0000
+europea            lo lleva, apuntando a 0x40B2</code></pre>
+<p>O sea que aparece después, y entre una versión y la siguiente alguien le cambia la puntería. <b>Qué hace está comprobado leyendo los bytes; para qué está no se puede demostrar desde el binario.</b> La lectura obvia es que sea una protección contra copias en RAM, y suma que por ahí circule un volcado que es exactamente la europea con esos dos bytes convertidos en <code>nop</code>, que es justo lo que haría quien quisiera quitársela de encima. Pero eso es una lectura, no una medida.</p>
+<h2 id="lo-que-no-sabemos">Lo que no sabemos</h2>
+<p>Los cuatro dibujos con los que la primera versión escribe el Polo Sur siguen sin leerse. Están en el cartucho comprimidos como el resto de los gráficos y harían falta las direcciones de esa versión para sacarlos.</p>
+<footer><p><em>Antarctic Adventure</em> lo publicó Konami en 1984 con la referencia RC-701. El cartucho no acredita a nadie por su nombre: lo único que firma, en la pantalla de presentación, es <b>&copy;KONAMI 1984</b>. Todos los derechos sobre el juego siguen siendo de sus titulares. Este trabajo es de preservación, estudio y documentación.</p></footer></div>

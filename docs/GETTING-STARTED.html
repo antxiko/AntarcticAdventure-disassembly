@@ -80,7 +80,7 @@ footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
 .galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
 audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 </style>
-<div class="w"><nav class="top"><a href="index.html">Home</a><a href="GETTING-STARTED.html" style=color:var(--tinta)>Start</a><a href="THE-GAME.html">The game</a><a href="THE-CARTRIDGE.html">The cartridge</a><a href="THE-CODE.html">The code</a><a href="FINDINGS.html">Findings</a><a href="OPEN-QUESTIONS.html">Open questions</a><a href="es/EMPEZAR.html" style="margin-left:auto;color:var(--oro)">Castellano</a></nav>
+<div class="w"><nav class="top"><a href="index.html">Home</a><a href="GETTING-STARTED.html" style=color:var(--tinta)>Start</a><a href="THE-GAME.html">The game</a><a href="THE-CARTRIDGE.html">The cartridge</a><a href="THE-CODE.html">The code</a><a href="FINDINGS.html">Findings</a><a href="THE-VERSIONS.html">The versions</a><a href="OPEN-QUESTIONS.html">Open questions</a><a href="es/EMPEZAR.html" style="margin-left:auto;color:var(--oro)">Castellano</a></nav>
 <h1 id="getting-started">Getting started</h1>
 <h2 id="what-you-need">What you need</h2>
 <p><code>pasmo</code> and <code>z80dasm</code> to assemble and disassemble, and Python 3 for the tools. That&#x27;s all: nothing to install, no environment to set up.</p>
@@ -90,7 +90,6 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 <h2 id="the-commands">The commands</h2>
 <pre><code>make          # trace, build the listing and check everything
 make verify   # just the acid test: does the cartridge come back out?
-make web      # rebuild the site under docs/, images included
 make graficos # decompress the artwork and dump it to PNG</code></pre>
 <p>Plain <code>make</code> runs the whole cycle and fails if anything doesn&#x27;t add up: if the listing stops reproducing the cartridge byte for byte, if the tracer has walked into a range declared as data, or if an entry point falls inside one.</p>
 <h2 id="the-test-that-settles-it">The test that settles it</h2>

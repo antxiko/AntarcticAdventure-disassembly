@@ -116,7 +116,7 @@ mismo par de sprites cambiándoles los dos colores.
 
 En la lista de atributos hay una entrada montada del todo —la número 14, con su
 dibujo y su color amarillo puesto— que jugando no aparece jamás. Y el dibujo no
-es cualquier cosa: es una **explosión**, un estallido de puntas amarillas. Se monta con
+es cualquier cosa: es **un sol**, un disco de puntas amarillas. Se monta con
 la coordenada vertical a 0xE0, que es fuera de la pantalla, y nadie se la
 cambia nunca: no hay una sola instrucción que escriba en esa entrada, la cadena
 que rehace los sprites al salir del agua se para justo en la anterior, y las
@@ -124,6 +124,15 @@ demás copias empiezan más arriba o acaban más abajo.
 
 O sea que el cartucho carga el dibujo, le reserva su sitio, le da color… y lo
 deja fuera del encuadre.
+
+Y no es una deducción de leer el binario. Sobre una partida grabada de
+veinticinco minutos, un punto de observación en los cuatro bytes de esa entrada
+dice que lo único que la toca son barridos de la tabla entera —el borrado de
+sprites, el copiador de las listas— y ninguno va a por ella; al terminar la
+partida sigue con la coordenada vertical a 0xE0. Y cambiando **solo esos dos
+bytes de posición** en una copia del cartucho, sin tocarle ni el dibujo ni el
+color, sale al cielo y se ve perfectamente: un sol amarillo de puntas sobre el
+azul.
 
 ## El alfabeto no tiene F
 
@@ -197,16 +206,28 @@ es un error de lectura, es que el primer paso de un obstáculo no dibuja nada
 porque todavía está detrás del horizonte, y dos de los siete llevan dos pasos
 vacíos.
 
-## Arriba frena y abajo acelera
+## Lo que parece un acelerador invertido es un periodo
 
 La tabla que gobierna la velocidad tiene cuatro destinos, uno por cada
 combinación de arriba y abajo. Sin tocar nada no pasa nada, con las dos a la
-vez tampoco, y las otras dos van al revés de lo que uno esperaría: **arriba
-baja la velocidad y abajo la sube**.
+vez tampoco, y las otras dos hacen lo esperable: arriba acelera y abajo frena.
 
-Además no cuestan igual. Cada escalón de aceleración tarda cuatro fotogramas y
-cada escalón de frenada tarda doce, así que el pingüino coge carrera tres veces
-más rápido de lo que la suelta.
+Se lee al revés con mucha facilidad, porque **arriba es la que RESTA**. Y resta
+porque en 0xE100 no está la velocidad, sino el periodo: cada cuántos fotogramas
+avanza el juego. Lo dicen sus tres usos. Dos contadores descendentes se recargan
+con él —el de la distancia con su mitad, en 0x46DC, y el de la pista con su
+cuarta parte, en 0x5334—, y el velocímetro tiene que invertirlo con un `cpl`
+para dibujar la barra. Menos periodo es más velocidad, y el tope de carrera es
+el 8.
+
+Además no cuestan igual: cada escalón de aceleración tarda doce fotogramas y
+cada uno de frenada solo cuatro, así que el pingüino suelta la carrera tres
+veces más rápido de lo que la coge.
+
+La regla que sale de aquí sirve para cualquier desensamblado: **una variable
+que se recarga en un contador descendente es un periodo, no una magnitud**.
+Antes de llamarle velocidad a algo, hay que mirar si el juego la usa para
+contar fotogramas.
 
 ## Las dos tablas de doce que no son lo mismo
 

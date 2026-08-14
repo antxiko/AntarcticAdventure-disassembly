@@ -19,7 +19,6 @@ If yours doesn't, it's a different version and the listing won't reassemble.
 ```sh
 make          # trace, build the listing and check everything
 make verify   # just the acid test: does the cartridge come back out?
-make web      # rebuild the site under docs/, images included
 make graficos # decompress the artwork and dump it to PNG
 ```
 

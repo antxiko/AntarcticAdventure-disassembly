@@ -70,6 +70,11 @@ INIT:		; Punto de entrada del cartucho, declarado en la cabecera
 ; Que hace: comprobado leyendo los bytes. Para que: es una
 ; proteccion contra copias en RAM (?), no se puede demostrar
 ; desde el binario.
+; Las otras dos versiones del cartucho lo situan: la primera
+; japonesa no lleva este LDIR en ninguna parte, y la segunda lo
+; lleva apuntando a 0x0000. O sea que aparece despues, y entre
+; una version y la siguiente alguien le cambia la punteria.
+; Ver la pagina de las versiones.
 ; ----------------------------------------------------------------------
 	ld hl,0411fh		;404c   ; Origen: los tres bytes `jp 0000h` de 0x411F
 	ld de,DESPACHA		;404f   ; Destino: 0x40B2, el despachador. Es ROM, asi que no pasa nada
@@ -617,7 +622,7 @@ META_1_ANIMA:
 	ld l,001h		;436e
 	ld (0e138h),hl		;4370
 	ld a,013h		;4373
-	ld (0e100h),a		;4375   ; Velocidad 0x13 para la animacion
+	ld (0e100h),a		;4375   ; Periodo 0x13 en 0xE100, que es lo mas lento que hay, para la animacion
 	jp SIGUIENTE_PASO		;4378
 META_2_ANDA:		; Paso 2: el pinguino sigue andando hasta la bandera
 	ld c,0ffh		;437b
@@ -649,7 +654,7 @@ META_4_SALUDA:		; Paso 4: la escena de la base
 	jr z,META_4_FASE_ESPECIAL		;43b2
 	cp 002h			;43b4
 	jr nz,META_4_NORMAL		;43b6
-META_4_FASE_ESPECIAL:		; Cuando 0xE0E1 vale 0 o 2, la llegada tiene un remate propio, y esos dos numeros son EL POLO SUR y FRANCIA. 0xE0E1 es el indice 0-9 de la base a la que se llega, y 0x433B lo sube UN PASO ANTES, en el paso 1 de esta misma escena, asi que aqui ya apunta a la base de destino: 0 es FRANCE y 2 es THE SOUTH POLE en la tabla de 0x55D9. El caso 2 esta MEDIDO en la partida grabada (t=270,2), con STAGE-02 en el panel y el rotulo SOUTH POLE debajo. El caso 0 no sale en esa partida: le toca a la llegada de la fase 10, la que cierra la vuelta volviendo a FRANCE, y por eso tiene remate propio igual que el Polo. Eso ultimo esta DEDUCIDO de como gira el indice en 0x433B, no medido todavia
+META_4_FASE_ESPECIAL:		; Cuando 0xE0E1 vale 0 o 2, la llegada tiene un remate propio, y esos dos numeros son EL POLO SUR y FRANCIA. 0xE0E1 es el indice 0-9 de la base a la que se llega, y 0x433B lo sube UN PASO ANTES, en el paso 1 de esta misma escena, asi que aqui ya apunta a la base de destino: 0 es FRANCE y 2 es THE SOUTH POLE en la tabla de 0x55D9. El caso 2 esta MEDIDO en la partida grabada (t=270,2), con STAGE-02 en el panel y el rotulo SOUTH POLE debajo. El caso 0 es la llegada que cierra la vuelta, volviendo a FRANCE, y tambien esta MEDIDO: en la partida larga (la del cartucho con el reloj parado) cae en t=1391-1403, con STAGE-10 en el panel, el rotulo FRANCE y la bandera francesa subiendo por el mastil. En el paso 5 aparecen los mismos cuatro sprites que en el Polo -0xF0 y 0xF4 en amarillo, 0xF8 y 0xFC en negro- o sea que las dos llegadas especiales comparten remate: el pinguino inclinado saludando
 	ld a,(0e13ah)		;43b8
 	cp 00fh			;43bb
 	jr nz,META_4_NORMAL		;43bd
@@ -1277,7 +1282,7 @@ PINTA_TRES_BYTES:
 	jr PINTA_BCD		;46da
 AVANZA_DISTANCIA:		; Descuenta la distancia que queda al ritmo que marca la velocidad
 	ld hl,0e0e9h		;46dc
-	dec (hl)		;46df   ; 0xE0E9 es el contador; se recarga con la mitad de la velocidad
+	dec (hl)		;46df   ; 0xE0E9 es el contador; se recarga con la mitad del periodo de 0xE100, y esa recarga es lo que demuestra que 0xE100 es un periodo y no una velocidad
 	ret nz			;46e0
 	ld a,(0e100h)		;46e1
 	srl a			;46e4
@@ -1789,7 +1794,7 @@ MONTA_LA_FASE:		; Prepara la fase entera: borra las variables de pista, carga lo
 	ld a,010h		;4b0e
 	ld h,a			;4b10
 	ld l,a			;4b11
-	ld (0e100h),hl		;4b12   ; Velocidad inicial 0x10
+	ld (0e100h),hl		;4b12   ; Periodo inicial 0x10, cerca del tope lento: cada fase arranca despacio
 	ld (0e110h),a		;4b15
 	ld a,008h		;4b18
 	ld (0e149h),a		;4b1a
@@ -2307,7 +2312,7 @@ CAIDA_POSE:
 	ld (0e144h),a		;4e59
 	call PONE_POSE		;4e5c
 	call PINGUINO_A_VRAM		;4e5f
-	ld hl,01313h		;4e62   ; Y la velocidad baja a 0x13
+	ld hl,01313h		;4e62   ; Y el periodo SUBE a 0x13, o sea que al caerse se queda a la minima velocidad
 	ld (0e100h),hl		;4e65
 	ret			;4e68
 SIGUE_CAIDA:		; Un paso de caida cada cuatro fotogramas: rueda de lado y baja
@@ -2534,7 +2539,7 @@ AGUA_ANIMA:		; Mueve las patas: el patron va cambiando entre 0x70, 0x74 y 0x78, 
 	pop af			;4fdb
 	call PONE_POSE		;4fdc
 	jp VUELCA_OCHO_SPRITES		;4fdf
-SALE_DEL_AGUA:		; Con el gatillo se sale, y la velocidad vuelve a 0x13
+SALE_DEL_AGUA:		; Con el gatillo se sale, y el periodo vuelve a 0x13: se sale del agua a la minima velocidad
 	xor a			;4fe2
 	ld (0e140h),a		;4fe3
 	ld (0e0f8h),a		;4fe6
@@ -2562,7 +2567,7 @@ SALIDA_SPRITES:
 	call PINGUINO_A_VRAM		;5015
 	call VUELCA_ATRIBUTOS		;5018
 	ret			;501b
-COGE_OBJETO:		; Tipos 5 y 6: se borra la ficha, se repinta el hueco y suma 500 puntos
+COGE_OBJETO:		; LAS BANDERAS DE LA PISTA. Los tipos 5 y 6 son las dos banderas que hay plantadas en el hielo -una inclinada a cada lado- y NO se esquivan: se recogen. Al tocarlas suena, se borra la ficha, se repinta el hueco y suman 500 puntos. Lo dice tambien el reparto de 0x4D6B: los tipos 0 a 4 se van al choque y solo el 5 y el 6 caen aqui. OJO, no confundirlas con la bandera que sube por el mastil de la base, que es otra cosa y va por sprites (0x55AD)
 	ex de,hl		;501c
 	dec hl			;501d
 	dec hl			;501e
@@ -2947,7 +2952,7 @@ RELLENA_FICHA:		; Copia a la ficha el tipo, el puntero de dibujo y el de choque,
 	ret			;52ca
 
 ; ----------------------------------------------------------------------
-; DATOS tabla_de_obstaculos: Los SIETE obstaculos, seis bytes cada uno: los dos primeros son el puntero al primer trozo de dibujo, y los cuatro siguientes los pares (posicion, ancho) con los que se mira el choque. Los siete dibujos caen dentro de los 92 trozos de 0x6BE9-0x7241, que es lo que confirma para que son. Cierra clavada en 0x52F5
+; DATOS tabla_de_obstaculos: Los SIETE obstaculos: los tipos 0, 1 y 2 son los agujeros -de los que salen la foca y el pez-, el 3 y el 4 los dos monticulos con los que se choca, y el 5 y el 6 LAS DOS BANDERAS que se recogen por 500 puntos. Seis bytes cada uno: los dos primeros son el puntero al primer trozo de dibujo, y los cuatro siguientes los pares (posicion, ancho) con los que se mira el choque. Los siete dibujos caen dentro de los 92 trozos de 0x6BE9-0x7241, que es lo que confirma para que son. Cierra clavada en 0x52F5
 ;   0x52cb..0x52f5  (42 bytes)
 ; ----------------------------------------------------------------------
 	defb 019h,06fh,001h,053h,03ah,000h,0d2h,06fh,001h,013h,03bh,000h,091h,070h,001h,092h	; 52cb  .o.S:..o..;..p..
@@ -3002,7 +3007,7 @@ CURVA_RITMO:
 	inc hl			;5330
 	ld (hl),000h		;5331
 	inc hl			;5333
-	ld a,(0e100h)		;5334   ; La velocidad marca cada cuantos fotogramas se desplaza la pista
+	ld a,(0e100h)		;5334   ; El periodo de 0xE100, dividido por cuatro, marca cada cuantos fotogramas se desplaza la pista
 	srl a			;5337
 	srl a			;5339
 	ld (hl),a		;533b
@@ -3263,7 +3268,7 @@ MONTA_LA_BASE:		; Escribe el nombre de la base y descomprime su bandera en los p
 	ld a,(hl)		;55b5
 	ld (0e067h),a		;55b6
 	jr BANDERA_A_VRAM		;55b9
-SUBE_LA_BANDERA:		; Sube la bandera dos pixeles por llamada hasta Y=0x36, que es el tope del mastil
+SUBE_LA_BANDERA:		; Sube la bandera dos pixeles por llamada hasta el tope del mastil. OJO CON DONDE SE PARA: el `cp 036h / ret z` se vuelve SIN GUARDAR el valor nuevo, asi que la bandera nunca llega a Y=0x36; se queda en 0x38. Medido en la llegada a Francia de la partida grabada: 0x50, 0x48, 0x3E y 0x38, y ahi se queda clavada
 	ld a,(0e060h)		;55bb
 	sub 002h		;55be
 	cp 036h			;55c0
@@ -3281,7 +3286,7 @@ BANDERA_A_VRAM:		; Los TRES sprites de la bandera, a la VRAM. Son doce bytes, o 
 ; ----------------------------------------------------------------------
 ; DATOS punteros_de_las_bases: Diez punteros, uno por fase, a los nombres de las bases. Cierra clavada en 0x55ED, que es la primera cadena; con ocho, nueve, once o doce entradas no cierra
 ;   0x55d9..0x55ed  (20 bytes)
-; DATOS nombres_de_las_bases: OCHO cadenas para diez fases: JAPAN, AUSTRALIA, FRANCE, NEW ZEALAND, ARGENTINA, UNITED KINGDOM, THE SOUTH POLE y USA. El reparto que sale de la tabla de arriba es FRANCE, USA, THE SOUTH POLE, USA, USA, ARGENTINA, UNITED KINGDOM, JAPAN, AUSTRALIA y AUSTRALIA. NEW ZEALAND (0x5611) NO LA VISITA NADIE: no esta en la tabla, ninguna instruccion la apunta, y ninguna de sus veinte direcciones aparece como palabra en los 16 KB
+; DATOS nombres_de_las_bases: OCHO cadenas para diez fases: JAPAN, AUSTRALIA, FRANCE, NEW ZEALAND, ARGENTINA, UNITED KINGDOM, THE SOUTH POLE y USA. El reparto que sale de la tabla de arriba es FRANCE, USA, THE SOUTH POLE, USA, USA, ARGENTINA, UNITED KINGDOM, JAPAN, AUSTRALIA y AUSTRALIA. NEW ZEALAND (0x5610..0x561F) NO LA VISITA NADIE: no esta en la tabla, ninguna instruccion la apunta, y ninguna de sus dieciseis direcciones aparece como palabra en los 16 KB. En la PRIMERA version japonesa del cartucho si se visita, y es la fase 4; ver la pagina de las versiones. Los dos primeros bytes de cada cadena son el destino en la tabla de nombres de la VRAM, o sea el centrado: 0x3AC8 para las dos de catorce letras y 0x3ACE para USA
 ;   0x55ed..0x565c  (111 bytes)
 ; DATOS punteros_de_banderas: Diez punteros a los graficos de bandera. Cierra clavada en 0x5670
 ;   0x565c..0x5670  (20 bytes)
@@ -3706,7 +3711,7 @@ VUELCA_ATRIBUTOS:		; Copia los 128 bytes de 0xE050 a la tabla de atributos de sp
 	jp COPIA_A_VRAM		;66ec
 
 ; ----------------------------------------------------------------------
-; DATOS atributos_de_partida: La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es una EXPLOSION de puntas- y color amarillo, que no se ve nunca: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia. MEDIDO sobre los diez minutos de partida grabada con un punto de observacion de escritura en 0xE088-0xE08B (tools/omsx_atributo14.tcl): las UNICAS cuatro cosas que lo tocan son barridos de la tabla entera -el ldir de 0x446E, el copiador de cuatro bytes de 0x45BE, BORRA_SPRITES en 0x4606 y el borrado previo de 0x66D1-, y ninguna va a por el. Al acabar la partida su entrada en la VRAM sigue siendo Y=0xE0, patron 0xD4, color 0x0A: cargado, coloreado y aparcado fuera del encuadre. El control -los mismos puntos en el atributo 13- recibe ademas 4426 y 41740 escrituras de las rutinas del pinguino, asi que los ceros del 14 son datos y no instrumentacion rota. Y de propina el control mide una cosa que estaba deducida: el 13 recibe 12 escrituras MAS que el 14 desde 0x45BE, que son las tres salidas del agua por cuatro bytes, o sea la cadena que rehace los sprites parandose justo antes del 14
+; DATOS atributos_de_partida: La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es un SOL de puntas- y color amarillo, que no se ve nunca. COMPROBADO QUE ES UN SOL Y QUE SE VERIA: parcheando en una COPIA del cartucho los dos bytes de su posicion (0x6709 y 0x670A, la Y y la X) para sacarlo al cielo, aparece un sol amarillo de puntas sobre el azul, sin tocarle ni el dibujo ni el color. La captura y el cartucho parcheado estan fuera del repositorio, en work/, porque esto NO es una modificacion del juego sino la forma de ver lo que el juego tiene y no ensena: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia. MEDIDO sobre los diez minutos de partida grabada con un punto de observacion de escritura en 0xE088-0xE08B (tools/omsx_atributo14.tcl): las UNICAS cuatro cosas que lo tocan son barridos de la tabla entera -el ldir de 0x446E, el copiador de cuatro bytes de 0x45BE, BORRA_SPRITES en 0x4606 y el borrado previo de 0x66D1-, y ninguna va a por el. Al acabar la partida su entrada en la VRAM sigue siendo Y=0xE0, patron 0xD4, color 0x0A: cargado, coloreado y aparcado fuera del encuadre. El control -los mismos puntos en el atributo 13- recibe ademas 4426 y 41740 escrituras de las rutinas del pinguino, asi que los ceros del 14 son datos y no instrumentacion rota. Y de propina el control mide una cosa que estaba deducida: el 13 recibe 12 escrituras MAS que el 14 desde 0x45BE, que son las tres salidas del agua por cuatro bytes, o sea la cadena que rehace los sprites parandose justo antes del 14
 ;   0x66ef..0x672c  (61 bytes)
 ; DATOS atributos_de_base: La misma lista para la escena de la base, pero de OCHO entradas en vez de treinta: 0x66CB pone los 128 bytes a cero antes de aplicarla, asi que del atributo 8 en adelante no queda nada. Cierra clavada en 0x6756, donde vuelve a haber codigo. Sus bytes de 0x6746 los copia ademas 0x5537. Y AQUI ESTA EL UNICO SPRITE DEL PINGUINO QUE SE GIRA Y SONRIE: el atributo 7, con el patron 0xD0 en amarillo, que es el PICO. Todo lo demas de ese pinguino -la cara, los ojos, la boca roja y hasta la sombra azul de debajo- son CASILLAS, no sprites. Comprobado a t=126,6 de la partida grabada de dos maneras: la tabla de atributos solo tiene ocho entradas puestas, y comparando el fotograma real con la pantalla pintada SOLO con casillas quedan 224 pixeles sin explicar, que son 96+72+24 de la bandera y 32 del pico. Y 32 son exactamente los bits encendidos del patron 0xD0
 ;   0x672c..0x6756  (42 bytes)
@@ -4207,7 +4212,7 @@ AJUSTA_DIFICULTAD:		; De la velocidad y de la fase sale cada cuantos pasos apare
 	ld a,(0e100h)		;76e3
 	or a			;76e6
 	rra			;76e7
-	ld (0e148h),a		;76e8   ; 0xE148: la mitad de la velocidad, que es el ritmo de los sprites de fondo
+	ld (0e148h),a		;76e8   ; 0xE148: la mitad del periodo, que es el ritmo de los sprites de fondo
 	ld a,(0e0e6h)		;76eb
 	and 00ch		;76ee
 	ld a,02ch		;76f0
@@ -4258,18 +4263,26 @@ DIFICULTAD_MENOS_4:
 ; ----------------------------------------------------------------------
 ; Los bits 0 y 1 de los mandos son arriba y abajo, y los cuatro
 ; destinos de la tabla son: no tocar nada, no hace nada; ARRIBA
-; FRENA y ABAJO ACELERA; y las dos a la vez, tampoco hace nada.
-; Va del reves de lo que uno esperaria, y ademas acelerar cuesta
-; cuatro fotogramas por escalon y frenar doce.
-; La velocidad vive en 0xE100 y va de 9 a 0x13.
+; ACELERA y ABAJO FRENA; y las dos a la vez, tampoco hace nada.
+; En 0xE100 no vive la velocidad sino su PERIODO: los fotogramas
+; que pasan entre dos avances. Cuanto mas alto, mas lento. Va de
+; 8 -a todo correr- a 0x13, y por eso acelerar es RESTARLE y
+; frenar es SUMARLE. Lo confirman sus tres usos: 0x46DC recarga
+; con el la mitad de un contador descendente, 0x5334 con su
+; cuarta parte, y el velocimetro tiene que INVERTIRLO con un cpl
+; (0x7781) para pintar la barra.
+; Y no cuestan lo mismo: ganar un escalon lleva doce fotogramas y
+; perderlo solo cuatro, o sea que se FRENA TRES VECES MAS RAPIDO
+; de lo que se acelera. Cada rutina pone a cero el contador de la
+; otra, asi que cambiar de idea empieza la cuenta de nuevo.
 ; ----------------------------------------------------------------------
-MANDA_LA_VELOCIDAD:		; Despacha por arriba/abajo para frenar o acelerar
+MANDA_LA_VELOCIDAD:		; Despacha por arriba/abajo para acelerar o frenar
 	ld a,(0e009h)		;772b
 	and 003h		;772e
 	call DESPACHA		;7730
 
 ; ----------------------------------------------------------------------
-; DATOS tabla_velocidad: Los CUATRO destinos, del CALL de 0x7730: nada, frenar, acelerar, nada
+; DATOS tabla_velocidad: Los CUATRO destinos, del CALL de 0x7730: nada, acelerar, frenar, nada
 ;   0x7733..0x773b  (8 bytes)
 ; ----------------------------------------------------------------------
 	defb 069h,077h,03bh,077h,053h,077h,069h,077h	; 7733  iw;wSwiw
@@ -4279,7 +4292,7 @@ MANDA_LA_VELOCIDAD:		; Despacha por arriba/abajo para frenar o acelerar
 ; ======================================================================
 
 
-FRENA:		; Un escalon menos cada doce fotogramas, hasta 9
+ACELERA:		; Un escalon MENOS de periodo cada doce fotogramas, hasta 8: el tope de velocidad
 	ld hl,0e0fdh		;773b
 	xor a			;773e
 	ld (hl),a		;773f
@@ -4298,7 +4311,7 @@ FRENA:		; Un escalon menos cada doce fotogramas, hasta 9
 	ret c			;7750
 	dec (hl)		;7751
 	ret			;7752
-ACELERA:		; Un escalon mas cada cuatro fotogramas, hasta 0x13
+FRENA:		; Un escalon MAS cada cuatro fotogramas, hasta 0x13
 	ld hl,0e0fdh		;7753
 	xor a			;7756
 	ld (hl),a		;7757
@@ -4392,7 +4405,7 @@ NUBE_SIGUIENTE:
 	ld hl,0e149h		;77da
 	dec (hl)		;77dd
 	ret nz			;77de
-	ld a,(0e148h)		;77df   ; El ritmo al que suben, que es la mitad de la velocidad del pinguino
+	ld a,(0e148h)		;77df   ; El ritmo al que suben, que es la mitad del periodo del pinguino
 	ld (hl),a		;77e2
 	ld b,000h		;77e3
 	ld hl,0e14ah		;77e5

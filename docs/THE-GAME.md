@@ -42,17 +42,22 @@ surplus is filed in its own slot and **next time round it gets deducted from
 that same stage's allowance**, once it goes past ten. The better you do, the
 less room you're given on the next lap.
 
-## The throttle is upside down
+## The throttle isn't upside down: what's in there is a period
 
-The controls are four directions and a button, and they don't do what you'd
-expect. Left and right move the penguin across the track, between columns 20
-and 204, and the button jumps. Up and down, though, work the speed: and it's
-**down that accelerates and up that brakes**.
+The controls are four directions and a button. Left and right move the penguin
+across the track, between columns 20 and 204, and the button jumps. Up and down
+work the speed, and they do what you'd expect: **up accelerates and down
+brakes**.
 
-It's not just that they're swapped, it's that they don't cost the same. Going
-up one speed step takes four frames and coming down takes twelve, so he picks
-up speed three times faster than he sheds it. Speed lives between 9 and 19, and
+What throws you is what the game keeps in 0xE100, which isn't the speed but its
+**period**: how many frames go by between two advances. The higher it is, the
+longer the wait and the slower he goes. That's why accelerating subtracts from
+it and braking adds to it, and why the speedometer has to invert it with a
+`cpl` before drawing the bar. The period lives between 8 —flat out— and 19, and
 every stage starts at 16.
+
+What is lopsided is what each one costs: gaining a step takes twelve frames and
+losing one only four, so **he brakes three times faster than he accelerates**.
 
 ## What's out on the track
 

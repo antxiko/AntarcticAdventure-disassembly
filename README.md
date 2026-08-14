@@ -66,14 +66,21 @@ what we say about them does. So two more checks run alongside:
   `jp 0000h` on top of its own dispatcher. On a cartridge that does nothing;
   from a copy in RAM it would reset the machine on the first frame.
 - **There's a research base nobody visits**: NEW ZEALAND is in there, spelled
-  out, and not one instruction points at it.
+  out, and not one instruction points at it. On the first Japanese version of
+  the cartridge you do go there, and it's the fifth stop on the route.
 - **The alphabet has no F.** The one word in the game that needs one, FRANCE,
   carries its own, stored well away from the rest of the letters.
-- **Up brakes and down accelerates**, and braking takes three times as long as
-  accelerating.
+- **0xE100 doesn't hold the speed but its period**: the more frames it waits,
+  the slower he goes, so accelerating means subtracting from it. And braking
+  takes a third of the time accelerating does.
 
 There's more, with the evidence, on
 [the findings page](https://antxiko.github.io/AntarcticAdventure-disassembly/FINDINGS.html).
+
+There are three different builds of this cartridge, and the second Japanese one
+is the European release bar two bytes. What changes between them — from the
+background colour to how they reach the video chip — is on
+[the versions page](https://antxiko.github.io/AntarcticAdventure-disassembly/THE-VERSIONS.html).
 
 ## What's still open
 
@@ -92,7 +99,7 @@ sha256 `17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126`.
 ```sh
 make          # trace, build the listing and check everything
 make verify   # just the acid test
-make web      # rebuild the site under docs/
+make graficos # decompress the artwork and dump it to PNG
 ```
 
 Full instructions are in

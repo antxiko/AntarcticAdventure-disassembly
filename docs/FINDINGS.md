@@ -114,7 +114,7 @@ which come out of the same pair of sprites with their two colours swapped.
 
 The attribute list has one entry set up completely —number 14, with its picture
 and its yellow colour in place— that never appears in play. And the picture is
-not just anything: it's an **explosion**, a burst of yellow spikes. It's built with its
+not just anything: it's **a sun**, a disc of yellow spikes. It's built with its
 vertical coordinate at 0xE0, which is off the screen, and nobody ever changes
 it: there isn't a single instruction writing to that entry, the chain that
 rebuilds the sprites on the way out of the water stops at the one before it,
@@ -122,6 +122,14 @@ and the other copies start higher up or end lower down.
 
 So the cartridge loads the picture, reserves its slot, gives it a colour… and
 leaves it out of frame.
+
+And this isn't deduced from reading the binary. Over a twenty-five minute
+recorded game, a watchpoint on that entry's four bytes says the only things
+touching it are sweeps of the whole table —the sprite clear, the list copier—
+and none of them is aiming at it; when the game ends it's still got its vertical
+coordinate at 0xE0. And changing **just those two position bytes** in a copy of
+the cartridge, without touching its picture or its colour, brings it into the
+sky where it shows perfectly: a yellow spiked sun against the blue.
 
 ## The alphabet has no F
 
@@ -194,16 +202,26 @@ A nice detail from that: all seven pointers point at an **empty** block. It
 isn't a misreading — an obstacle's first step draws nothing because it's still
 behind the horizon, and two of the seven carry two empty steps.
 
-## Up brakes and down accelerates
+## What looks like an inverted throttle is a period
 
 The table governing speed has four destinations, one per combination of up and
 down. Pressing nothing does nothing, pressing both does nothing either, and the
-other two run backwards from what you'd expect: **up lowers the speed and down
-raises it**.
+other two do the obvious thing: up accelerates and down brakes.
 
-They don't cost the same, either. Each step of acceleration takes four frames
-and each step of braking takes twelve, so the penguin picks up speed three
-times faster than he lets it go.
+It reads backwards very easily, because **up is the one that SUBTRACTS**. And it
+subtracts because 0xE100 doesn't hold the speed but the period: how many frames
+go by between two advances. Its three uses say so. Two countdown timers are
+reloaded from it —the distance one with half of it, at 0x46DC, and the track one
+with a quarter, at 0x5334— and the speedometer has to invert it with a `cpl` to
+draw the bar. Less period is more speed, and flat out is 8.
+
+They don't cost the same, either. Each step of acceleration takes twelve frames
+and each step of braking only four, so the penguin lets his speed go three
+times faster than he picks it up.
+
+The rule that comes out of this is good for any disassembly: **a variable that
+gets reloaded into a countdown timer is a period, not a magnitude**. Before
+calling something a speed, check whether the game uses it to count frames.
 
 ## The two tables of twelve that aren't the same thing
 

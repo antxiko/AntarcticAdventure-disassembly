@@ -42,17 +42,23 @@ cada fase se apunta en su casilla y **la próxima vuelta se le descuenta al
 tiempo de esa misma fase**, en cuanto pase de diez. Cuanto mejor lo haces, menos
 margen te dan la vuelta siguiente.
 
-## La velocidad va del revés
+## El acelerador no está invertido: lo que hay ahí es un periodo
 
-Los mandos son cuatro direcciones y un botón, pero no hacen lo que uno espera.
-Izquierda y derecha mueven al pingüino por la pista, entre las columnas 20 y
-204, y el botón salta. Arriba y abajo, en cambio, gobiernan la velocidad: y es
-**abajo el que acelera y arriba el que frena**.
+Los mandos son cuatro direcciones y un botón. Izquierda y derecha mueven al
+pingüino por la pista, entre las columnas 20 y 204, y el botón salta. Arriba y
+abajo gobiernan la velocidad, y hacen lo que uno espera: **arriba acelera y
+abajo frena**.
 
-No es solo que estén cambiados, es que no cuestan lo mismo. Subir un escalón de
-velocidad tarda cuatro fotogramas y bajarlo tarda doce, así que se coge carrera
-tres veces más rápido de lo que se frena. La velocidad vive entre 9 y 19, y
-cada fase arranca en 16.
+Lo que despista es lo que el juego guarda en 0xE100, que no es la velocidad
+sino su **periodo**: cuántos fotogramas pasan entre dos avances. Cuanto más
+alto, más se espera y más lento se va. Por eso acelerar es restarle y frenar es
+sumarle, y por eso el velocímetro tiene que invertirlo con un `cpl` antes de
+pintar la barra. El periodo vive entre 8 —a todo correr— y 19, y cada fase
+arranca en 16.
+
+Lo que sí es asimétrico es lo que cuesta cada cosa: ganar un escalón lleva doce
+fotogramas y perderlo solo cuatro, así que **se frena tres veces más rápido de
+lo que se acelera**.
 
 ## Lo que hay por la pista
 

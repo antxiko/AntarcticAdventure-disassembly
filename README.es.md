@@ -67,13 +67,21 @@ lo que decimos de ellos. Así que van dos comprobaciones más al lado:
   `jp 0000h` encima de su propio despachador. En cartucho no hace nada; desde
   una copia en RAM reiniciaría la máquina en el primer fotograma.
 - **Hay una base de investigación que no visita nadie**: NEW ZEALAND está ahí,
-  escrita, y ninguna instrucción la apunta.
+  escrita, y ninguna instrucción la apunta. En la primera versión japonesa del
+  cartucho sí se visita, y es la quinta parada del recorrido.
 - **El alfabeto no tiene F.** La única palabra del juego que necesita una,
   FRANCE, se la lleva puesta, guardada lejos del resto de las letras.
-- **Arriba frena y abajo acelera**, y frenar cuesta el triple que acelerar.
+- **En 0xE100 no está la velocidad, sino su periodo**: cuantos más fotogramas
+  espera, más lento se va, así que acelerar es restarle. Y frenar cuesta la
+  tercera parte que acelerar.
 
 Hay más, con la evidencia al lado, en
 [la página de hallazgos](https://antxiko.github.io/AntarcticAdventure-disassembly/es/HALLAZGOS.html).
+
+De este cartucho hay tres compilaciones distintas, y la segunda japonesa es la
+europea salvo dos bytes. Lo que cambia de una a otra —desde el color del fondo
+hasta cómo llegan al chip gráfico— está en
+[la página de las versiones](https://antxiko.github.io/AntarcticAdventure-disassembly/es/LAS-VERSIONES.html).
 
 ## Lo que queda abierto
 
@@ -91,7 +99,7 @@ sha256 `17f4dd654c937134c44c1faf68a9f67141d69ccf251853228aa5211dc8065126`.
 ```sh
 make          # traza, genera el listado y lo comprueba todo
 make verify   # solo la prueba de fuego
-make web      # regenera la web de docs/
+make graficos # descomprime los dibujos y los saca a PNG
 ```
 
 Las instrucciones completas están en

@@ -23,10 +23,12 @@ from estilo_web import ESTILO  # noqa: E402
 NAV_EN = [("index.html", "Home"), ("GETTING-STARTED.html", "Start"),
           ("THE-GAME.html", "The game"), ("THE-CARTRIDGE.html", "The cartridge"),
           ("THE-CODE.html", "The code"), ("FINDINGS.html", "Findings"),
+          ("THE-VERSIONS.html", "The versions"),
           ("OPEN-QUESTIONS.html", "Open questions")]
 NAV_ES = [("index.html", "Portada"), ("EMPEZAR.html", "Empezar"),
           ("EL-JUEGO.html", "El juego"), ("EL-CARTUCHO.html", "El cartucho"),
           ("EL-CODIGO.html", "El código"), ("HALLAZGOS.html", "Hallazgos"),
+          ("LAS-VERSIONES.html", "Las versiones"),
           ("PREGUNTAS-ABIERTAS.html", "Preguntas abiertas")]
 
 # Cada documento se llama distinto en cada idioma, asi que el selector de idioma
@@ -37,6 +39,7 @@ _PAREJAS = [("GETTING-STARTED.html", "EMPEZAR.html"),
             ("THE-CARTRIDGE.html", "EL-CARTUCHO.html"),
             ("THE-CODE.html", "EL-CODIGO.html"),
             ("FINDINGS.html", "HALLAZGOS.html"),
+            ("THE-VERSIONS.html", "LAS-VERSIONES.html"),
             ("OPEN-QUESTIONS.html", "PREGUNTAS-ABIERTAS.html")]
 PAREJA = {}
 for _en, _es in _PAREJAS:
