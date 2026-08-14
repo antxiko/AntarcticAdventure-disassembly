@@ -2,13 +2,15 @@
 
 De este cartucho hay tres compilaciones distintas, y entre ellas cambian cosas
 que van bastante más allá de traducir un rótulo: cambia el color del fondo,
-cambia el recorrido, y cambia hasta la manera de hablarle al chip gráfico.
+cambia el recorrido, y cambia **cada una de las conversaciones que el código
+tiene con el hardware**.
 
 ## Cuál es la ROM de aquí
 
-La que está desensamblada y comentada de arriba abajo es la **segunda versión
-japonesa**, y conviene decirlo de entrada porque no es la que uno esperaría.
-Las otras dos, por ahora, están comparadas byte a byte pero no desensambladas.
+Las tres están desensambladas aquí, cada una en su carpeta de `src/`, y las
+tres reensamblan byte a byte a su propia ROM sin dejar un byte sin explicar. La
+que está comentada de arriba abajo es la **segunda versión japonesa**, y
+conviene decirlo de entrada porque no es la que uno esperaría.
 
     primera japonesa    087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
     segunda japonesa    a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
@@ -18,22 +20,23 @@ Los tres ficheros son de 16384 bytes clavados, y aquí no se distribuye ninguno.
 Si los tienes, `make compara` saca de una pasada todo lo que cuenta esta
 página.
 
-Un aviso, porque de este juego circulan muchos volcados sucios: los hay de
-32 KB con los mismos 16 KB repetidos dos veces, copias del mismo fichero con
-otro nombre, y varios con un par de bytes cambiados. Lo primero es siempre el
-sha256, y no fiarse del nombre.
+Un aviso, porque de este juego circulan volcados sucios: los hay de 32 KB con
+los mismos 16 KB repetidos dos veces, y copias del mismo fichero con otro
+nombre. Lo primero es siempre el sha256.
 
 ## Las tres, de un vistazo
 
 |  | primera japonesa | europea | segunda japonesa |
 |---|---|---|---|
 | fondo y borde | negro | negro | **azul oscuro** |
-| accesos al VDP con el puerto en el opcode | 14 | 14 | **0** |
-| accesos con el puerto leído de la BIOS | 0 | 0 | **8** |
+| puertos del hardware escritos a pelo | 31 | 31 | **0** |
+| llamadas a la BIOS | 0 | 0 | **14** |
 | ganchos del sistema neutralizados al arrancar | no | no | **sí** |
 | copia de tres bytes en el arranque | no | no | **sí** |
 | rótulo de portada | `VIDEO CARTRIDGE` | `VIDEO CARTRIDGE` | **`KONAMI`** |
 | NEW ZEALAND | **se visita** | está sin usar | está sin usar |
+| la demo arranca sola | sí | **no** | sí |
+| errata `KEYBOABD` | **sí** | no | no |
 | el Polo Sur | **cuatro dibujos propios** | `THE SOUTH POLE` | `THE SOUTH POLE` |
 
 Ninguna de las tres se parece a otra en el binario: entre la primera y la
@@ -72,36 +75,79 @@ deletreado como `THE SOUTH POLE`. Y cada cadena empieza a llevar delante dos
 bytes con el sitio exacto de la pantalla donde va escrita, que es lo que la
 centra: 0x3AC8 para las de catorce letras, 0x3ACE para las tres de EE. UU.
 
-## Segunda tanda: cambia la máquina
+## Segunda tanda: cambia la máquina entera
 
-Aquí es donde la segunda japonesa se separa de las otras dos, y todo lo que
-cambia va en la misma dirección: dejar de dar por hecho cómo es el MSX que hay
-debajo.
+Aquí es donde la segunda japonesa se separa de las otras dos, y no es un
+detalle del chip gráfico: es toda la capa de hardware, contada instrucción a
+instrucción sobre los tres listados.
 
-Las dos primeras llevan los puertos del chip gráfico escritos dentro de las
-propias instrucciones. Su rutina de escribir un registro es esta entera:
+|  | llamadas a la BIOS | puertos escritos a pelo |
+|---|---|---|
+| primera japonesa | 0 | 31 |
+| europea | 0 | 31 |
+| segunda japonesa | **14** | **0** |
 
-    di / ld a,e / out (099h),a / ld a,d / out (099h),a / ret
+Las dos primeras no llaman a la BIOS ni una sola vez y hablan con los chips
+directamente: nueve accesos a los datos del vídeo, cuatro a sus registros,
+trece al chip de sonido y cinco al circuito que lee el teclado. Y lo hacen
+exactamente igual las dos, con el mismo reparto hasta en el número de veces,
+así que de esto la europea no cambió nada.
 
-y con ella hay catorce accesos más del mismo estilo. La segunda japonesa no
-tiene ni uno. Los ocho accesos a los datos del vídeo pasan a `out (c),a`, con
-el número de puerto en C, y ese número no está escrito en ninguna parte: se lee
-de la zona de trabajo de la BIOS, que es donde la máquina apunta cuál es el
-suyo.
+La segunda japonesa no escribe ni un puerto. Lo mismo pasa por catorce llamadas
+a la BIOS: `WRTVDP` para los registros de vídeo, `SETRD` y `SETWRT` para
+apuntar la memoria de vídeo, `RDVDP` para leer su estado, `WRTPSG` y `RDPSG`
+para el sonido y el mando, y `SNSMAT` para el teclado.
+
+La diferencia importa porque en un MSX no está garantizado dónde están los
+chips. La norma dice que el puerto del vídeo se lea de la zona de trabajo de la
+BIOS, y eso es justo lo que hace:
 
     ld a,(00006h)   ; el puerto de datos del VDP, que la BIOS guarda ahí
     ld c,a
 
-Los registros pasan a mandarse con la llamada estándar de la BIOS y el apuntado
-de la memoria de vídeo también. Y el arranque hace algo más que las otras dos
-no hacen: antes de enganchar su rutina de interrupción, **rellena de RET los
-512 bytes de ganchos que el sistema tiene reservados**, o sea que desactiva lo
-que hubiera puesto ahí cualquier extensión conectada.
+donde las otras dos llevan el número metido dentro de la propia instrucción, en
+rutinas como esta, que es la de escribir un registro del chip gráfico entera:
+
+    di / ld a,e / out (099h),a / ld a,d / out (099h),a / ret
+
+Y el arranque hace algo más que las otras dos no hacen: antes de enganchar su
+rutina de interrupción, **rellena de RET los 512 bytes de ganchos que el
+sistema tiene reservados**, o sea que desactiva lo que hubiera puesto ahí
+cualquier extensión conectada.
 
 De paso, el fondo. El color de fondo y de borde sale del registro 7 del chip, y
 las tres lo dejan puesto en el arranque y no lo vuelven a tocar en toda la
 partida: 0xE1 en las dos primeras, que es negro, y 0xE4 en la segunda japonesa,
 que es azul oscuro.
+
+## Lo que solo tiene la europea: no hay demo
+
+Si dejas quieta la primera japonesa o la segunda, al rato arranca sola una
+partida de demostración. En la europea no arranca nunca, y la razón es una sola
+instrucción.
+
+El juego va por una máquina de estados de dieciséis casillas, y sus dieciséis
+destinos coinciden uno a uno en las tres versiones. Menos uno: el estado 5, que
+es el que espera en la pantalla de título.
+
+    segunda japonesa   ld hl,0E004h / dec (hl) / ret nz / jp <siguiente estado>
+    europea            ret
+
+En las otras dos, ese estado descuenta un contador de fotogramas y, cuando
+llega a cero, pasa al estado siguiente, que es la cortinilla, y de ahí a la
+demo. En la europea el estado 5 **es un `ret` pelado**: no cuenta nada y no pasa
+a ninguna parte, así que la pantalla de título se queda ahí hasta que alguien
+pulse.
+
+Y lo bonito es que la cuenta atrás sigue en el cartucho, **un byte más allá**,
+entera y sin que nadie la apunte. Aparece como código huérfano al repasar que
+no quede un byte sin explicar, mucho antes de saber por qué está ahí.
+
+## Otra pista de que la primera es la primera
+
+En la primera japonesa, el rótulo del menú dice `KEYBOABD` en vez de
+`KEYBOARD`. Está en 0x57B9, con la B donde va la R. En las otras dos está
+corregido.
 
 ## La copia de tres bytes del arranque
 
@@ -113,21 +159,14 @@ entrada de la BIOS y el vector de arranque de la máquina:
 
 Ahí hay ROM, así que la escritura se pierde y no pasa nada.
 
-Lo llamativo llega al comparar volcados: **esa instrucción es lo único que
-separa entre sí a los que circulan de esta versión**. Hay uno con el destino
-puesto en 0x40B2, que es el despachador del juego, la rutina por la que pasan
-todos los saltos por tabla y a la que se llama en el primer fotograma; ahí sí
-muerde, porque corriendo desde RAM el despachador se convertiría en un salto a
-cero y la máquina se reiniciaría antes de enseñar nada. Y hay un tercero con el
-`ldir` entero convertido en dos `nop`.
-
-Tres variantes del mismo binario que solo se diferencian en esa instrucción dan
-una idea bastante clara de para qué está: es una protección contra copias, de
-las discretas, porque no comprueba nada ni avisa de nada. El para qué, eso sí,
-no se demuestra desde el binario.
-
 Ni la primera japonesa ni la europea llevan nada de esto: la copia no existe en
-ninguna parte de esas dos, ni siquiera los tres bytes sueltos.
+ninguna parte de esas dos, ni siquiera los tres bytes sueltos de 0x411F.
+
+Qué hace está comprobado leyendo los bytes; **para qué no se puede demostrar
+desde el binario**. La lectura que encaja es que sea un guardián contra correr
+el cartucho desde RAM, porque la escritura solo llega a alguna parte si eso de
+ahí no es ROM, y en un cartucho de verdad es una instrucción que no se nota:
+no comprueba nada ni avisa de nada. Pero es una lectura, no una medida.
 
 ## Lo que no sabemos
 

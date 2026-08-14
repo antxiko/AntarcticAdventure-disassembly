@@ -48,16 +48,11 @@ B 0x404c ROM, asi que la escritura se pierde y no pasa nada.
 B 0x404c Solo lleva esto la segunda japonesa: ni la primera japonesa ni
 B 0x404c la europea tienen el LDIR, ni siquiera los tres bytes sueltos
 B 0x404c de 0x411F.
-B 0x404c Y ESTA INSTRUCCION ES LO UNICO que separa a los volcados de
-B 0x404c esta version que circulan: hay otro con el destino puesto en
-B 0x404c 0x40B2, que es el despachador de aqui abajo -y ahi si muerde,
-B 0x404c porque en una copia en RAM el juego se mataria solo en el
-B 0x404c primer fotograma, ya que 0x4122 lo llama enseguida-, y un
-B 0x404c tercero con el `ldir` convertido en dos `nop`.
-B 0x404c Que hace: comprobado leyendo los bytes. Para que: lo que encaja
-B 0x404c con tres volcados que solo se diferencian aqui es una
-B 0x404c proteccion contra copias, pero eso no se demuestra desde el
-B 0x404c binario. Ver la pagina de las versiones.
+B 0x404c Que hace: comprobado leyendo los bytes. Para que: NO SE PUEDE
+B 0x404c DEMOSTRAR desde el binario. La lectura que encaja es que sea un
+B 0x404c guardian contra correr el cartucho desde RAM, porque la
+B 0x404c escritura solo llega a alguna parte si eso de ahi no es ROM;
+B 0x404c pero es una lectura, no una medida.
 C 0x404c Origen: los tres bytes `jp 0000h` de 0x411F
 C 0x404f Destino: 0x0000, la entrada de la BIOS. Es ROM, asi que la escritura se pierde
 C 0x4057 Lee el registro de estado del VDP para descartar la interrupcion pendiente

@@ -94,8 +94,8 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
     ld bc,00003h
     ldir</code></pre>
 <p>On an MSX that does absolutely nothing, because 0x0000 is ROM and the write goes nowhere.</p>
-<p>What&#x27;s striking is that <b>this instruction is the only thing telling apart the dumps of this version that go around</b>. There&#x27;s another with the destination set to 0x40B2, the game&#x27;s dispatcher, and there it does bite: running from a copy in RAM, the dispatcher would turn into a jump to zero and the machine would reset on the first frame, since the game loop calls it right away. And there&#x27;s a third with the <code>ldir</code> turned into two <code>nop</code>s.</p>
-<p>The cartridge&#x27;s other two builds carry none of this: neither the first Japanese version nor the European one has these four instructions, not even the three loose bytes. What all that fits is a guard against copies in memory, a discreet one — it checks nothing and warns about nothing, because on the real cartridge it&#x27;s an instruction you never notice — though what it&#x27;s for can&#x27;t be proved from the binary.</p>
+<p>The cartridge&#x27;s other two builds carry none of this: neither the first Japanese version nor the European one has these four instructions, not even the three loose bytes at 0x411F. It belongs to this one.</p>
+<p>What it does is settled by reading the bytes; <b>what it&#x27;s for can&#x27;t be proved from the binary</b>. The reading that fits is a guard against running the cartridge from RAM, since the write only lands anywhere if what&#x27;s there isn&#x27;t ROM. But that&#x27;s a reading, not a measurement.</p>
 <h2 id="there-s-a-base-you-never-reach">There&#x27;s a base you never reach</h2>
 <p>The cartridge carries eight base names and the route has ten stops. Seven of those names cover the ten —the United States turns up three times and Australia twice— and the eighth, <b>NEW ZEALAND</b>, is asked for by nobody.</p>
 <p>Checked three separate ways, because one check isn&#x27;t enough here:</p>

@@ -34,19 +34,14 @@ instrucciones:
 En un MSX eso no hace absolutamente nada, porque en 0x0000 hay ROM y la
 escritura se pierde por el camino.
 
-Lo llamativo es que **esa instrucción es lo único que separa entre sí a los
-volcados de esta versión que circulan por ahí**. Hay otro con el destino puesto
-en 0x40B2, que es el despachador del juego, y ahí sí muerde: corriendo desde
-una copia en RAM, el despachador quedaría convertido en un salto a cero y la
-máquina se reiniciaría en el primer fotograma, porque el bucle de juego lo llama
-nada más empezar. Y hay un tercero con el `ldir` convertido en dos `nop`.
-
 Las otras dos compilaciones del cartucho no llevan nada de esto: ni la primera
 japonesa ni la europea tienen estas cuatro instrucciones, ni siquiera los tres
-bytes sueltos. Lo que encaja con todo junto es una protección contra copias en
-memoria, de las discretas —no comprueba nada ni avisa de nada, porque en el
-cartucho de verdad es una instrucción que no se nota—, aunque el para qué no se
-demuestra desde el binario.
+bytes sueltos de 0x411F. Es cosa de esta.
+
+Qué hace está comprobado leyendo los bytes; **para qué no se puede demostrar
+desde el binario**. La lectura que encaja es que sea un guardián contra correr
+el cartucho desde RAM, porque la escritura solo llega a alguna parte si eso de
+ahí no es ROM. Pero es una lectura, no una medida.
 
 ## Hay una base a la que no se llega nunca
 

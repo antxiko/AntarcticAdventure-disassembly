@@ -67,16 +67,11 @@ INIT:		; Punto de entrada del cartucho, declarado en la cabecera
 ; Solo lleva esto la segunda japonesa: ni la primera japonesa ni
 ; la europea tienen el LDIR, ni siquiera los tres bytes sueltos
 ; de 0x411F.
-; Y ESTA INSTRUCCION ES LO UNICO que separa a los volcados de
-; esta version que circulan: hay otro con el destino puesto en
-; 0x40B2, que es el despachador de aqui abajo -y ahi si muerde,
-; porque en una copia en RAM el juego se mataria solo en el
-; primer fotograma, ya que 0x4122 lo llama enseguida-, y un
-; tercero con el `ldir` convertido en dos `nop`.
-; Que hace: comprobado leyendo los bytes. Para que: lo que encaja
-; con tres volcados que solo se diferencian aqui es una
-; proteccion contra copias, pero eso no se demuestra desde el
-; binario. Ver la pagina de las versiones.
+; Que hace: comprobado leyendo los bytes. Para que: NO SE PUEDE
+; DEMOSTRAR desde el binario. La lectura que encaja es que sea un
+; guardian contra correr el cartucho desde RAM, porque la
+; escritura solo llega a alguna parte si eso de ahi no es ROM;
+; pero es una lectura, no una medida.
 ; ----------------------------------------------------------------------
 	ld hl,0411fh		;404c   ; Origen: los tres bytes `jp 0000h` de 0x411F
 	ld de,00000h		;404f   ; Destino: 0x0000, la entrada de la BIOS. Es ROM, asi que la escritura se pierde

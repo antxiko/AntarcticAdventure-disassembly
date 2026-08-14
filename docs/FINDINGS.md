@@ -34,19 +34,14 @@ instructions:
 On an MSX that does absolutely nothing, because 0x0000 is ROM and the write
 goes nowhere.
 
-What's striking is that **this instruction is the only thing telling apart the
-dumps of this version that go around**. There's another with the destination
-set to 0x40B2, the game's dispatcher, and there it does bite: running from a
-copy in RAM, the dispatcher would turn into a jump to zero and the machine
-would reset on the first frame, since the game loop calls it right away. And
-there's a third with the `ldir` turned into two `nop`s.
-
 The cartridge's other two builds carry none of this: neither the first Japanese
 version nor the European one has these four instructions, not even the three
-loose bytes. What all that fits is a guard against copies in memory, a discreet
-one — it checks nothing and warns about nothing, because on the real cartridge
-it's an instruction you never notice — though what it's for can't be proved
-from the binary.
+loose bytes at 0x411F. It belongs to this one.
+
+What it does is settled by reading the bytes; **what it's for can't be proved
+from the binary**. The reading that fits is a guard against running the
+cartridge from RAM, since the write only lands anywhere if what's there isn't
+ROM. But that's a reading, not a measurement.
 
 ## There's a base you never reach
 
