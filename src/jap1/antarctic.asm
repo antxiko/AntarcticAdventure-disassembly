@@ -236,7 +236,7 @@ PASO_DE_JUEGO:		; Un paso de la maquina de estados: cuenta el fotograma en 0xE00
 
 ; ----------------------------------------------------------------------
 ; DATOS tabla_de_estados: Los 16 destinos del CALL de 0x4116. Cierra clavada
-;   contra su primer destino Es la maquina de estados: la indexa 0xE000.
+;   contra su primer destino. Es la maquina de estados: la indexa 0xE000.
 ;   0x4119..0x4139  (32 bytes)
 DATA_tabla_de_estados:
 	defw 04139h	; 4119  -> ESTADO_00_PARADO
@@ -316,7 +316,7 @@ ESTADO_07_DEMO:		; Estado 7: la partida de demostracion, en tres pasos
 
 ; ----------------------------------------------------------------------
 ; DATOS tabla_demo: Los 3 destinos del CALL de 0x4188. Cierra clavada contra
-;   su primer destino Son los pasos del estado 7, la partida de demostracion.
+;   su primer destino. Son los pasos del estado 7, la partida de demostracion.
 ;   0x418b..0x4191  (6 bytes)
 DATA_tabla_demo:
 	defw 04191h	; 418b  -> DEMO_0_ARRANCA
@@ -373,7 +373,7 @@ ESTADO_08_MENU:		; Estado 8: el menu de eleccion de mando, en cuatro pasos
 
 ; ----------------------------------------------------------------------
 ; DATOS tabla_menu: Los 4 destinos del CALL de 0x41BC. Cierra clavada contra
-;   su primer destino Son los pasos del estado 8, el menu.
+;   su primer destino. Son los pasos del estado 8, el menu.
 ;   0x41da..0x41e2  (8 bytes)
 DATA_tabla_menu:
 	defw 041e2h	; 41da  -> MENU_0_PINTA
@@ -544,7 +544,7 @@ ESTADO_14_META:		; Estado 14: la llegada a la base, en ocho pasos
 
 ; ----------------------------------------------------------------------
 ; DATOS tabla_meta: Los 8 destinos del CALL de 0x42FA. Cierra clavada contra
-;   su primer destino Son los pasos del estado 14, la llegada a la meta.
+;   su primer destino. Son los pasos del estado 14, la llegada a la meta.
 ;   0x42fd..0x430d  (16 bytes)
 DATA_tabla_meta:
 	defw 0430dh	; 42fd  -> META_0_FRENA
@@ -1621,7 +1621,7 @@ ESTADO_15_MAPA:		; Estado 15: el mapa, en siete pasos
 
 ; ----------------------------------------------------------------------
 ; DATOS tabla_mapa: Los 7 destinos del CALL de 0x48DE. Cierra clavada contra
-;   su primer destino Son los pasos del estado 15, el mapa del recorrido.
+;   su primer destino. Son los pasos del estado 15, el mapa del recorrido.
 ;   0x48e1..0x48ef  (14 bytes)
 DATA_tabla_mapa:
 	defw 048efh	; 48e1  -> MAPA_0_PREPARA
@@ -2787,17 +2787,24 @@ DECORADO_DIBUJA:
 	ret			;5114
 
 ; ----------------------------------------------------------------------
-; DATOS decorados_por_fase: Ocho bytes por fase, diez fases: la lista de
-;   decorados que van saliendo. Un 0xFF acaba la lista y los 0x77 son relleno
-;   0x5115..0x514b  (54 bytes)
+; DATOS decorados_por_fase (tramo): Ocho bytes por fase, diez fases: la lista
+;   de decorados que van saliendo. Un 0xFF acaba la lista y los 0x77 son
+;   relleno
+;   0x5115..0x5141  (44 bytes)  de 0x5115..0x5165 (80 bytes)
 DATA_decorados_por_fase:
 	defb 003h,0ffh,001h,077h,003h,002h,001h,000h	; 5115  ...w....
 	defb 0ffh,003h,001h,077h,002h,003h,000h,001h	; 511d  ...w....
 	defb 002h,0ffh,000h,0ffh,0ffh,003h,001h,077h	; 5125  .......w
 	defb 002h,000h,0ffh,077h,003h,0ffh,001h,077h	; 512d  ...w...w
 	defb 0ffh,077h,077h,077h,0ffh,002h,003h,000h	; 5135  .www....
-	defb 001h,003h,001h,077h,000h,001h,000h,000h	; 513d  ...w....
-	defb 000h,001h,000h,001h,000h,000h	; 5145
+	defb 001h,003h,001h,077h	; 513d
+
+; ----------------------------------------------------------------------
+; DATOS color_por_fase: Un byte por fase: con 0 el cielo es la casilla 7 y con
+;   1 la 9. Cierra clavada en 0x514B, donde vuelve a haber codigo
+;   0x5141..0x514b  (10 bytes)
+DATA_color_por_fase:
+	defb 000h,001h,000h,000h,000h,001h,000h,001h,000h,000h	; 5141  ..........
 
 ; ======================================================================
 ; CODIGO 0x514b..0x5277  (300 bytes)
@@ -4514,7 +4521,7 @@ MANDA_LA_VELOCIDAD:		; Despacha por arriba/abajo para acelerar o frenar
 
 ; ----------------------------------------------------------------------
 ; DATOS tabla_velocidad: Los 4 destinos del CALL de 0x76D7. Cierra clavada
-;   contra su primer destino Son los cuatro destinos de la velocidad: nada,
+;   contra su primer destino. Son los cuatro destinos de la velocidad: nada,
 ;   acelerar, frenar y el tope.
 ;   0x76da..0x76e2  (8 bytes)
 DATA_tabla_velocidad:

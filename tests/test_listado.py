@@ -182,3 +182,54 @@ class TestNadaDeOtroJuego(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestLasTresVersiones(unittest.TestCase):
+    """Los tests de arriba miran la version por defecto. Estos, las tres.
+
+    Hacen falta porque asi es como se colaron dos rangos AL REVES en la primera
+    japonesa -punteros_de_banderas y color_por_fase, con el fin antes que el
+    principio- que nadie vio: su explicacion no se publicaba y el listado
+    reensamblaba igual, porque los bytes no cambian.
+    """
+
+    def rangos(self, version):
+        ruta = os.path.join(RAIZ, "src", version, "antarctic.notes")
+        with open(ruta, encoding="utf-8") as f:
+            return [(int(l.split()[1], 16), int(l.split()[2], 16), l.split()[3])
+                    for l in f if l.startswith("D ")]
+
+    def test_ningun_rango_va_del_reves(self):
+        for v in ("jap1", "jap2", "eu"):
+            for a, b, nombre in self.rangos(v):
+                self.assertLess(a, b, "%s: %s va del reves (%#06x..%#06x)"
+                                % (v, nombre, a, b))
+
+    # Solapes que ya se han mirado y estan explicados. Cualquier otro es un
+    # fallo: dos rangos que se pisan quieren decir que uno de los dos tiene mal
+    # un limite, y eso el reensamblado no lo caza.
+    SOLAPES_CONOCIDOS = {
+        ("jap1", "decorados_por_fase", "color_por_fase"):
+            "en jap2 y eu las dos tablas van SEGUIDAS (80 bytes de decorados y "
+            "10 de color); en jap1 la de color cae dentro de la de decorados. "
+            "Que color_por_fase esta en 0x5141 es seguro -0x5018 hace "
+            "ld hl,0x5141, igual que jap2 hace ld hl,0x5195 desde 0x5047, y los "
+            "diez bytes de ahi son 0 y 1 como dice su descripcion-, asi que el "
+            "limite dudoso es el de decorados_por_fase, y para cerrarlo hace "
+            "falta ver en el emulador cuanto lee de verdad",
+    }
+
+    def test_ningun_rango_se_solapa_con_otro(self):
+        for v in ("jap1", "jap2", "eu"):
+            ordenados = sorted(self.rangos(v))
+            for (a1, b1, n1), (a2, b2, n2) in zip(ordenados, ordenados[1:]):
+                if b1 > a2 and (v, n1, n2) in self.SOLAPES_CONOCIDOS:
+                    continue
+                self.assertLessEqual(b1, a2, "%s: %s (%#06x..%#06x) se mete en "
+                                     "%s (%#06x..%#06x)" % (v, n1, a1, b1, n2, a2, b2))
+
+    def test_todos_los_rangos_caben_en_el_cartucho(self):
+        for v in ("jap1", "jap2", "eu"):
+            for a, b, nombre in self.rangos(v):
+                self.assertTrue(0x4000 <= a < b <= 0x8000,
+                                "%s: %s se sale del cartucho" % (v, nombre))

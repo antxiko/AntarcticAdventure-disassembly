@@ -25,13 +25,13 @@
 
 D 0x4000 0x4010 cabecera_del_cartucho La cabecera que lee la BIOS: "AB", INIT=0x4010, y a cero los otros tres vectores (STATEMENT, DEVICE y TEXT). Con eso la BIOS llama a 0x4010 nada mas terminar de arrancar la maquina
 F 0x4000 2,w4,6
-D 0x4119 0x4139 tabla_de_estados Los 16 destinos del CALL de 0x4116. Cierra clavada contra su primer destino Es la maquina de estados: la indexa 0xE000.
+D 0x4119 0x4139 tabla_de_estados Los 16 destinos del CALL de 0x4116. Cierra clavada contra su primer destino. Es la maquina de estados: la indexa 0xE000.
 F 0x4119 w1
-D 0x418C 0x4192 tabla_demo Los 3 destinos del CALL de 0x4189. Cierra clavada contra su primer destino Son los pasos del estado 7, la partida de demostracion.
+D 0x418C 0x4192 tabla_demo Los 3 destinos del CALL de 0x4189. Cierra clavada contra su primer destino. Son los pasos del estado 7, la partida de demostracion.
 F 0x418C w1
-D 0x41DB 0x41E3 tabla_menu Los 4 destinos del CALL de 0x41BE. Cierra clavada contra su primer destino Son los pasos del estado 8, el menu.
+D 0x41DB 0x41E3 tabla_menu Los 4 destinos del CALL de 0x41BE. Cierra clavada contra su primer destino. Son los pasos del estado 8, el menu.
 F 0x41DB w1
-D 0x42FE 0x430E tabla_meta Los 8 destinos del CALL de 0x42E1. Cierra clavada contra su primer destino Son los pasos del estado 14, la llegada a la meta.
+D 0x42FE 0x430E tabla_meta Los 8 destinos del CALL de 0x42E1. Cierra clavada contra su primer destino. Son los pasos del estado 14, la llegada a la meta.
 F 0x42FE w1
 D 0x4477 0x4480 valores_iniciales Los nueve bytes que 0x4456 copia a 0xE0E0: fase 1, indice 0, y el resto a cero salvo 0xE0E4=2 y 0xE0E6=0x17. Solo los cinco primeros se usan: 0x4241 machaca la distancia y el tiempo en cuanto empieza la fase
 D 0x476E 0x4782 decorado_por_fase Dos bytes por fase, diez fases: 0x4731 los indexa y el bit 4 de la distancia elige cual de los dos. Acaba justo donde empiezan las listas
@@ -39,7 +39,7 @@ F 0x476E 2
 D 0x4782 0x47AA listas_de_decorado Cinco listas de ocho bytes. Es a donde apuntan los veinte punteros de 0x47BE, y acaban clavadas donde empieza la tabla de fases
 F 0x4782 8
 D 0x4820 0x482A duracion_sorpresa Diez bytes, uno por fase: cuanto dura lo que enciende 0x47F8. La fase 1 lleva 7 y las demas entre 2 y 6
-D 0x48DF 0x48ED tabla_mapa Los 7 destinos del CALL de 0x48DC. Cierra clavada contra su primer destino Son los pasos del estado 15, el mapa del recorrido.
+D 0x48DF 0x48ED tabla_mapa Los 7 destinos del CALL de 0x48DC. Cierra clavada contra su primer destino. Son los pasos del estado 15, el mapa del recorrido.
 F 0x48DF w1
 D 0x4A7A 0x4AA3 mapa_recorrido Los cuarenta pasos del camino: nibble alto la direccion (0 arriba, 4 derecha, 8 abajo, C izquierda) y nibble bajo la casilla que se dibuja. El 0x20 de 0x4AA2 lo cierra
 D 0x4AA3 0x4ACB tabla_de_fases Las DIEZ fases, cuatro bytes cada una: centenas de metros, casilla del mapa donde empieza, y el tiempo en BCD. Cierra clavada en 0x4ACB, donde vuelve a haber codigo. Salen 1500 m/100 s, 1700/120, 1100/80, 1200/80, 1200/80, 500/40, 2600/165, 1200/90, 1500/100 y 1200/90
@@ -74,7 +74,7 @@ F 0x6704 5
 D 0x6734 0x6BC1 sprites_comprimidos Los patrones de sprite: los pinguinos, los peces y las focas
 D 0x6BC1 0x7219 trozos_de_pista Los 92 trozos incrementales de la pista, en el mismo formato que los decorados: cada uno pone entre una y seis casillas, o sea que son INCREMENTOS y no pantallas enteras. Se consumen en cadena, uno por paso, y asi va creciendo lo que se acerca. Los siete obstaculos de 0x5295 empiezan cada uno en uno de estos trozos
 D 0x753F 0x75C5 bloques_de_la_meta Los cinco bloques que va dibujando 0x74F1
-D 0x7709 0x7711 tabla_velocidad Los 4 destinos del CALL de 0x76DC. Cierra clavada contra su primer destino Son los cuatro destinos de la velocidad: nada, acelerar, frenar y el tope.
+D 0x7709 0x7711 tabla_velocidad Los 4 destinos del CALL de 0x76DC. Cierra clavada contra su primer destino. Son los cuatro destinos de la velocidad: nada, acelerar, frenar y el tope.
 F 0x7709 w1
 D 0x780C 0x7810 nubes_desplazamientos Cuanto se corre de lado cada nube en cada paso: -1, +1, -2 y +2. Con la Y subiendo y la X abriendose, las cuatro se separan del centro segun se acercan
 D 0x7810 0x7818 nubes_posiciones Por donde asoma cada nube: cuatro parejas (Y, X), las cuatro en la misma columna y a alturas distintas

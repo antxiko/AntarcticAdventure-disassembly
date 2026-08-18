@@ -42,7 +42,7 @@ comido un byte por el camino.
 
 ## Sin el cartucho
 
-Se puede leer igualmente el listado de `src/antarctic.asm` y las notas, que es
+Se puede leer igualmente el listado de `src/jap2/antarctic.asm` y las notas, que es
 donde está de verdad el trabajo: 394 rutinas con nombre, 269 comentarios
 anclados a su dirección y 63 rangos de datos con su explicación al lado.
 
@@ -52,11 +52,11 @@ El listado **no se toca a mano**. Se genera, y lo gobiernan tres ficheros:
 
 | | |
 |---|---|
-| `src/antarctic.entries` | los puntos de entrada: por dónde empieza a trazar |
-| `src/antarctic.nocode` | las zonas que NO son código, y por qué se sabe |
-| `src/antarctic.notes` | los nombres, los comentarios y los rangos de datos |
+| `src/jap2/antarctic.entries` | los puntos de entrada: por dónde empieza a trazar |
+| `src/jap2/antarctic.nocode` | las zonas que NO son código, y por qué se sabe |
+| `src/jap2/antarctic.notes` | los nombres, los comentarios y los rangos de datos |
 
-De ahí sale `src/antarctic.asm`. Si quieres cambiar un comentario o bautizar
+De ahí sale `src/jap2/antarctic.asm`. Si quieres cambiar un comentario o bautizar
 una rutina, va en el `.notes`, anclado a su dirección; así el comentario
 sobrevive a un retrazado y nunca se despega de la instrucción que explica.
 
@@ -71,7 +71,7 @@ cabecera diciendo para que sirve, su etiqueta y el volcado alineado a su primer
 byte, de modo que se ve de un golpe donde acaba una tabla y empieza la
 siguiente. Una linea opcional le da al bloque la anchura de fila de su
 estructura real -dos bytes por fase, ocho por lista, `defw` si es una tabla de
-punteros, un glifo por fila en una fuente- y cuando un puntero cae en un bloque
+punteros- y cuando un puntero cae en un bloque
 que tiene nombre, ese nombre se escribe al lado.
 
 ## Las herramientas

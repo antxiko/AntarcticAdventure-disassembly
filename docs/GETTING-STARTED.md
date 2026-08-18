@@ -40,7 +40,7 @@ byte along the way.
 
 ## Without the cartridge
 
-You can still read `src/antarctic.asm` and the notes, which is where the work
+You can still read `src/jap2/antarctic.asm` and the notes, which is where the work
 actually lives: 394 named routines, 269 comments anchored to their address, and
 63 data ranges with an explanation beside each one.
 
@@ -51,11 +51,11 @@ it:
 
 | | |
 |---|---|
-| `src/antarctic.entries` | the entry points: where tracing starts |
-| `src/antarctic.nocode` | the ranges that are NOT code, and how we know |
-| `src/antarctic.notes` | the names, the comments and the data ranges |
+| `src/jap2/antarctic.entries` | the entry points: where tracing starts |
+| `src/jap2/antarctic.nocode` | the ranges that are NOT code, and how we know |
+| `src/jap2/antarctic.notes` | the names, the comments and the data ranges |
 
-Out of those comes `src/antarctic.asm`. If you want to change a comment or name
+Out of those comes `src/jap2/antarctic.asm`. If you want to change a comment or name
 a routine, it goes in the `.notes`, anchored to its address; that way the
 comment survives a re-trace and never drifts away from the instruction it
 explains.
@@ -70,8 +70,7 @@ Every data range declared in the `.notes` comes out as a block of its own: its
 own heading saying what it is for, its own label, and the dump aligned to its
 first byte, so where one table ends and the next begins is visible at a glance.
 An optional line gives the block the row width of its real structure -two bytes
-per stage, eight per list, `defw` for a table of pointers, one glyph per row for
-a font- and where a pointer lands on a block that has a name, that name is
+per stage, eight per list, `defw` for a table of pointers- and where a pointer lands on a block that has a name, that name is
 written next to it.
 
 ## The tools
