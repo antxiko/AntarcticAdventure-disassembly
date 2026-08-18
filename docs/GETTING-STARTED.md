@@ -3,7 +3,6 @@
 ## What you need
 
 `pasmo` and `z80dasm` to assemble and disassemble, and Python 3 for the tools.
-That's all: nothing to install, no environment to set up.
 
 The cartridge isn't distributed with this repository, only the documentation
 work, so you'll need your own copy named `antarctic.rom` in the project root.

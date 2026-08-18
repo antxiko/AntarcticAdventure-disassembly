@@ -3,7 +3,7 @@
 ## Lo que hace falta
 
 `pasmo` y `z80dasm` para ensamblar y desensamblar, y Python 3 para las
-herramientas. Nada más: no hay dependencias que instalar ni entorno que montar.
+herramientas.
 
 El cartucho no se distribuye con este repositorio, solo el trabajo de
 documentación, así que hace falta tu propia copia con el nombre

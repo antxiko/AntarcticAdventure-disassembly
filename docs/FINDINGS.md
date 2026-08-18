@@ -1,12 +1,5 @@
 # Findings
 
-> **Work in progress.** There are several different builds of this cartridge,
-> and we are currently going back over which is which and what changes between
-> them. Until that review is closed, what is said here about **versions and
-> regions** may change. The listing, the numbers and everything else still come
-> from the binary and are reproducible with `make`. The complete data will be
-> published once it is verified.
-
 What turned up when the cartridge came apart, with the evidence alongside.
 Everything on this page checks out by reading the binary; what isn't settled yet
 is in [Open questions](OPEN-QUESTIONS.html).
@@ -68,8 +61,8 @@ zero means something.
 
 ## The seal comes out of the hole in eight steps
 
-Three of the seven obstacles —the holes— have a seal come out of them, and it's
-all there in the cartridge: eight frames, one per step from 7 to 14, with the
+Three of the seven obstacles —the holes— have a seal come out of them (the fish
+comes out too, at step seven), and it's all there in the cartridge: eight frames, one per step from 7 to 14, with the
 table at 0x78C1. That table's index is easy to read backwards, and the mistake
 is a convincing one: it looks like the obstacle type and it's **the step it's
 on**. Read the other way you get pointers that walk off the end of the
@@ -228,10 +221,6 @@ draw the bar. Less period is more speed, and flat out is 8.
 They don't cost the same, either. Each step of acceleration takes twelve frames
 and each step of braking only four, so the penguin lets his speed go three
 times faster than he picks it up.
-
-The rule that comes out of this is good for any disassembly: **a variable that
-gets reloaded into a countdown timer is a period, not a magnitude**. Before
-calling something a speed, check whether the game uses it to count frames.
 
 ## The two tables of twelve that aren't the same thing
 

@@ -1,12 +1,5 @@
 # Hallazgos
 
-> **Trabajo en curso.** De este cartucho hay varias compilaciones distintas, y
-> ahora mismo estamos revisando cuál es cuál y qué cambia entre ellas. Hasta que
-> esa revisión esté cerrada, lo que aquí se dice sobre **versiones y regiones**
-> puede cambiar. El listado, las cifras y todo lo demás siguen saliendo del
-> binario y son reproducibles con `make`. Publicaremos los datos completos en
-> cuanto estén comprobados.
-
 Lo que apareció al desmontar el cartucho, con la evidencia al lado. Todo lo de
 esta página se comprueba leyendo el binario; lo que todavía no está cerrado
 está en [Preguntas abiertas](PREGUNTAS-ABIERTAS.html).
@@ -69,8 +62,8 @@ NEW ZEALAND significa algo.
 
 ## La foca sale del agujero en ocho pasos
 
-De tres de los siete obstáculos —los agujeros— sale una foca, y está entera en
-el cartucho: ocho fotogramas, uno por cada paso del 7 al 14, con la tabla en
+De tres de los siete obstáculos —los agujeros— sale una foca (y también el pez,
+en el paso siete), y está entera en el cartucho: ocho fotogramas, uno por cada paso del 7 al 14, con la tabla en
 0x78C1. El índice de esa tabla es fácil de leer al revés, y el error es
 convincente: parece el tipo de obstáculo y es **el paso en que va**. Leída de
 la otra manera salen punteros que se van fuera del cartucho; leída bien salen
@@ -232,11 +225,6 @@ el 8.
 Además no cuestan igual: cada escalón de aceleración tarda doce fotogramas y
 cada uno de frenada solo cuatro, así que el pingüino suelta la carrera tres
 veces más rápido de lo que la coge.
-
-La regla que sale de aquí sirve para cualquier desensamblado: **una variable
-que se recarga en un contador descendente es un periodo, no una magnitud**.
-Antes de llamarle velocidad a algo, hay que mirar si el juego la usa para
-contar fotogramas.
 
 ## Las dos tablas de doce que no son lo mismo
 

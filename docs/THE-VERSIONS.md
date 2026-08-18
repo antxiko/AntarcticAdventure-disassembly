@@ -1,11 +1,9 @@
 # The versions
 
-> **Work in progress.** There are several different builds of this cartridge,
-> and we are currently going back over which is which and what changes between
-> them. Until that review is closed, what is said here about **versions and
-> regions** may change. The listing, the numbers and everything else still come
-> from the binary and are reproducible with `make`. The complete data will be
-> published once it is verified.
+> **Which build is which is not settled.** There are several different builds of
+> this cartridge, and what this page says about **versions and regions** may
+> change. The listing and the numbers come from the binary either way, and `make`
+> reproduces them.
 
 There are three different builds of this cartridge, and what changes between
 them goes well beyond translating a label: the background colour changes, the

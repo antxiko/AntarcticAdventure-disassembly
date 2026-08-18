@@ -77,8 +77,9 @@ aproximación, que es cuando el obstáculo está justo a la altura del pingüino
 De los siete, tres son agujeros en el hielo. Si lo pillas por el borde
 tropiezas y ruedas; si lo pillas de lleno, te caes dentro y ahí te quedas
 manoteando hasta que pulses el botón, mientras el reloj sigue corriendo, que es
-el castigo de verdad. Y de esos mismos agujeros sale el pez: cuando uno llega
-al paso siete, asoma con su arco propio, y pisarlo vale 300 puntos.
+el castigo de verdad. Y de esos mismos agujeros salen dos cosas: la foca, que es
+la animación del propio agujero, y el pez, que suelta cuando el agujero llega al
+paso siete. El pez asoma con su arco propio, y pisarlo vale 300 puntos.
 
 El pez es **un solo sprite** —el atributo 15— y tiene ocho dibujos, cuatro
 mirando a cada lado. El dibujo alterna cada dieciséis fotogramas mientras sube,

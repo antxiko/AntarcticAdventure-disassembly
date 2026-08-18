@@ -76,8 +76,9 @@ lasts, which is when the obstacle is level with the penguin.
 Three of the seven are holes in the ice. Catch one by the edge and you trip and
 roll; catch it square and you fall in and stay there flailing until you press
 the button, while the clock keeps running, which is the real punishment. And
-out of those same holes comes the fish: when one reaches step seven it pops up
-on its own arc, and landing on it is worth 300 points.
+out of those same holes come two things: the seal, which is the hole's own
+animation, and the fish, released when the hole reaches step seven. The fish
+comes up on its own arc, and landing on it is worth 300 points.
 
 The fish is **a single sprite** —attribute 15— with eight drawings, four facing
 each way. The drawing alternates every sixteen frames on the way up, and when
