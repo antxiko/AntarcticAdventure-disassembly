@@ -205,26 +205,12 @@ class TestLasTresVersiones(unittest.TestCase):
                 self.assertLess(a, b, "%s: %s va del reves (%#06x..%#06x)"
                                 % (v, nombre, a, b))
 
-    # Solapes que ya se han mirado y estan explicados. Cualquier otro es un
-    # fallo: dos rangos que se pisan quieren decir que uno de los dos tiene mal
-    # un limite, y eso el reensamblado no lo caza.
-    SOLAPES_CONOCIDOS = {
-        ("jap1", "decorados_por_fase", "color_por_fase"):
-            "en jap2 y eu las dos tablas van SEGUIDAS (80 bytes de decorados y "
-            "10 de color); en jap1 la de color cae dentro de la de decorados. "
-            "Que color_por_fase esta en 0x5141 es seguro -0x5018 hace "
-            "ld hl,0x5141, igual que jap2 hace ld hl,0x5195 desde 0x5047, y los "
-            "diez bytes de ahi son 0 y 1 como dice su descripcion-, asi que el "
-            "limite dudoso es el de decorados_por_fase, y para cerrarlo hace "
-            "falta ver en el emulador cuanto lee de verdad",
-    }
-
+    # Dos rangos que se pisan quieren decir que uno de los dos tiene mal un
+    # limite, y eso el reensamblado no lo caza: los bytes no cambian.
     def test_ningun_rango_se_solapa_con_otro(self):
         for v in ("jap1", "jap2", "eu"):
             ordenados = sorted(self.rangos(v))
             for (a1, b1, n1), (a2, b2, n2) in zip(ordenados, ordenados[1:]):
-                if b1 > a2 and (v, n1, n2) in self.SOLAPES_CONOCIDOS:
-                    continue
                 self.assertLessEqual(b1, a2, "%s: %s (%#06x..%#06x) se mete en "
                                      "%s (%#06x..%#06x)" % (v, n1, a1, b1, n2, a2, b2))
 

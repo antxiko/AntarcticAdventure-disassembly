@@ -90,8 +90,8 @@ D 0x49D2 0x4A81 mapa_dibujo Las filas del mapa, una detras de otra: un byte de c
 D 0x4A81 0x4AAA mapa_recorrido Los cuarenta pasos del camino: nibble alto la direccion (0 arriba, 4 derecha, 8 abajo, C izquierda) y nibble bajo la casilla que se dibuja. El 0x20 de 0x4AA9 lo cierra
 D 0x4AAA 0x4AD2 tabla_de_fases Las DIEZ fases, cuatro bytes cada una: centenas de metros, casilla del mapa donde empieza, y el tiempo en BCD. Cierra clavada en 0x4AD2, donde vuelve a haber codigo. Salen 1500 m/100 s, 1700/120, 1100/80, 1200/80, 1200/80, 500/40, 2600/165, 1200/90, 1500/100 y 1200/90
 F 0x4AAA 4
-D 0x5115 0x5165 decorados_por_fase Ocho bytes por fase, diez fases: la lista de decorados que van saliendo. Un 0xFF acaba la lista y los 0x77 son relleno
-F 0x5115 8
+D 0x5115 0x5141 decorados_por_fase CUATRO bytes por fase, diez fases: la lista de decorados que van saliendo. Aqui el indice se multiplica por cuatro y no por ocho -0x5070 y 0x5071 son dos add a,a, mientras que jap2 (0x509F) y eu (0x5069) llevan tres-, asi que la tabla ocupa 44 bytes y no 80: el 0x5165 que decia antes se tragaba color_por_fase y 26 bytes de codigo. Un 0xFF NO acaba la lista: 0x5096 hace inc (hl) sobre el indice antes del cp 0xFF de 0x509E, asi que es un hueco -esa vez no sale decorado- y la lectura sigue. Los 0x77 son relleno y no se leen nunca porque la fase se acaba antes. Medido con watchpoint de lectura sobre una vuelta completa: la direccion mas alta que se lee es 0x513F
+F 0x5115 4
 D 0x5141 0x514B color_por_fase Un byte por fase: con 0 el cielo es la casilla 7 y con 1 la 9. Cierra clavada en 0x514B, donde vuelve a haber codigo
 D 0x5277 0x52A1 tabla_de_obstaculos Los SIETE obstaculos: los tipos 0, 1 y 2 son los agujeros -de los que salen la foca y el pez-, el 3 y el 4 los dos monticulos con los que se choca, y el 5 y el 6 LAS DOS BANDERAS que se recogen por 500 puntos. Seis bytes cada uno: los dos primeros son el puntero al primer trozo de dibujo, y los cuatro siguientes los pares (posicion, ancho) con los que se mira el choque. Los siete dibujos caen dentro de los 92 trozos de 0x6B92-0x71EA, que es lo que confirma para que son. Cierra clavada en 0x52A1
 F 0x5277 6

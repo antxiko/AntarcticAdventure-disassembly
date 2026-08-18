@@ -2787,16 +2787,28 @@ DECORADO_DIBUJA:
 	ret			;5114
 
 ; ----------------------------------------------------------------------
-; DATOS decorados_por_fase (tramo): Ocho bytes por fase, diez fases: la lista
-;   de decorados que van saliendo. Un 0xFF acaba la lista y los 0x77 son
-;   relleno
-;   0x5115..0x5141  (44 bytes)  de 0x5115..0x5165 (80 bytes)
+; DATOS decorados_por_fase: CUATRO bytes por fase, diez fases: la lista de
+;   decorados que van saliendo. Aqui el indice se multiplica por cuatro y no
+;   por ocho -0x5070 y 0x5071 son dos add a,a, mientras que jap2 (0x509F) y eu
+;   (0x5069) llevan tres-, asi que la tabla ocupa 44 bytes y no 80: el 0x5165
+;   que decia antes se tragaba color_por_fase y 26 bytes de codigo. Un 0xFF NO
+;   acaba la lista: 0x5096 hace inc (hl) sobre el indice antes del cp 0xFF de
+;   0x509E, asi que es un hueco -esa vez no sale decorado- y la lectura sigue.
+;   Los 0x77 son relleno y no se leen nunca porque la fase se acaba antes.
+;   Medido con watchpoint de lectura sobre una vuelta completa: la direccion
+;   mas alta que se lee es 0x513F
+;   0x5115..0x5141  (44 bytes)
 DATA_decorados_por_fase:
-	defb 003h,0ffh,001h,077h,003h,002h,001h,000h	; 5115  ...w....
-	defb 0ffh,003h,001h,077h,002h,003h,000h,001h	; 511d  ...w....
-	defb 002h,0ffh,000h,0ffh,0ffh,003h,001h,077h	; 5125  .......w
-	defb 002h,000h,0ffh,077h,003h,0ffh,001h,077h	; 512d  ...w...w
-	defb 0ffh,077h,077h,077h,0ffh,002h,003h,000h	; 5135  .www....
+	defb 003h,0ffh,001h,077h	; 5115
+	defb 003h,002h,001h,000h	; 5119
+	defb 0ffh,003h,001h,077h	; 511d
+	defb 002h,003h,000h,001h	; 5121
+	defb 002h,0ffh,000h,0ffh	; 5125
+	defb 0ffh,003h,001h,077h	; 5129
+	defb 002h,000h,0ffh,077h	; 512d
+	defb 003h,0ffh,001h,077h	; 5131
+	defb 0ffh,077h,077h,077h	; 5135
+	defb 0ffh,002h,003h,000h	; 5139
 	defb 001h,003h,001h,077h	; 513d
 
 ; ----------------------------------------------------------------------
