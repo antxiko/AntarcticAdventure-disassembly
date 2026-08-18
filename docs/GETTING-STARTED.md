@@ -64,6 +64,16 @@ That separation is exactly what stops the listing and its verification from
 diverging over time, because the file that gets published is the same one that
 gets checked.
 
+### How the data blocks are laid out
+
+Every data range declared in the `.notes` comes out as a block of its own: its
+own heading saying what it is for, its own label, and the dump aligned to its
+first byte, so where one table ends and the next begins is visible at a glance.
+An optional line gives the block the row width of its real structure -two bytes
+per stage, eight per list, `defw` for a table of pointers, one glyph per row for
+a font- and where a pointer lands on a block that has a name, that name is
+written next to it.
+
 ## The tools
 
 Everything you need is in `tools/`, and each one carries in its header what it

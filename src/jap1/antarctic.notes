@@ -24,20 +24,30 @@
 # de esta version, pero 0x4103, 0x44BD y alguna mas siguen siendo de jap2.
 
 D 0x4000 0x4010 cabecera_del_cartucho La cabecera que lee la BIOS: "AB", INIT=0x4010, y a cero los otros tres vectores (STATEMENT, DEVICE y TEXT). Con eso la BIOS llama a 0x4010 nada mas terminar de arrancar la maquina
-D 0x4119 0x4139 tabla_de_saltos_4119 Los 16 destinos del CALL de 0x4116. Cierra clavada contra su primer destino
-D 0x418B 0x4191 tabla_de_saltos_418B Los 3 destinos del CALL de 0x4188. Cierra clavada contra su primer destino
-D 0x41DA 0x41E2 tabla_de_saltos_41DA Los 4 destinos del CALL de 0x41BC. Cierra clavada contra su primer destino
-D 0x42FD 0x430D tabla_de_saltos_42FD Los 8 destinos del CALL de 0x42FA. Cierra clavada contra su primer destino
+F 0x4000 2,w4,6
+D 0x4119 0x4139 tabla_de_estados Los 16 destinos del CALL de 0x4116. Cierra clavada contra su primer destino Es la maquina de estados: la indexa 0xE000.
+F 0x4119 w1
+D 0x418B 0x4191 tabla_demo Los 3 destinos del CALL de 0x4188. Cierra clavada contra su primer destino Son los pasos del estado 7, la partida de demostracion.
+F 0x418B w1
+D 0x41DA 0x41E2 tabla_menu Los 4 destinos del CALL de 0x41BC. Cierra clavada contra su primer destino Son los pasos del estado 8, el menu.
+F 0x41DA w1
+D 0x42FD 0x430D tabla_meta Los 8 destinos del CALL de 0x42FA. Cierra clavada contra su primer destino Son los pasos del estado 14, la llegada a la meta.
+F 0x42FD w1
 D 0x4479 0x4482 valores_iniciales Los nueve bytes que 0x4458 copia a 0xE0E0: fase 1, indice 0, y el resto a cero salvo 0xE0E4=2 y 0xE0E6=0x17. Solo los cinco primeros se usan: 0x4240 machaca la distancia y el tiempo en cuanto empieza la fase
 D 0x4770 0x4784 decorado_por_fase Dos bytes por fase, diez fases: 0x4733 los indexa y el bit 4 de la distancia elige cual de los dos. Acaba justo donde empiezan las listas
+F 0x4770 2
 D 0x4784 0x47AC listas_de_decorado Cinco listas de ocho bytes. Es a donde apuntan los veinte punteros de 0x47C0, y acaban clavadas donde empieza la tabla de fases
+F 0x4784 8
 D 0x4822 0x482C duracion_sorpresa Diez bytes, uno por fase: cuanto dura lo que enciende 0x47FA. La fase 1 lleva 7 y las demas entre 2 y 6
-D 0x48E1 0x48EF tabla_de_saltos_48E1 Los 7 destinos del CALL de 0x48DE. Cierra clavada contra su primer destino
+D 0x48E1 0x48EF tabla_mapa Los 7 destinos del CALL de 0x48DE. Cierra clavada contra su primer destino Son los pasos del estado 15, el mapa del recorrido.
+F 0x48E1 w1
 D 0x4B55 0x4B7D poses_del_pinguino Diez poses de cuatro bytes: los cuatro patrones de sprite que forman el pinguino en cada postura. 0x4BA6 las reparte de cuatro en cuatro por los atributos
+F 0x4B55 4
 D 0x4C51 0x4C5D curva_del_salto Doce correcciones con signo para la Y del pinguino: -4,-3,-3,-2,-1,-1,+1,+1,+2,+3,+3,+4. Es el arco del salto, y tambien el balanceo de andar
 D 0x4CFB 0x4D05 arco_del_salto Diez alturas, indexadas de 1 a 10 desde 0x4CFA: lo que se separa la sombra en cada paso del salto
 D 0x4D05 0x4D1A arco_de_la_caida Veintiuna alturas, indexadas de 1 a 21 desde 0x4D04 con 0xE143, que es el contador de la caida. Cierra clavada en 0x4D1A
 D 0x4D99 0x4DA3 choque_en_el_aire Cinco pares (posicion, ancho) para los choques con el pinguino saltando: 0x58/0x30, 0x18/0x30, 0x98/0x30, 0x2C/0x58 y 0x64/0x58
+F 0x4D99 2
 D 0x4EBE 0x4ED2 rodada_de_la_caida Veinte desplazamientos con signo, indexados de 1 a 20 desde 0x4EBD con 0xE143. Son tres tramos casi iguales: cada vuelta el pinguino rueda un poco menos
 D 0x53BE 0x546D dibujos_del_horizonte Los siete horizontes, en el formato de las cadenas: recto, curva a un lado, curva al otro, y los cuatro de la llegada a la base. Todos escriben en las filas 10 y 11. Acaba clavado en 0x546D
 D 0x54F8 0x550C bloque_base_a Uno de los dos bloques que se van alternando para dibujar la base
@@ -50,13 +60,17 @@ D 0x620C 0x6229 colores_de_pista_b LOS COLORES DE LA PISTA DEL SEGUNDO TIPO DE F
 D 0x6229 0x6238 dibujos_banco1_resto El remate del banco 1
 D 0x626E 0x666B dibujos_banco2 Dibujos y colores del banco 2, comprimidos
 D 0x6698 0x66D5 atributos_de_partida La lista con la que se monta la tabla de atributos durante la partida: pares (cuantos, cuatro bytes) y un cero al final. De aqui sale el color de cada sprite, que NO va en su dibujo: el pinguino negro, la foca negra y roja, el pez rojo, la sombra azul. Y AQUI ESTA EL ATRIBUTO 14, con patron 0xD4 -que dibujado es un SOL de puntas- y color amarillo, que no se ve nunca. COMPROBADO QUE ES UN SOL Y QUE SE VERIA: parcheando en una COPIA del cartucho los dos bytes de su posicion (0x66B2 y 0x66B3, la Y y la X) para sacarlo al cielo, aparece un sol amarillo de puntas sobre el azul, sin tocarle ni el dibujo ni el color. La captura y el cartucho parcheado estan fuera del repositorio, en work/, porque esto NO es una modificacion del juego sino la forma de ver lo que el juego tiene y no ensena: se monta con Y=0xE0 -fuera de la pantalla- y nadie se la cambia. MEDIDO sobre los diez minutos de partida grabada con un punto de observacion de escritura en 0xE088-0xE08B (tools/omsx_atributo14.tcl): las UNICAS cuatro cosas que lo tocan son barridos de la tabla entera -el ldir de 0x4456, el copiador de cuatro bytes de 0x45A6, BORRA_SPRITES en 0x45EE y el borrado previo de 0x667A-, y ninguna va a por el. Al acabar la partida su entrada en la VRAM sigue siendo Y=0xE0, patron 0xD4, color 0x0A: cargado, coloreado y aparcado fuera del encuadre. El control -los mismos puntos en el atributo 13- recibe ademas 4426 y 41740 escrituras de las rutinas del pinguino, asi que los ceros del 14 son datos y no instrumentacion rota. Y de propina el control mide una cosa que estaba deducida: el 13 recibe 12 escrituras MAS que el 14 desde 0x45A6, que son las tres salidas del agua por cuatro bytes, o sea la cadena que rehace los sprites parandose justo antes del 14
+F 0x6698 5
 D 0x66D5 0x66FF atributos_de_base La misma lista para la escena de la base, pero de OCHO entradas en vez de treinta: 0x6674 pone los 128 bytes a cero antes de aplicarla, asi que del atributo 8 en adelante no queda nada. Cierra clavada en 0x66FF, donde vuelve a haber codigo. Sus bytes de 0x66EF los copia ademas 0x54E3. Y AQUI ESTA EL UNICO SPRITE DEL PINGUINO QUE SE GIRA Y SONRIE: el atributo 7, con el patron 0xD0 en amarillo, que es el PICO. Todo lo demas de ese pinguino -la cara, los ojos, la boca roja y hasta la sombra azul de debajo- son CASILLAS, no sprites. Comprobado a t=126,6 de la partida grabada de dos maneras: la tabla de atributos solo tiene ocho entradas puestas, y comparando el fotograma real con la pantalla pintada SOLO con casillas quedan 224 pixeles sin explicar, que son 96+72+24 de la bandera y 32 del pico. Y 32 son exactamente los bits encendidos del patron 0xD0
+F 0x66D5 5
 D 0x6705 0x6B92 sprites_comprimidos Los patrones de sprite: los pinguinos, los peces y las focas
 D 0x6B92 0x71EA trozos_de_pista Los 92 trozos incrementales de la pista, en el mismo formato que los decorados: cada uno pone entre una y seis casillas, o sea que son INCREMENTOS y no pantallas enteras. Se consumen en cadena, uno por paso, y asi va creciendo lo que se acerca. Los siete obstaculos de 0x5277 empiezan cada uno en uno de estos trozos
 D 0x7510 0x7596 bloques_de_la_meta Los cinco bloques que va dibujando 0x74C2
-D 0x76DA 0x76E2 tabla_de_saltos_76DA Los 4 destinos del CALL de 0x76D7. Cierra clavada contra su primer destino
+D 0x76DA 0x76E2 tabla_velocidad Los 4 destinos del CALL de 0x76D7. Cierra clavada contra su primer destino Son los cuatro destinos de la velocidad: nada, acelerar, frenar y el tope.
+F 0x76DA w1
 D 0x77DD 0x77E1 nubes_desplazamientos Cuanto se corre de lado cada nube en cada paso: -1, +1, -2 y +2. Con la Y subiendo y la X abriendose, las cuatro se separan del centro segun se acercan
 D 0x77E1 0x77E9 nubes_posiciones Por donde asoma cada nube: cuatro parejas (Y, X), las cuatro en la misma columna y a alturas distintas
+F 0x77E1 2
 D 0x7964 0x7970 foca_escondida El fotograma del paso 15, con las cuatro Y a 0xE0 para sacarla de la pantalla. Cierra clavado en 0x7970, donde vuelve a haber codigo
 D 0x7AD8 0x7AE4 tabla_de_notas Doce periodos, una octava cromatica: la desviacion respecto al temperamento igual es de 0,090 semitonos, y los doce bytes de al lado dan 15,8
 D 0x7AE4 0x7AF2 tabla_de_duraciones Las doce duraciones, indexadas por el nibble alto de cada nota. Van de 5 a 100 fotogramas y NO son una escala, aunque esten pegadas a la que si lo es
@@ -67,28 +81,41 @@ D 0x7AE4 0x7AF2 tabla_de_duraciones Las doce duraciones, indexadas por el nibble
 # codigo trazado a los dos lados; el nombre y la explicacion vienen de jap2
 # y sus direcciones interiores estan SIN TRADUCIR.
 D 0x44D6 0x44DE registros_vdp Los ocho registros del VDP: 02 E2 0E 7F 07 76 03 E1. El ultimo es el registro 7, tinta y fondo: aqui el fondo y el borde son NEGROS. Colores en 0x0000 y patrones en 0x2000, al reves de lo corriente; nombres en 0x3800, patrones de sprite en 0x1800 y atributos de sprite en 0x3B00. Sprites de 16x16 sin ampliar, y SCREEN 2
+F 0x44D6 1
 D 0x47AC 0x47C0 decorado_puntero_por_fase Diez punteros, uno por fase, que apuntan DENTRO de la tabla de al lado con ventanas que se solapan. 0x474B lo indexa
+F 0x47AC w10
 D 0x47C0 0x47E8 decorado_punteros Veinte punteros a las cinco listas. Cierra clavado en 0x47E8, donde vuelve a haber codigo
+F 0x47C0 w10
 D 0x49D2 0x4A81 mapa_dibujo Las filas del mapa, una detras de otra: un byte de columna y detras las casillas, o un 0xFF si la fila va vacia. El 0x00 de 0x4A80 lo cierra. Son dieciseis filas, y la ultima es el rotulo ANTARCTICA (c)KONAMI
 D 0x4A81 0x4AAA mapa_recorrido Los cuarenta pasos del camino: nibble alto la direccion (0 arriba, 4 derecha, 8 abajo, C izquierda) y nibble bajo la casilla que se dibuja. El 0x20 de 0x4AA9 lo cierra
 D 0x4AAA 0x4AD2 tabla_de_fases Las DIEZ fases, cuatro bytes cada una: centenas de metros, casilla del mapa donde empieza, y el tiempo en BCD. Cierra clavada en 0x4AD2, donde vuelve a haber codigo. Salen 1500 m/100 s, 1700/120, 1100/80, 1200/80, 1200/80, 500/40, 2600/165, 1200/90, 1500/100 y 1200/90
+F 0x4AAA 4
 D 0x5115 0x5165 decorados_por_fase Ocho bytes por fase, diez fases: la lista de decorados que van saliendo. Un 0xFF acaba la lista y los 0x77 son relleno
+F 0x5115 8
 D 0x5165 0x514B color_por_fase Un byte por fase: con 0 el cielo es la casilla 7 y con 1 la 9. Cierra clavada en 0x514B, donde vuelve a haber codigo
 D 0x5277 0x52A1 tabla_de_obstaculos Los SIETE obstaculos: los tipos 0, 1 y 2 son los agujeros -de los que salen la foca y el pez-, el 3 y el 4 los dos monticulos con los que se choca, y el 5 y el 6 LAS DOS BANDERAS que se recogen por 500 puntos. Seis bytes cada uno: los dos primeros son el puntero al primer trozo de dibujo, y los cuatro siguientes los pares (posicion, ancho) con los que se mira el choque. Los siete dibujos caen dentro de los 92 trozos de 0x6B92-0x71EA, que es lo que confirma para que son. Cierra clavada en 0x52A1
+F 0x5277 6
 D 0x538D 0x53AE curvas_por_fase Sesenta y seis curvas en treinta y tres bytes, a nibble por curva: 0x52B1 elige la mitad alta o la baja. Cierra con el 0xFF de 0x53AD, justo delante de los punteros
 D 0x53AE 0x53BE punteros_del_horizonte Ocho punteros a los siete dibujos de horizonte (dos apuntan al mismo). Cierra clavada en 0x53BE, que es el primero de ellos
+F 0x53AE w8
 D 0x5588 0x559C punteros_de_las_bases Diez punteros, uno por fase, a los nombres de las bases. Cierra clavada en 0x559C, que es la primera cadena; con ocho, nueve, once o doce entradas no cierra
-D 0x559C 0x560B nombres_de_las_bases OCHO cadenas para diez fases: JAPAN, AUSTRALIA, FRANCE, NEW ZEALAND, ARGENTINA, UNITED KINGDOM, THE SOUTH POLE y USA. El reparto que sale de la tabla de arriba es FRANCE, USA, THE SOUTH POLE, USA, USA, ARGENTINA, UNITED KINGDOM, JAPAN, AUSTRALIA y AUSTRALIA. NEW ZEALAND (0x55BF..0x55CE) NO LA VISITA NADIE: no esta en la tabla, ninguna instruccion la apunta, y ninguna de sus dieciseis direcciones aparece como palabra en los 16 KB. En la PRIMERA version japonesa del cartucho si se visita, y es la fase 4; ver la pagina de las versiones. Los dos primeros bytes de cada cadena son el destino en la tabla de nombres de la VRAM, o sea el centrado: 0x3AC8 para las dos de catorce letras y 0x3ACE para USA
-D 0x560B 0x5605 punteros_de_banderas Diez punteros a los graficos de bandera. Cierra clavada en 0x5605
+F 0x5588 w10
+D 0x559C 0x55F1 nombres_de_las_bases OCHO cadenas para diez fases: JAPAN, AUSTRALIA, FRANCE, NEW ZEALAND, ARGENTINA, UNITED KINGDOM, THE SOUTH POLE y USA. El reparto que sale de la tabla de arriba es FRANCE, USA, THE SOUTH POLE, USA, USA, ARGENTINA, UNITED KINGDOM, JAPAN, AUSTRALIA y AUSTRALIA. NEW ZEALAND (0x55BF..0x55CE) NO LA VISITA NADIE: no esta en la tabla, ninguna instruccion la apunta, y ninguna de sus dieciseis direcciones aparece como palabra en los 16 KB. En la PRIMERA version japonesa del cartucho si se visita, y es la fase 4; ver la pagina de las versiones. Los dos primeros bytes de cada cadena son el destino en la tabla de nombres de la VRAM, o sea el centrado: 0x3AC8 para las dos de catorce letras y 0x3ACE para USA
+D 0x55F1 0x5605 punteros_de_banderas Diez punteros a los graficos de bandera. Cierra clavada en 0x5605
+F 0x55F1 w10
 D 0x574C 0x57CE rotulos Los rotulos de pantalla, en el formato de las cadenas: el panel (1P, HI, STAGE, TIME), el logotipo de KONAMI con su 1984 -las letras del logotipo son dibujos propios, no la fuente-, PLAY SELECT con JOYSTICK y KEYBOABD -asi, con una B donde va la R: la errata es de esta version-, y TIME OUT
 D 0x57CE 0x57E3 titulo_comprimido La pantalla de titulo: relleno y el rotulo SOFTWARE en la fila 10. Pasado por el descompresor son veinte casillas en dos sitios (VRAM 0x394A y 0x396C) y el flujo se acaba en 0x57E3
 D 0x5874 0x5D9B fuente_comprimida La fuente y el logotipo de KONAMI, que van a los tres bancos
 D 0x71EA 0x74C2 arbol_de_decorados Cuatro punteros en 0x71EA llevan a cuatro grupos, cada uno con otros cuatro, y los dieciseis bloques de abajo embaldosan 0x72D6-0x74C1 sin dejar hueco. Pasados por el interprete de 0x4525 dibujan los bordes de la pista
+F 0x71EA w4,w4,w4,w4,w4,16
 D 0x7506 0x7510 punteros_de_la_meta Cinco punteros, uno por cada tramo de 32 metros del final. Cierra clavada en 0x7510, que es el primero de ellos
+F 0x7506 w5
 D 0x7868 0x7878 punteros_de_la_foca Ocho punteros, uno por cada paso del 7 al 14. 0x7802 los indexa con paso-7, no con el tipo de obstaculo: leido de la otra manera salen punteros que se van fuera del cartucho. Cierra clavada en 0x787A, que es el primero de ellos
+F 0x7868 w8
 D 0x7878 0x7964 fotogramas_de_la_foca Los ocho fotogramas, cada uno con TRES variantes que elige 0x782D con el bit que 0x75FE encendio en 0xE183. Los tres primeros pasos llevan dos sprites (18 bytes = 3 x 2 x 3) y los cinco siguientes cuatro (36 bytes); de cada sprite van tres bytes: Y, X y patron. LAS TRES VARIANTES LLEVAN EL MISMO DIBUJO y solo cambian la X: una sale por el centro (0x78), otra se va a la derecha y otra a la izquierda, separandose mas en cada paso. Y del paso 10 al 14 los cuatro patrones son siempre C0, C4, C8 y CC: lo unico que cambia es la Y, que baja de 0x7B a 0xA1. La foca no se deforma, se acerca
 D 0x7AD7 0x7AD8 byte_suelto Un 0xFF que no apunta nadie, justo delante de la tabla de notas
 D 0x7AF2 0x7B22 punteros_de_sonido Veinticuatro punteros a los flujos. Cierra clavada en 0x7B22, que es el primero. El del sonido 0 apunta fuera de la ROM porque no se pide nunca, y los tres ultimos apuntan al 0xFF de 0x7B22: el sonido 0x95, el que llama 0x44BD al arrancar, es un flujo que se acaba en el primer byte, o sea el silencio
+F 0x7AF2 w8
 D 0x7B22 0x7E57 flujos_de_sonido Los veintiun flujos de musica y efectos
 D 0x7E57 0x8000 relleno_final Lo que sobra del cartucho hasta los 16 KB: 425 bytes, todos 0xFF, sin una sola excepcion
 

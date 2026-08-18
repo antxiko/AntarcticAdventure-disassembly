@@ -64,6 +64,16 @@ Esa separación es justo lo que evita que el listado y su comprobación se
 distancien con el tiempo, porque el fichero que se publica es el mismo que se
 verifica.
 
+### Como salen los bloques de datos
+
+Cada rango de datos declarado en el `.notes` sale como un bloque aparte: su
+cabecera diciendo para que sirve, su etiqueta y el volcado alineado a su primer
+byte, de modo que se ve de un golpe donde acaba una tabla y empieza la
+siguiente. Una linea opcional le da al bloque la anchura de fila de su
+estructura real -dos bytes por fase, ocho por lista, `defw` si es una tabla de
+punteros, un glifo por fila en una fuente- y cuando un puntero cae en un bloque
+que tiene nombre, ese nombre se escribe al lado.
+
 ## Las herramientas
 
 En `tools/` está todo lo que hace falta, y cada una lleva escrito en su

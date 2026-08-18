@@ -27,7 +27,13 @@ def lee(p):
 
 
 def cuenta_etiquetas():
-    return len(set(re.findall(r"(?m)^([A-Za-z_]\w*):", lee(ASM))))
+    """Las etiquetas del listado, SIN contar las de los bloques de datos.
+
+    Las DATA_ las pone mkasm.py en cada rango de datos para separarlos y
+    etiquetarlos por su uso; se publican como "rangos de datos", no como
+    rutinas con nombre, y contarlas aqui inflaba la cifra de la portada."""
+    todas = set(re.findall(r"(?m)^([A-Za-z_]\w*):", lee(ASM)))
+    return len({e for e in todas if not e.startswith("DATA_")})
 
 
 def cuenta_rutinas():
