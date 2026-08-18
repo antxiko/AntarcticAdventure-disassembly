@@ -1,9 +1,0 @@
-
-archivo											protección anticopia
--------											--------------------
-Antarctic Adventure - Japanese 1st Version (1984)(Konami)(JP)[!][GoodMSX][RC-701].rom	NO LA TIENE (la compilación no lleva el LDIR)
-Antarctic Adventure - Japanese 2nd Version (1984)(Konami)(JP)[RC-701].rom		PARCHEADA (LDIR a 0x0000, desactivada)
-Antarctic Adventure - European Version (1984)(Konami)(JP)(en)[RC-701].rom		NO LA TIENE (la compilación no lleva el LDIR)
-ANTARCEU.ROM										NO LA TIENE (idéntica byte a byte a la de arriba)		
-Antarctic_Adventure_Konami_1984_a_European_version_RC_701_106.rom			FUNCIONANDO (LDIR al despachador 0x40B2)
-Antarctic_Adventure_European_Version_1984KonamiJPaRC_701.rom				FUNCIONANDO (idéntica byte a byte a la de arriba)

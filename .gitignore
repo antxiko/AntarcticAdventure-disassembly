@@ -31,3 +31,6 @@ __pycache__/
 *.pyc
 .forja/
 *.omr
+
+# Notas sueltas de trabajo, no forman parte de la documentacion
+variantes_anticopy_pingu.txt

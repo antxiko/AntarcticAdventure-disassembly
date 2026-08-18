@@ -63,7 +63,8 @@ NEW ZEALAND significa algo.
 ## La foca sale del agujero en ocho pasos
 
 De tres de los siete obstáculos —los agujeros— sale una foca (y también el pez,
-en el paso siete), y está entera en el cartucho: ocho fotogramas, uno por cada paso del 7 al 14, con la tabla en
+en el paso siete), y está entera en el cartucho: ocho fotogramas, uno por cada
+paso del 7 al 14, con la tabla en
 0x78C1. El índice de esa tabla es fácil de leer al revés, y el error es
 convincente: parece el tipo de obstáculo y es **el paso en que va**. Leída de
 la otra manera salen punteros que se van fuera del cartucho; leída bien salen

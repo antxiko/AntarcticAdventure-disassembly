@@ -61,13 +61,14 @@ zero means something.
 
 ## The seal comes out of the hole in eight steps
 
-Three of the seven obstacles —the holes— have a seal come out of them (the fish
-comes out too, at step seven), and it's all there in the cartridge: eight frames, one per step from 7 to 14, with the
-table at 0x78C1. That table's index is easy to read backwards, and the mistake
-is a convincing one: it looks like the obstacle type and it's **the step it's
-on**. Read the other way you get pointers that walk off the end of the
-cartridge; read right, you get eight in a row, and the last frame ends exactly
-on the one that hides the seal, which in turn ends where code starts again.
+Three of the seven obstacles —the holes— have a seal come out of them (the
+fish comes out too, at step seven), and it's all there in the cartridge: eight
+frames, one per step from 7 to 14, with the table at 0x78C1. That table's
+index is easy to read backwards, and the mistake is a convincing one: it looks
+like the obstacle type and it's **the step it's on**. Read the other way you
+get pointers that walk off the end of the cartridge; read right, you get eight
+in a row, and the last frame ends exactly on the one that hides the seal,
+which in turn ends where code starts again.
 
 The first three steps are two sprites and the remaining five are four, and each
 frame carries three variants. But all three carry the same picture: the only

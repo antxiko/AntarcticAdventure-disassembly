@@ -1,11 +1,9 @@
 # Antarctic Adventure (Konami, 1984, MSX) — desensamblado comentado
 
-> **Trabajo en curso.** De este cartucho hay varias compilaciones distintas, y
-> ahora mismo estamos revisando cuál es cuál y qué cambia entre ellas. Hasta que
-> esa revisión esté cerrada, lo que aquí se dice sobre **versiones y regiones**
-> puede cambiar. El listado, las cifras y todo lo demás siguen saliendo del
-> binario y son reproducibles con `make`. Publicaremos los datos completos en
-> cuanto estén comprobados.
+> **Cuál es cuál no está cerrado.** De este cartucho hay varias compilaciones
+> distintas, y lo que este repositorio dice sobre **versiones y regiones** puede
+> cambiar. El listado y las cifras salen del binario igualmente, y `make` las
+> reproduce.
 
 Un cartucho de 16 KB de 1984, desmontado byte a byte. Los 16.384 bytes
 están acotados y explicados, y dentro hay un pingüino que cruza la Antártida
