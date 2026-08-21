@@ -13,9 +13,13 @@ tiene con el hardware**.
 ## Cuál es la ROM de aquí
 
 Las tres están desensambladas aquí, cada una en su carpeta de `src/`, y las
-tres reensamblan byte a byte a su propia ROM sin dejar un byte sin explicar. La
-que está comentada de arriba abajo es la **segunda versión japonesa**, y
-conviene decirlo de entrada porque no es la que uno esperaría.
+tres reensamblan byte a byte a su propia ROM sin dejar un byte sin explicar, y
+las tres están comentadas: ninguna de sus rutinas se queda sin explicación. La
+que sirve de **origen** es la segunda versión japonesa —y conviene decirlo de
+entrada porque no es la que uno esperaría—: sus comentarios se llevan a las
+otras dos con el mapa de direcciones de `tools/`, que solo empareja
+instrucciones idénticas, y lo que en ellas es código distinto (los chips a pelo
+donde esta llama a la BIOS) lleva explicación propia.
 
     primera japonesa    087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
     segunda japonesa    a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452

@@ -43,7 +43,7 @@ comido un byte por el camino.
 ## Sin el cartucho
 
 Se puede leer igualmente el listado de `src/jap2/antarctic.asm` y las notas, que es
-donde está de verdad el trabajo: 394 rutinas con nombre, 269 comentarios
+donde está de verdad el trabajo: 394 rutinas con nombre, 445 comentarios
 anclados a su dirección y 63 rangos de datos con su explicación al lado.
 
 ## Cómo está organizado

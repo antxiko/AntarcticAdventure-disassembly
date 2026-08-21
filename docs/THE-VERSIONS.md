@@ -14,9 +14,13 @@ hardware.
 
 All three are disassembled here, each in its own folder under `src/`, and all
 three reassemble byte for byte into their own ROM with not a byte left
-unaccounted for. The one commented from top to bottom is the **second Japanese
-version**, which is worth saying up front because it isn't the one you'd
-expect.
+unaccounted for, and all three are commented: no routine in any of them is left
+unexplained. The one they are commented **from** is the **second Japanese
+version** — worth saying up front because it isn't the one you'd expect: its
+comments travel to the other two through the address map in `tools/`, which
+only pairs identical instructions, and whatever is genuinely different in them
+(talking to the chips directly where this one calls the BIOS) carries its own
+explanation.
 
     first Japanese     087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd
     second Japanese    a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452
