@@ -13,9 +13,10 @@ analysis and the documentation. Those are published under the licence in
 
 ## What this repository contains
 
-The file `src/antarctic.asm` is the commented disassembly of the cartridge. It
-is published for the **preservation, study and documentation** of a 1984 title
-that is part of the MSX's software history.
+The files `src/eu/antarctic.asm`, `src/jap1/antarctic.asm` and
+`src/jap2/antarctic.asm` are the commented disassemblies of this cartridge's
+three builds. They are published for the **preservation, study and
+documentation** of a 1984 title that is part of the MSX's software history.
 
 The cartridge image (`.rom`) is **not** distributed here. Anyone wanting to
 rebuild the listing has to supply their own, and the `Makefile` checks its

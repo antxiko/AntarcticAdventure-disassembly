@@ -14,9 +14,11 @@ licencia que consta en `LICENSE`.
 
 ## Qué contiene este repositorio
 
-El fichero `src/antarctic.asm` es el desensamblado comentado del cartucho. Se
-publica con ánimo de **preservación, estudio y documentación** de un título de
-1984 que forma parte de la historia del software para MSX.
+Los ficheros `src/eu/antarctic.asm`, `src/jap1/antarctic.asm` y
+`src/jap2/antarctic.asm` son los desensamblados comentados de las tres
+compilaciones de este cartucho. Se publican con ánimo de **preservación,
+estudio y documentación** de un título de 1984 que forma parte de la historia
+del software para MSX.
 
 La imagen del cartucho (`.rom`) **no** se distribuye aquí. Quien quiera
 reconstruir el listado tiene que poner la suya, y el `Makefile` comprueba su
