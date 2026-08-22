@@ -36,11 +36,11 @@ DATA_cabecera_del_cartucho:
 INIT:		; Punto de entrada del cartucho, declarado en la cabecera
 	di			;4010   ; 0xFD9A: el gancho de interrupcion de la BIOS, tres bytes (un `jp`)
 	im 1		;4011
-	ld a,0c3h		;4013
+	ld a,0c3h		;4013   ; el 0xC3 es el opcode de `jp`: el gancho de la BIOS son tres bytes y hay que escribir el salto entero a mano
 	ld (0fd9ah),a		;4015   ; La pila justo debajo de las variables, que empiezan en 0xE000
 	ld hl,H_TIMI		;4018   ; Los 2 KB de variables (0xE000-0xE7FF) a cero de un `ldir`
 	ld (0fd9bh),hl		;401b
-	ld sp,0e400h		;401e
+	ld sp,0e400h		;401e   ; la pila arranca en 0xE400, justo por encima de las variables
 	ld hl,0e000h		;4021
 	ld de,0e001h		;4024
 	ld bc,007ffh		;4027   ; El cerrojo puesto ANTES de arrancar la maquina: si entra una interrupcion mientras se monta todo, se va por la salida corta
@@ -48,12 +48,12 @@ INIT:		; Punto de entrada del cartucho, declarado en la cabecera
 	ldir		;402c
 	ld a,001h		;402e   ; Y quitado despues, con el estado ya en 1
 	ld (0e005h),a		;4030
-	call ARRANCA_MAQUINA		;4033
+	call ARRANCA_MAQUINA		;4033   ; y con el cerrojo puesto se monta la maquina: VDP, sonido y tablas
 	di			;4036
 	xor a			;4037   ; La lectura del puerto 0x99 limpia la peticion de interrupcion pendiente del VDP
 	ld (0e005h),a		;4038
 	inc a			;403b
-	ld (0e000h),a		;403c
+	ld (0e000h),a		;403c   ; 0xE000 es el estado del juego; el 1 es el titulo
 	in a,(099h)		;403f
 	ei			;4041
 PARADO:		; El bucle vacio de dos bytes en el que se queda el arranque: de aqui en adelante el juego entero corre dentro de la interrupcion
@@ -72,7 +72,7 @@ PARADO:		; El bucle vacio de dos bytes en el que se queda el arranque: de aqui e
 ; vez de reentrar.
 ; ----------------------------------------------------------------------
 H_TIMI:		; Rutina de interrupcion; INIT la engancha en 0xFD9A
-	push af			;4044
+	push af			;4044   ; el gancho H_TIMI guarda los cuatro pares que va a tocar y los devuelve al salir
 	push bc			;4045
 	push de			;4046
 	push hl			;4047
@@ -81,7 +81,7 @@ H_TIMI:		; Rutina de interrupcion; INIT la engancha en 0xFD9A
 	ld a,(0e000h)		;404b   ; Con el estado en 0 (antes de arrancar) no suena nada
 	or a			;404e
 	jr z,HTIMI_MIRA_ESTADO		;404f
-	call SUENA_UN_PASO		;4051
+	call SUENA_UN_PASO		;4051   ; el sonido va en TODOS los fotogramas, pase lo que pase con la logica
 HTIMI_MIRA_ESTADO:		; Por debajo del estado 12 no se mueve nada de lo de abajo
 	ld a,(0e000h)		;4054
 	cp 00ch		;4057   ; Del estado 12 para arriba ya no hay partida: ni pinguino ni reloj
@@ -92,7 +92,7 @@ HTIMI_MIRA_ESTADO:		; Por debajo del estado 12 no se mueve nada de lo de abajo
 	jr nz,HTIMI_LATERAL		;4062
 	call ANIMA_ANDAR		;4064
 HTIMI_LATERAL:		; Cuenta el tiempo y mira el signo del desplazamiento lateral
-	call CUENTA_EL_TIEMPO		;4067
+	call CUENTA_EL_TIEMPO		;4067   ; y de paso baja el reloj de la fase
 	ld a,(0e081h)		;406a   ; El bit 7 de 0xE081 es el signo del desplazamiento lateral...
 	bit 7,a		;406d
 	ld a,000h		;406f   ; ...que queda en 0xE0FC como 0 o 1
@@ -106,10 +106,10 @@ HTIMI_SIGUE:		; El resto de la interrupcion, que corre en todos los estados
 	jr nz,HTIMI_SALE		;407c
 	ld (hl),001h		;407e   ; Echa el cerrojo y ABRE las interrupciones: el paso puede durar mas de un fotograma
 	ei			;4080
-	call LEE_MANDOS		;4081
+	call LEE_MANDOS		;4081   ; primero los mandos y luego el paso de juego, en ese orden
 	call PASO_DE_JUEGO		;4084
 	di			;4087
-	pop hl			;4088
+	pop hl			;4088   ; se devuelven los registros con las interrupciones cerradas y se suelta el cerrojo al final
 	pop de			;4089   ; Suelta el cerrojo con las interrupciones ya paradas
 	pop bc			;408a
 	xor a			;408b
@@ -138,10 +138,10 @@ HTIMI_SALE:		; Saca los registros de la pila y vuelve
 ; tener que suponerlo.
 ; ----------------------------------------------------------------------
 DESPACHA:		; Salta al destino A de la tabla que va detras del CALL
-	add a,a			;4098
+	add a,a			;4098   ; el indice por dos, que la tabla es de palabras
 	pop hl			;4099   ; La direccion de retorno es la tabla
 	call SUMA_A_HL		;409a
-	ld e,(hl)			;409d
+	ld e,(hl)			;409d   ; la palabra apuntada es el destino, y el `jp (hl)` salta sin volver aqui
 	inc hl			;409e
 	ld d,(hl)			;409f
 	ex de,hl			;40a0
@@ -160,7 +160,7 @@ DESPACHA:		; Salta al destino A de la tabla que va detras del CALL
 ; fotograma en 0xE009 y la del anterior en 0xE008.
 ; ----------------------------------------------------------------------
 LEE_MANDOS:		; Deja en 0xE009 lo pulsado ahora y en 0xE008 lo de antes
-	ld a,(0e000h)		;40a2
+	ld a,(0e000h)		;40a2   ; antes del estado 7 no hay nada que leer: no se juega
 	cp 007h		;40a5   ; Antes del estado 7 (la demo) no se lee nada
 	ret c			;40a7
 	ld a,(0e002h)		;40a8
@@ -168,11 +168,11 @@ LEE_MANDOS:		; Deja en 0xE009 lo pulsado ahora y en 0xE008 lo de antes
 	jr z,LEE_MANDOS_GRABADOS		;40ad   ; Bit 4: teclado o joystick
 	bit 4,a		;40af
 	jr nz,LEE_TECLADO		;40b1   ; Registro 14 del PSG por el puerto de datos, sin pasar por la BIOS
-	ld a,00eh		;40b3
+	ld a,00eh		;40b3   ; el registro 14 del PSG es el puerto del joystick, y se lee por el 0xA2 sin pasar por la BIOS
 	out (0a0h),a		;40b5   ; El `cpl` endereza la logica negativa: bits 0-3 direcciones, 4 y 5 gatillos
 	in a,(0a2h)		;40b7
 	cpl			;40b9
-	and 03fh		;40ba
+	and 03fh		;40ba   ; seis bits: cuatro direcciones y dos gatillos
 GUARDA_MANDOS:		; 0xE009 = ahora, 0xE008 = el fotograma anterior
 	ld hl,0e009h		;40bc
 	ld c,(hl)			;40bf   ; C hace de tercera mano: lo de 0xE009 baja a 0xE008 sin tocar A
@@ -184,7 +184,7 @@ LEE_TECLADO:		; Monta con la matriz del teclado el mismo mapa de bits que trae e
 	ld bc,057aah		;40c4   ; 0x57 en B: fila 7 con el motor de cinta y el CAPS apagados; 0xAA es el puerto del PPI
 	out (c),b		;40c7   ; Se escribe dos veces: el PPI necesita que la fila se asiente antes de leerla
 	out (c),b		;40c9
-	in a,(0a9h)		;40cb
+	in a,(0a9h)		;40cb   ; el puerto 0xA9 devuelve los ocho bits de la fila seleccionada
 	cpl			;40cd
 	rrca			;40ce   ; El `cpl` y la rotacion suben la tecla al bit 5: el segundo gatillo
 	and 020h		;40cf
@@ -197,7 +197,7 @@ LEE_TECLADO:		; Monta con la matriz del teclado el mismo mapa de bits que trae e
 	rrca			;40da
 	rrca			;40db
 	ld b,a			;40dc   ; Tres tandas de rotaciones recolocan la fila 8 en el mapa del joystick: derecha al bit 2, espacio y arriba al 3 y al 4, y las dos ultimas al 0 y al 1
-	and 004h		;40dd
+	and 004h		;40dd   ; las tres tandas de rotaciones dejan el teclado con la MISMA forma que el joystick, y asi el resto del juego no tiene que saber de donde vino
 	or e			;40df
 	ld c,a			;40e0
 	ld a,b			;40e1
@@ -213,7 +213,7 @@ LEE_TECLADO:		; Monta con la matriz del teclado el mismo mapa de bits que trae e
 	or c			;40ed
 	jr GUARDA_MANDOS		;40ee
 LEE_MANDOS_GRABADOS:		; En la demo los mandos no se leen: salen de la grabacion de 64 bytes
-	ld de,(0e0ech)		;40f0
+	ld de,(0e0ech)		;40f0   ; la demo no lee el mando: lee una grabacion
 	ld hl,0e0ebh		;40f4   ; 0xE0EB cuenta los fotogramas y 0xE0EC apunta dentro de la grabacion
 	inc (hl)			;40f7
 	ld a,(hl)			;40f8
@@ -224,14 +224,14 @@ LEE_MANDOS_GRABADOS:		; En la demo los mandos no se leen: salen de la grabacion 
 	ld (0e0ech),de		;40ff
 	jr GUARDA_MANDOS		;4103
 MANDOS_SOLO_DIRECCIONES:		; Se queda con las cuatro direcciones y tira los gatillos
-	ld a,(0e009h)		;4105
+	ld a,(0e009h)		;4105   ; y aqui se conservan solo las direcciones, sin los gatillos
 	and 00fh		;4108
 	jr GUARDA_MANDOS		;410a
 PASO_DE_JUEGO:		; Un paso de la maquina de estados: cuenta el fotograma en 0xE003 y despacha por 0xE000
-	ld hl,0e003h		;410c
+	ld hl,0e003h		;410c   ; 0xE003 es el contador de fotogramas del que cuelgan los parpadeos
 	inc (hl)			;410f
 	call MIRA_TECLAS_1_2		;4110
-	ld a,(0e000h)		;4113
+	ld a,(0e000h)		;4113   ; el estado (0xE000) elige la rutina de la tabla
 	call DESPACHA		;4116
 
 ; ----------------------------------------------------------------------
@@ -265,28 +265,28 @@ ESTADO_00_PARADO:		; Estado 0: no hace nada. Es el que deja INIT hasta que se po
 	ret			;4139
 ESTADO_01_ARRANCA:		; Estado 1: prepara la pantalla de presentacion
 	call MONTA_LA_FUENTE		;413a   ; Estado 1: el titulo, con la cortinilla ya montada
-	ld a,011h		;413d
+	ld a,011h		;413d   ; 0x11 fotogramas de espera para el paso siguiente
 	ld (0e00ah),a		;413f
 	ld hl,00000h		;4142
 	ld (0e00eh),hl		;4145
 	jp SIGUIENTE_ESTADO		;4148
 ESTADO_02_LOGO:		; Estado 2: sube el logotipo una fila cada dos fotogramas, y al llegar descomprime la pantalla de titulo
-	ld a,(0e003h)		;414b
+	ld a,(0e003h)		;414b   ; el logo sube un fotograma si y otro no: la mitad de velocidad
 	rra			;414e   ; Un fotograma si y otro no
 	ret nc			;414f
 	call SUBE_LOGO		;4150
 	ret nz			;4153
 	ld hl,057cdh		;4154   ; Los datos comprimidos de la pantalla de titulo
-	call ESCRIBE_CADENA		;4157
+	call ESCRIBE_CADENA		;4157   ; la pantalla de titulo va comprimida y se escribe con la misma rutina que los rotulos
 	jp ESPERA_80_Y_ESTADO		;415a
 ESTADO_03_ESPERA:		; Estado 3: espera a que 0xE004 llegue a cero y prepara el rotulo
 	ld hl,0e004h		;415d
 	dec (hl)			;4160
 	ret nz			;4161
-	call PREPARA_ROTULO		;4162
+	call PREPARA_ROTULO		;4162   ; el rotulo se prepara antes de dibujarlo, que va letra a letra
 	jp ESPERA_A_Y_ESTADO		;4165
 ESTADO_04_ROTULO:		; Estado 4: dibuja el rotulo columna a columna; mientras dibuja, vuelve con acarreo
-	call DIBUJA_ROTULO		;4168
+	call DIBUJA_ROTULO		;4168   ; mientras DIBUJA_ROTULO devuelva acarreo, sigue escribiendo
 	ret c			;416b
 	ld hl,05782h		;416c   ; "PLAY SELECT", "1 JOYSTICK" y "2 KEYBOARD"
 	call ESCRIBE_CADENA		;416f
@@ -298,7 +298,7 @@ ESTADO_05_ESPERA:		; Estado 5: otra espera de 0xE004 fotogramas
 	ret nz			;417a
 	jp ESPERA_80_Y_ESTADO		;417b
 ESTADO_06_CORTINILLA:		; Estado 6: borra la pantalla por columnas; sale cuando la cortinilla vuelve negativa
-	call CORTINILLA		;417e
+	call CORTINILLA		;417e   ; la cortinilla devuelve el signo: mientras sea negativo, sigue
 	ret p			;4181
 	jp SIGUIENTE_ESTADO		;4182
 
@@ -311,7 +311,7 @@ ESTADO_06_CORTINILLA:		; Estado 6: borra la pantalla por columnas; sale cuando l
 ; cero). Dura 0x073C = 1852 pasos, y al acabar vuelve al titulo.
 ; ----------------------------------------------------------------------
 ESTADO_07_DEMO:		; Estado 7: la partida de demostracion, en tres pasos
-	ld a,(0e001h)		;4185
+	ld a,(0e001h)		;4185   ; 0xE001 es el paso dentro del estado, y tiene su propia tabla
 	call DESPACHA		;4188
 
 ; ----------------------------------------------------------------------
@@ -329,7 +329,7 @@ DATA_tabla_demo:
 
 
 DEMO_0_ARRANCA:		; Paso 0: pone a cero la partida y arranca la grabacion
-	call REINICIA_PARTIDA		;4191
+	call REINICIA_PARTIDA		;4191   ; la demo empieza como una partida: se reinicia todo igual
 	ld hl,0e002h		;4194
 	res 6,(hl)		;4197   ; Bit 6 a cero: no hay partida de verdad, asi que no se puntua
 	ld hl,0073ch		;4199   ; 1852 pasos de demostracion
@@ -345,17 +345,17 @@ DEMO_1_CORRE:		; Paso 1: mientras corre la demo, escribe el aviso y descuenta
 	ld (0e133h),a		;41b3   ; 0xE133: el reloj de la fase corre
 	call PASO_DE_PARTIDA		;41b6   ; Un paso de partida
 	ld hl,(0e0eeh)		;41b9
-	dec hl			;41bc
+	dec hl			;41bc   ; un paso menos de los 1852
 	ld (0e0eeh),hl		;41bd
 	ld a,h			;41c0
 	or l			;41c1
 	ret nz			;41c2
-	ld (0e133h),a		;41c3
+	ld (0e133h),a		;41c3   ; al agotarse se para el reloj y se pasa de estado
 	jp ESPERA_80_Y_PASO		;41c6
 DEMO_2_SALE:		; Paso 2: cortinilla, y vuelta al estado 0
 	call CORTINILLA		;41c9
 	ret p			;41cc
-	xor a			;41cd
+	xor a			;41cd   ; el estado vuelve a 0: la demo termina donde empezo
 	ld (0e000h),a		;41ce
 	jp SIGUIENTE_ESTADO		;41d1
 
@@ -387,29 +387,29 @@ DATA_tabla_menu:
 
 
 MENU_0_PINTA:		; Paso 0: limpia y prepara el rotulo
-	call BORRA_SPRITES		;41e2
+	call BORRA_SPRITES		;41e2   ; el menu se monta con la pantalla limpia: sprites y nombres
 	call BORRA_NOMBRES		;41e5
 	call PREPARA_ROTULO		;41e8
 	ld a,092h		;41eb
 	call PIDE_SONIDO		;41ed   ; Sonido 0x92
 	jp SIGUIENTE_PASO		;41f0
 MENU_1_ROTULO:		; Paso 1: dibuja el rotulo entero de una vez, sin repartirlo por fotogramas
-	call DIBUJA_ROTULO		;41f3
+	call DIBUJA_ROTULO		;41f3   ; el rotulo se dibuja poco a poco, y mientras haya acarreo se vuelve
 	jr c,MENU_1_ROTULO		;41f6
 	ld hl,05782h		;41f8
 	call ESCRIBE_CADENA		;41fb
-	ld a,006h		;41fe
+	ld a,006h		;41fe   ; seis parpadeos de la opcion elegida antes de entrar
 	ld (0e18dh),a		;4200   ; Seis parpadeos
 	jp SIGUIENTE_PASO		;4203
 MENU_2_PARPADEA:		; Paso 2: parpadea la linea elegida, ocho fotogramas encendida y ocho apagada
 	ld hl,0e003h		;4206
-	ld a,(hl)			;4209
+	ld a,(hl)			;4209   ; ocho fotogramas por medio parpadeo: el `and 7` deja pasar uno de cada ocho...
 	and 007h		;420a
 	ret nz			;420c
 	ld a,(hl)			;420d
-	bit 3,a		;420e
+	bit 3,a		;420e   ; ...y el bit 3 dice si toca encender o apagar
 	jr nz,MENU_2_ENCIENDE		;4210
-	ld de,03a00h		;4212
+	ld de,03a00h		;4212   ; 0x3A00 es la fila 16 de la tabla de nombres
 	ld bc,00020h		;4215
 	ld a,(0e002h)		;4218   ; Bit 4 de 0xE002: 0 joystick (fila 16), 1 teclado (fila 18)
 	and 010h		;421b
@@ -417,17 +417,17 @@ MENU_2_PARPADEA:		; Paso 2: parpadea la linea elegida, ocho fotogramas encendida
 	rlca			;421e
 	call SUMA_A_DE		;421f   ; Suma 0x00 o 0x40 al destino, o sea dos filas
 	ld a,001h		;4222
-	call RELLENA_VRAM		;4224
+	call RELLENA_VRAM		;4224   ; el tile 1 es el blanco: apagar la linea es rellenarla con el
 	ret			;4227
 MENU_2_ENCIENDE:		; La otra mitad del parpadeo: repinta el texto
-	ld hl,05782h		;4228
+	ld hl,05782h		;4228   ; y encenderla es volver a escribir el texto
 	call ESCRIBE_CADENA		;422b
 	ld hl,0e18dh		;422e   ; 0xE18D cuenta los parpadeos que quedan; agotados, la espera de 0x80 y al paso siguiente
 	dec (hl)			;4231
 	ret nz			;4232
 	jp ESPERA_80_Y_PASO		;4233
 MENU_3_CORTINILLA:		; Paso 3: cortinilla y a empezar la partida
-	call CORTINILLA		;4236
+	call CORTINILLA		;4236   ; la cortinilla otra vez, y detras el reinicio de la partida
 	ret p			;4239
 	call REINICIA_PARTIDA		;423a
 	jp SIGUIENTE_ESTADO		;423d
@@ -451,13 +451,13 @@ ESTADO_09_PREPARA:		; Estado 9: saca de la tabla la distancia y el tiempo de la 
 	ld a,(hl)			;425f
 	sub 010h		;4260   ; Menos de 0x10 guardado: no se descuenta nada
 	jr c,PREPARA_TIEMPO		;4262
-	daa			;4264
+	daa			;4264   ; el `daa` detras de cada resta: el tiempo va en BCD y hay que ajustarlo a mano
 	ld c,a			;4265
 	ld a,e			;4266
 	sub c			;4267
 	jr nc,PREPARA_AJUSTA		;4268
 	daa			;426a
-	dec d			;426b
+	dec d			;426b   ; la resta se lleva una centena
 	jr PREPARA_GUARDA		;426c
 PREPARA_AJUSTA:
 	daa			;426e
@@ -465,7 +465,7 @@ PREPARA_GUARDA:
 	ld e,a			;426f
 PREPARA_TIEMPO:
 	ld (0e0e3h),de		;4270   ; El tiempo de la fase, en BCD
-	call PINTA_PANEL		;4274
+	call PINTA_PANEL		;4274   ; el panel y la fuente se montan antes de que se vea nada
 	call MONTA_LA_FUENTE		;4277
 	ld a,00eh		;427a   ; Estado 14 y el avance de abajo lo deja en 15: primero el mapa
 	ld (0e000h),a		;427c
@@ -473,16 +473,16 @@ PREPARA_TIEMPO:
 ESTADO_10_ENTRA:		; Estado 10: cortinilla, monta la pista y suena la musica de salida
 	call CORTINILLA		;4282
 	ret p			;4285
-	call MONTA_LA_FASE		;4286
+	call MONTA_LA_FASE		;4286   ; con la cortinilla ya pasada, la fase se monta entera
 	ld a,(0e002h)		;4289
 	bit 6,a		;428c   ; En la demo no suena
-	ld a,08ah		;428e
+	ld a,08ah		;428e   ; el sonido 0x8A es el del arranque de la fase
 	call nz,PIDE_SONIDO		;4290
 	ld a,001h		;4293
-	ld (0e133h),a		;4295
+	ld (0e133h),a		;4295   ; y el reloj se echa a andar
 	jp SIGUIENTE_ESTADO		;4298
 ESTADO_11_PARTIDA:		; Estado 11: la partida. Un paso de juego por fotograma hasta que se acaba el tiempo o se llega a la meta
-	ld a,(0e002h)		;429b
+	ld a,(0e002h)		;429b   ; el bit 6 de 0xE002 distingue la partida de verdad de la demo
 	bit 6,a		;429e
 	jr z,PARTIDA_ERA_DEMO		;42a0
 	call PASO_DE_PARTIDA		;42a2   ; Un paso de partida
@@ -501,7 +501,7 @@ PARTIDA_CAMBIA:
 	ld (0e000h),a		;42b8
 	ret			;42bb
 PARTIDA_ERA_DEMO:		; Si no habia partida de verdad, vuelve al paso 1 de la demo
-	ld hl,00107h		;42bc
+	ld hl,00107h		;42bc   ; estado 7, paso 1: la demo se recoge por otro lado
 	jr PONE_ESTADO		;42bf
 ESTADO_12_TIME_OUT:		; Estado 12: se acabo el tiempo
 	xor a			;42c1
@@ -513,7 +513,7 @@ TIME_OUT_SPRITES:
 	ld (hl),0e0h		;42cd
 	add hl,de			;42cf
 	djnz TIME_OUT_SPRITES		;42d0
-	call VUELCA_ATRIBUTOS		;42d2
+	call VUELCA_ATRIBUTOS		;42d2   ; y los atributos se vuelcan ya, sin esperar al fotograma siguiente
 	ld (0e0e2h),a		;42d5
 	ld a,08ch		;42d8
 	call PIDE_SONIDO		;42da   ; Sonido 0x8C
@@ -524,7 +524,7 @@ ESTADO_13_FIN:		; Estado 13: espera a que acabe la musica y vuelve a la demo
 	ld a,(0e012h)		;42e6   ; 0xE012 lo pone a cero el reproductor cuando termina
 	or a			;42e9
 	ret nz			;42ea
-	ld hl,0e002h		;42eb
+	ld hl,0e002h		;42eb   ; y al soltarse se apaga la partida: lo que venga despues es demo otra vez
 	res 6,(hl)		;42ee   ; Se acabo la partida: a partir de aqui los mandos vuelven a ser los grabados
 	ld hl,00207h		;42f0   ; Estado 7, paso 2
 PONE_ESTADO:		; Estado en L y paso en H, de una sentada
@@ -562,7 +562,7 @@ DATA_tabla_meta:
 
 
 META_0_FRENA:		; Paso 0: espera a que el pinguino termine de frenar
-	ld hl,0e0f9h		;430d
+	ld hl,0e0f9h		;430d   ; 0xE0F9 es lo que le queda al salto por frenar
 	ld a,(hl)			;4310   ; A cero ya estaba parado: al paso siguiente sin mas
 	or a			;4311
 	jp z,SIGUIENTE_PASO		;4312
@@ -572,7 +572,7 @@ META_0_FRENA:		; Paso 0: espera a que el pinguino termine de frenar
 	ret nz			;431c
 	jp SIGUIENTE_PASO		;431d
 META_1_SIGUIENTE:		; Paso 1: sube el numero de fase y guarda el tiempo que ha sobrado. Son DOS contadores distintos y conviene no mezclarlos: 0xE0E0 es el numero que se ve en el panel, en BCD y SIN TOPE -sigue subiendo a 11, 12...-, y 0xE0E1 es el indice 0-9 de la base, que DA LA VUELTA al llegar a diez. Esa pareja es la vuelta completa: el juego arranca con 0xE0E1 = 0, que es FRANCE (los valores iniciales estan en 0x4479), y cada llegada lo sube UNO, asi que se va de una base a la siguiente hasta que en la decima se vuelve al 0 y se cierra el circuito en Francia. Como el numero del panel no se reinicia, la vuelta siguiente son las mismas diez bases pero mas dificiles, que es lo que mira 0x769E
-	ld hl,0e0e0h		;4320
+	ld hl,0e0e0h		;4320   ; 0xE0E0 es el numero de fase que se ve, en BCD, y 0xE0E1 el indice de verdad
 	ld a,(hl)			;4323
 	add a,001h		;4324   ; El numero que se ve, en BCD
 	daa			;4326
@@ -581,7 +581,7 @@ META_1_SIGUIENTE:		; Paso 1: sube el numero de fase y guarda el tiempo que ha so
 	ld a,(hl)			;4329   ; Y el indice 0-9, que da la vuelta al llegar a diez
 	ld c,a			;432a
 	inc a			;432b
-	cp 00ah		;432c
+	cp 00ah		;432c   ; diez fases y vuelta a empezar
 	jr c,META_1_GUARDA		;432e
 	xor a			;4330
 	ld (0e0e2h),a		;4331
@@ -604,27 +604,27 @@ META_1_ANIMA:
 	ld a,(0e079h)		;434f
 	ld h,a			;4352
 	ld l,001h		;4353
-	ld (0e138h),hl		;4355
+	ld (0e138h),hl		;4355   ; 0xE138 arranca la animacion de la vuelta completa
 	ld a,013h		;4358
 	ld (0e100h),a		;435a   ; Periodo 0x13 en 0xE100, que es lo mas lento que hay, para la animacion
 	jp SIGUIENTE_PASO		;435d
 META_2_ANDA:		; Paso 2: el pinguino sigue andando hasta la bandera
 	ld c,0ffh		;4360   ; C = 0xFF: que ANDA_HASTA_LA_BASE calcule la X de destino en su primer paso
-	call ANDA_HASTA_LA_BASE		;4362
+	call ANDA_HASTA_LA_BASE		;4362   ; el pinguino anda solo hasta la base; hasta que no llega, no se pasa de paso
 	ret nz			;4365
 	ld a,00ch		;4366   ; Llegado (dieciseis pasos), el paso 3 arranca con la cuenta en 12: cuatro pasos mas de subida
 	ld (0e138h),a		;4368
 	jp SIGUIENTE_PASO		;436b
 META_3_LLEGA:		; Paso 3: llega, se monta el decorado de la base y suena la musica
-	ld c,000h		;436e
+	ld c,000h		;436e   ; C = 0: el andar de vuelta no lleva prisa
 	ld a,(0e079h)		;4370
 	ld h,a			;4373
 	call ANDA_HASTA_LA_BASE		;4374
 	ret nz			;4377
-	call MONTA_SPRITES_BASE		;4378
+	call MONTA_SPRITES_BASE		;4378   ; los sprites de la base, el dibujo y el montaje, en ese orden
 	call DIBUJA_LA_BASE		;437b
 	call MONTA_LA_BASE		;437e
-	ld a,08fh		;4381
+	ld a,08fh		;4381   ; el sonido 0x8F es el de la llegada a la base
 	call PIDE_SONIDO		;4383   ; Sonido 0x8F
 	ld a,004h		;4386   ; Se salta el paso 4... no: entra en el, poniendolo a mano
 	ld (0e001h),a		;4388
@@ -633,7 +633,7 @@ META_4_SALUDA:		; Paso 4: la escena de la base
 	dec a			;438e   ; 0xE01A es el 'lo que queda de nota' del segundo canal: la escena avanza al compas de la musica
 	ret nz			;438f
 	call SUBE_LA_BANDERA		;4390
-	ld a,(0e0e1h)		;4393
+	ld a,(0e0e1h)		;4393   ; la bandera solo se sube en la fase 2
 	or a			;4396
 	jr z,META_4_REMATE_DEL_POLO		;4397
 	cp 005h		;4399
@@ -651,37 +651,37 @@ META_4_PASO:		; Un paso mas de la escena de la base, hasta llegar al 16
 	ret nz			;43b2
 	jr SIGUIENTE_PASO		;43b3
 META_5_ESPERA:		; Paso 5: espera a que se acabe la musica
-	ld a,(0e012h)		;43b5
+	ld a,(0e012h)		;43b5   ; no se sigue hasta que el reproductor suelta 0xE012: la musica se oye entera
 	or a			;43b8
 	ret nz			;43b9
 	ld a,010h		;43ba
 	jr ESPERA_A_Y_PASO		;43bc
 META_6_BONUS:		; Paso 6: cada cuatro fotogramas cambia un segundo que sobra por 100 puntos
 	ld hl,0e004h		;43be   ; 0xE004 es la espera que dejo el paso anterior: se descuenta antes de empezar a canjear
-	ld a,(hl)			;43c1
+	ld a,(hl)			;43c1   ; una espera con su propio contador
 	or a			;43c2
 	jr z,BONUS_PASO		;43c3
 	dec (hl)			;43c5
 	ret			;43c6
 BONUS_PASO:
-	ld a,(0e003h)		;43c7
+	ld a,(0e003h)		;43c7   ; uno de cada cuatro fotogramas: el bonus se descuenta despacio para que se vea
 	and 003h		;43ca
 	ret nz			;43cc
 	ld hl,(0e0e3h)		;43cd   ; Cuando el reloj llega a cero se acabo el bonus
-	ld a,h			;43d0
+	ld a,h			;43d0   ; los dos bytes del tiempo juntos: a cero, se acabo el bonus
 	add a,l			;43d1
 	jr z,ESPERA_80_Y_PASO		;43d2
 	ld c,000h		;43d4
-	call RESTA_UN_SEGUNDO		;43d6
+	call RESTA_UN_SEGUNDO		;43d6   ; un segundo menos de tiempo...
 	ld de,00100h		;43d9   ; Cien puntos por segundo
-	call SUMA_AL_MARCADOR		;43dc
+	call SUMA_AL_MARCADOR		;43dc   ; ...y sus puntos al marcador
 	ld a,001h		;43df
 	call PIDE_SONIDO		;43e1   ; Sonido 1, el tic-tic del bonus
 	ret			;43e4
 META_7_CORTINILLA:		; Paso 7: cortinilla y vuelta al estado 9 con la fase siguiente
 	call CORTINILLA		;43e5
 	ret p			;43e8
-	ld a,008h		;43e9
+	ld a,008h		;43e9   ; el estado 8 con 0x50 fotogramas de espera
 	ld (0e000h),a		;43eb
 
 ; ----------------------------------------------------------------------
@@ -698,13 +698,13 @@ ESPERA_80_Y_ESTADO:		; Espera 80 fotogramas y pasa al estado siguiente
 ESPERA_A_Y_ESTADO:		; Espera A fotogramas y pasa al estado siguiente
 	ld (0e004h),a		;43f0
 SIGUIENTE_ESTADO:		; Sube 0xE000 y pone el paso a cero
-	ld hl,0e000h		;43f3
+	ld hl,0e000h		;43f3   ; el estado sube uno y el paso vuelve a cero
 	inc (hl)			;43f6
 	xor a			;43f7
 	ld (0e001h),a		;43f8
 	ret			;43fb
 ESPERA_80_Y_PASO:		; Espera 80 fotogramas y pasa al paso siguiente
-	ld a,050h		;43fc
+	ld a,050h		;43fc   ; 0x50 fotogramas de espera y un paso mas
 ESPERA_A_Y_PASO:		; Espera A fotogramas y pasa al paso siguiente
 	ld (0e004h),a		;43fe
 SIGUIENTE_PASO:		; Sube 0xE001 dentro del mismo estado
@@ -728,8 +728,8 @@ MUERTA_JUGADOR:		; Codigo muerto: escribe el numero de jugador. No la llama nadi
 	ld a,(0e002h)		;4409
 	rlca			;440c   ; Bit 7 de 0xE002: el jugador. Nadie lo pone
 	and 001h		;440d
-	add a,031h		;440f
-	ld de,03933h		;4411
+	add a,031h		;440f   ; el 0x31 es el tile del "1": el numero de jugador sale de sumarle el bit 0 de 0xE002
+	ld de,03933h		;4411   ; 0x3933 es la casilla donde va ese digito
 	call ESCRIBE_EN_VRAM		;4414
 	ret			;4417
 
@@ -749,13 +749,13 @@ MIRA_TECLAS_1_2:		; Empieza la partida si se pulsa 1 (joystick) o 2 (teclado)
 	ld a,(0e002h)		;441d
 	bit 6,a		;4420   ; Con una partida en marcha tampoco
 	ret nz			;4422
-	ld a,050h		;4423
+	ld a,050h		;4423   ; el 0x50 en el puerto 0xAA selecciona la fila del teclado, y se escribe dos veces para que se asiente
 	out (0aah),a		;4425
 	out (0aah),a		;4427
 	in a,(0a9h)		;4429
 	cpl			;442b
-	and 006h		;442c
-	ld b,040h		;442e
+	and 006h		;442c   ; dos bits: las teclas 1 y 2
+	ld b,040h		;442e   ; 0x40 con la tecla 1 -joystick- y 0x50 con la 2, que ademas enciende el bit del teclado
 	cp 002h		;4430
 	jr z,TECLA_GUARDA		;4432
 	ld b,050h		;4434
@@ -766,28 +766,28 @@ TECLA_GUARDA:		; Apunta que tecla se ha elegido y monta el menu
 	ld (0e133h),a		;443a
 	ld a,b			;443d
 	ld (0e002h),a		;443e
-	pop hl			;4441
-	ld a,007h		;4442
+	pop hl			;4441   ; el `pop hl` tira la direccion de retorno: de aqui se sale por el estado, no volviendo
+	ld a,007h		;4442   ; estado 7, que es donde empieza la partida
 	ld (0e000h),a		;4444
 	jp ESPERA_80_Y_ESTADO		;4447
 TECLA_SALE:		; Un RET suelto al que no llega nadie
 	ret			;444a
 REINICIA_PARTIDA:		; Deja a cero el marcador y todas las variables de partida
 	ld hl,0e043h		;444b   ; Borra 0x100 bytes desde 0xE043: marcador, pinguino y objetos. El record de 0xE040 se salva por tres bytes
-	ld de,0e044h		;444e
+	ld de,0e044h		;444e   ; 0x100 bytes desde 0xE044 a cero: las fichas de los objetos
 	ld bc,00100h		;4451
 	ld (hl),000h		;4454
 	ldir		;4456
 	ld hl,04479h		;4458   ; Los nueve valores iniciales de 0xE0E0 (fase, tiempo, distancia...)
-	ld de,0e0e0h		;445b
+	ld de,0e0e0h		;445b   ; y nueve bytes mas desde 0xE0E0: fase, mapa y tiempo
 	ld bc,00009h		;445e
 	ldir		;4461
 	ld de,00900h		;4463   ; Colores del banco 0 de la VRAM
 	ld bc,00100h		;4466
-	ld a,0f0h		;4469
+	ld a,0f0h		;4469   ; el tile 0xF0 rellena la pantalla: el fondo de la fase
 	call RELLENA_VRAM		;446b
 	ld b,00ah		;446e   ; Los diez huecos de tiempo sobrante, uno por fase, a 5
-	ld hl,0e0d5h		;4470
+	ld hl,0e0d5h		;4470   ; los diez huecos de tiempo sobrante vuelven a cinco segundos cada uno
 REINICIA_HUECOS:
 	ld (hl),005h		;4473
 	inc hl			;4475
@@ -810,37 +810,37 @@ DATA_valores_iniciales:
 
 ARRANCA_MAQUINA:		; Registros del VDP, mezclador del PSG y VRAM a cero. Hace lo mismo que en la segunda japonesa, pero hablandole a los chips directamente
 	call PONE_REGISTROS_VDP		;4482   ; Los registros del VDP, los tres volumenes del PSG y la VRAM entera: el encendido completo
-	ld a,007h		;4485
+	ld a,007h		;4485   ; registro 7 del PSG con 0xB8: los tres canales de tono abiertos y el ruido cerrado
 	out (0a0h),a		;4487
 	ld a,0b8h		;4489
 	out (0a1h),a		;448b
 	call PREPARA_EL_MANDO		;448d
 	call APAGA_LOS_TRES_CANALES		;4490
 	ld de,00000h		;4493
-	ld bc,04000h		;4496
+	ld bc,04000h		;4496   ; los 16 KB de VRAM a cero de una vez
 VRAM_A_CERO:		; Rellena de ceros los 16 KB de VRAM
 	xor a			;4499
 	call RELLENA_VRAM		;449a
 	ret			;449d
 BORRA_NOMBRES:		; Las 768 casillas de la tabla de nombres
-	ld de,03800h		;449e
+	ld de,03800h		;449e   ; 0x3800 son las 24 filas de la tabla de nombres, 0x300 bytes
 	ld bc,00300h		;44a1
 	jr VRAM_A_CERO		;44a4
 APAGA_LOS_TRES_CANALES:		; Pone a cero los registros 8, 9 y 10 del PSG, que son los tres volumenes, escribiendo el puerto a pelo
 	xor a			;44a6
 	ld bc,003a0h		;44a7   ; 0xA0 en C es el puerto de seleccion de registro del PSG, y D arranca en el 8: los tres volumenes
-	ld d,008h		;44aa
+	ld d,008h		;44aa   ; los registros del PSG del 8 al 10 son los tres volumenes
 APAGA_CANAL:		; Registro tras registro, los tres volumenes a cero
 	out (c),d		;44ac   ; El numero de registro por 0xA0 y el cero por 0xA1: escritura del PSG a pelo, sin WRTPSG
 	inc d			;44ae
 	out (0a1h),a		;44af
 	djnz APAGA_CANAL		;44b1   ; Y detras el sonido 0x95, que es lo que suena al encender
-	ld a,095h		;44b3
+	ld a,095h		;44b3   ; el sonido 0x95 acompana al arranque
 	call PIDE_SONIDO		;44b5
 	ret			;44b8
 PONE_REGISTROS_VDP:		; Copia los ocho registros a 0xE038 y los manda al VDP por el puerto 0x99, con el bit 0x80 del numero de registro que va sumando en D
 	ld hl,044d6h		;44b9   ; 0xE038 guarda la copia en RAM de los ocho registros, que el VDP no deja leer
-	ld de,0e038h		;44bc
+	ld de,0e038h		;44bc   ; los ocho registros del VDP se copian a 0xE038 y de ahi se mandan
 	ld bc,00008h		;44bf
 	ldir		;44c2
 	ld hl,0e038h		;44c4
@@ -848,11 +848,11 @@ PONE_REGISTROS_VDP:		; Copia los ocho registros a 0xE038 y los manda al VDP por 
 	ld d,080h		;44c9   ; D arranca en 0x80: el bit alto es lo que convierte la escritura en 'a un registro'
 MANDA_UN_REGISTRO:		; Manda un registro del VDP: el valor en E y el numero con el bit 0x80 en D
 	ld e,(hl)			;44cb   ; El valor en E y el numero en D, que es exactamente el par que APUNTA_VRAM manda por el 0x99
-	di			;44cc
+	di			;44cc   ; el volcado va con las interrupciones cerradas: entre poner la direccion y escribir no puede meterse nadie
 	call APUNTA_VRAM		;44cd
 	ei			;44d0
 	inc hl			;44d1   ; El `inc d` recorre 0x80-0x87: los ocho registros seguidos
-	inc d			;44d2
+	inc d			;44d2   ; el numero de registro sube con D, que es lo que pide el VDP
 	djnz MANDA_UN_REGISTRO		;44d3
 	ret			;44d5
 
@@ -882,13 +882,13 @@ COPIA_A_VRAM:		; Copia BC bytes de (HL) a la VRAM DE. Apunta con el bit 6 puesto
 	di			;44de
 	set 6,d		;44df   ; Bit 6 de la direccion: es para escribir, y se quita despues para que el llamante vea DE como lo dejo
 	call APUNTA_VRAM		;44e1
-	res 6,d		;44e4
+	res 6,d		;44e4   ; el bit 6 fuera: la direccion se pone para LEER, no para escribir
 COPIA_BYTE:		; Suelta un byte por el puerto de datos del VDP
 	ld a,(hl)			;44e6
 	out (098h),a		;44e7   ; Al puerto de datos del VDP, sin pasar por la BIOS: la direccion ya quedo apuntada y el VDP la sube solo
 	inc hl			;44e9
 	dec bc			;44ea   ; El `dec bc` no toca banderas: el `ld a,b / or c` es el 'BC == 0' de un contador de 16 bits
-	ld a,b			;44eb
+	ld a,b			;44eb   ; el `or c` mira los dos bytes de la cuenta de una vez
 	or c			;44ec
 	jr nz,COPIA_BYTE		;44ed
 	ei			;44ef
@@ -901,7 +901,7 @@ RELLENA_VRAM:		; Escribe el byte A en BC posiciones de la VRAM desde DE
 	res 6,d		;44f8
 RELLENA_VRAM_BUCLE:
 	ld a,h			;44fa   ; El byte se relee de H en cada vuelta, porque el `or c` del final gasta A
-	out (098h),a		;44fb
+	out (098h),a		;44fb   ; el puerto 0x98 es el de datos de la VRAM: se escribe byte a byte sin volver a poner la direccion
 	dec bc			;44fd
 	ld a,b			;44fe
 	or c			;44ff
@@ -909,23 +909,23 @@ RELLENA_VRAM_BUCLE:
 	ei			;4502
 	ret			;4503
 PINTA_FRANJAS:		; Rellena tiras de la tabla de nombres a partir de una lista (largo, posicion), con el byte que va delante
-	ld a,(hl)			;4504
+	ld a,(hl)			;4504   ; el primer byte de la lista es el que se va a escribir; detras vienen las parejas de largo y posicion
 	inc hl			;4505
 	ld (0e0dfh),a		;4506   ; El byte con el que se rellena, que va el primero de la lista
-	ld d,039h		;4509
+	ld d,039h		;4509   ; 0x3900 es la tabla de nombres mas 0x100, o sea la fila 8: por ahi empiezan las franjas
 FRANJAS_BUCLE:
 	ld c,(hl)			;450b
 	inc hl			;450c
 	xor a			;450d   ; Un largo 0 cierra la lista
 	cp c			;450e
 	ret z			;450f
-	ld b,a			;4510
+	ld b,a			;4510   ; B a cero: el largo cabe en un byte y el otro no se usa
 	ld e,(hl)			;4511
 	inc hl			;4512
 	ld a,e			;4513
 	cp 020h		;4514   ; Posicion menor de 0x20: la fila de mas abajo
 	jr nc,FRANJAS_PINTA		;4516
-	inc d			;4518
+	inc d			;4518   ; el `inc d` suma 0x100, que en la tabla de nombres son ocho filas
 FRANJAS_PINTA:
 	ld a,(0e0dfh)		;4519
 	push hl			;451c   ; La lista y el destino se salvan alrededor del relleno, que gasta los seis registros
@@ -959,7 +959,7 @@ DIBUJA_BLOQUE:		; Interprete de los bloques de decorado y de pista
 	inc hl			;452c
 	and 003h		;452d   ; El nibble bajo (0-3) mas 0x78: el byte alto de la casilla en la tabla de nombres, con el bit de escritura ya puesto
 	add a,078h		;452f
-	ld d,a			;4531
+	ld d,a			;4531   ; y con eso D queda hecho: el byte alto de la casilla, con el bit de escritura ya dentro
 	ld a,c			;4532
 BLOQUE_FILA:
 	ld b,(hl)			;4533
@@ -1020,16 +1020,16 @@ DESCOMPRIME_SIGUE:		; El bucle
 	jr z,DESCOMPRIME_FIN		;4560
 	bit 7,a		;4562   ; Un 0x00 acaba del todo
 	jr nz,DESCOMPRIME_TIRADA		;4564   ; Bit 7: tirada de literales; si no, repeticion
-	ld b,a			;4566
+	ld b,a			;4566   ; la repeticion: B veces el MISMO byte, leido una vez por vuelta
 	call LEE_Y_ESPEJA		;4567
 DESCOMPRIME_REPITE:		; Repite el mismo byte n veces: no lo vuelve a leer, y ese es el detalle que distingue esta rama de la de al lado
 	out (098h),a		;456a
-	push hl			;456c
+	push hl			;456c   ; el `push hl / pop hl` no mueve nada: son doce ciclos de espera para que el VDP no se atragante
 	pop hl			;456d
 	djnz DESCOMPRIME_REPITE		;456e
 	jr DESCOMPRIME_SIGUE		;4570
 DESCOMPRIME_TIRADA:		; Una tirada de bytes literales, con el bit 7 quitado de la cuenta
-	res 7,a		;4572
+	res 7,a		;4572   ; el bit 7 fuera y lo que queda es cuantos literales vienen detras
 	ld b,a			;4574
 TIRADA_BYTE:		; Aqui SI se relee cada vez, por eso es literal y no repeticion
 	call LEE_Y_ESPEJA		;4575
@@ -1040,7 +1040,7 @@ DESCOMPRIME_FIN:		; Vuelve a permitir la interrupcion y sale
 	ei			;457e
 	ret			;457f
 LEE_Y_ESPEJA:		; Lee (HL) y, si C tiene el bit 0, le INVIERTE LOS BITS: el espejo horizontal del descompresor
-	ld a,(hl)			;4580
+	ld a,(hl)			;4580   ; el espejo se decide al entrar y vale para todo el bloque
 	inc hl			;4581
 	bit 0,c		;4582   ; El bit 0 de C lo fijo la entrada del descompresor: sin el, el byte sale tal cual
 	ret z			;4584
@@ -1048,7 +1048,7 @@ LEE_Y_ESPEJA:		; Lee (HL) y, si C tiene el bit 0, le INVIERTE LOS BITS: el espej
 	ld b,008h		;4586
 	ld c,a			;4588
 ESPEJA_BIT:		; Los ocho bits, rotando en un sentido y metiendolos en el otro
-	rr c		;4589
+	rr c		;4589   ; `rr c` saca por abajo y `rla` mete por arriba: eso es dar la vuelta al byte
 	rla			;458b
 	djnz ESPEJA_BIT		;458c
 	pop bc			;458e
@@ -1068,14 +1068,14 @@ ESPEJA_BIT:		; Los ocho bits, rotando en un sentido y metiendolos en el otro
 ; 'A'. Por eso los rotulos no se ven al mirar el volcado.
 ; ----------------------------------------------------------------------
 ESCRIBE_CADENA:		; Escribe la cadena de (HL); el destino va en los dos primeros bytes
-	ld e,(hl)			;4590
+	ld e,(hl)			;4590   ; cada cadena trae delante su destino de VRAM, dos bytes
 	inc hl			;4591
 	ld d,(hl)			;4592
 	inc hl			;4593
 ESCRIBE_CADENA_EN_DE:		; Igual, pero el destino ya viene en DE
 	ld a,(hl)			;4594
 	inc hl			;4595
-	ld b,a			;4596
+	ld b,a			;4596   ; el byte se mira con dos `inc b` seguidos: el primero caza el 0xFF y el segundo el 0xFE
 	inc b			;4597
 	ret z			;4598   ; 0xFF: se acabo
 	inc b			;4599
@@ -1084,7 +1084,7 @@ ESCRIBE_CADENA_EN_DE:		; Igual, pero el destino ya viene en DE
 	inc de			;459f
 	jr ESCRIBE_CADENA_EN_DE		;45a0
 REPITE_4_BYTES:		; Copia C veces los mismos cuatro bytes de (HL) a (DE): un atributo de sprite repetido
-	push hl			;45a2
+	push hl			;45a2   ; cuatro bytes por vuelta, y HL vuelve atras: el mismo grupo repetido C veces
 	ld b,004h		;45a3
 REPITE_4_BUCLE:
 	ld a,(hl)			;45a5
@@ -1112,19 +1112,19 @@ REPITE_4_FIN:
 ; ----------------------------------------------------------------------
 CORTINILLA:		; Borra la pantalla por columnas; devuelve M al terminar
 	call BORRA_SPRITES		;45b3
-	ld d,038h		;45b6
+	ld d,038h		;45b6   ; 0x3800 es la tabla de nombres; la cortinilla se pinta ahi
 	ld hl,0e004h		;45b8
-	ld b,018h		;45bb
+	ld b,018h		;45bb   ; 0x18 filas: la pantalla entera
 	bit 6,(hl)		;45bd   ; Bit 6 de 0xE004: un lado o el otro
 	jr nz,CORTINILLA_DERECHA		;45bf
 	ld a,01fh		;45c1   ; La columna izquierda es 0x1F menos la cuenta: las dos avanzan a la vez hacia el centro
 	sub (hl)			;45c3
 	ld e,a			;45c4
-	set 6,(hl)		;45c5
+	set 6,(hl)		;45c5   ; el bit 6 se enciende y se apaga en vueltas alternas: una columna por lado y por fotograma
 	jr CORTINILLA_COLUMNA		;45c7
 CORTINILLA_DERECHA:
 	res 6,(hl)		;45c9
-	dec (hl)			;45cb
+	dec (hl)			;45cb   ; y solo se descuenta al cerrar la pareja; con el signo negativo, se acabo
 	ret m			;45cc
 	ld e,(hl)			;45cd
 CORTINILLA_COLUMNA:
@@ -1134,20 +1134,20 @@ CORTINILLA_COLUMNA:
 	ld a,040h		;45d5
 	add a,e			;45d7
 	ld e,a			;45d8
-	dec b			;45d9
+	dec b			;45d9   ; los dos `dec b` se comen las dos filas del panel
 	dec b			;45da
 CORTINILLA_BUCLE:
 	xor a			;45db
 	call ESCRIBE_EN_VRAM		;45dc
-	ld a,020h		;45df
+	ld a,020h		;45df   ; 0x20 casillas para bajar una fila
 	call SUMA_A_DE		;45e1   ; Baja una fila
 	djnz CORTINILLA_BUCLE		;45e4
 	xor a			;45e6
 	ret			;45e7
 BORRA_SPRITES:		; Deja a cero los 128 bytes de atributos de sprite (VRAM 0x3B00), pasando por 0xE050
-	ld hl,0e050h		;45e8
+	ld hl,0e050h		;45e8   ; los sprites se borran en la copia de RAM y luego se vuelca entera
 	push hl			;45eb
-	ld b,080h		;45ec
+	ld b,080h		;45ec   ; 0x80 bytes son los 32 atributos de sprite
 BORRA_SPRITES_BUCLE:
 	ld (hl),000h		;45ee
 	inc hl			;45f0
@@ -1158,12 +1158,12 @@ BORRA_SPRITES_BUCLE:
 	jp COPIA_A_VRAM		;45fa
 PREPARA_EL_MANDO:		; Registro 15 del PSG a 0x8F, que es como se deja el puerto por el que se lee el joystick
 	ld a,00fh		;45fd
-	out (0a0h),a		;45ff
+	out (0a0h),a		;45ff   ; el 0xA0 selecciona el registro y el 0xA1 escribe: dos puertos, uno para elegir y otro para el dato
 	ld a,08fh		;4601
 	out (0a1h),a		;4603
 	ret			;4605
 LEE_GATILLOS_NUEVOS:		; Deja en A los gatillos que se acaban de pulsar en este fotograma
-	ld a,(0e009h)		;4606
+	ld a,(0e009h)		;4606   ; 0xE009 es lo pulsado ahora y 0xE008 lo de la vuelta anterior
 	ld b,a			;4609
 	ld a,(0e008h)		;460a
 	and 030h		;460d
@@ -1171,13 +1171,13 @@ LEE_GATILLOS_NUEVOS:		; Deja en A los gatillos que se acaban de pulsar en este f
 	ld c,a			;4610
 	ld a,b			;4611
 	and 030h		;4612
-	and c			;4614
+	and c			;4614   ; y el `and` de los dos deja solo lo que acaba de pulsarse
 	ret			;4615
 SUMA_AL_MARCADOR:		; Suma DE al marcador, en BCD, y actualiza el record
 	ld a,(0e002h)		;4616   ; Bit 6 de 0xE002 al bit de signo: en la demo no se puntua
 	add a,a			;4619
 	ret p			;461a
-	ld hl,0e043h		;461b
+	ld hl,0e043h		;461b   ; el marcador son tres parejas BCD en 0xE043, y se suma pareja a pareja
 	ld a,(hl)			;461e
 	add a,e			;461f
 	daa			;4620
@@ -1185,23 +1185,23 @@ SUMA_AL_MARCADOR:		; Suma DE al marcador, en BCD, y actualiza el record
 	ld e,a			;4622   ; Las dos parejas bajas vuelven a DE: COMPARA_RECORD las compara de golpe con el `sbc hl,de`
 	inc hl			;4623
 	ld a,(hl)			;4624
-	adc a,d			;4625
+	adc a,d			;4625   ; la pareja de en medio va con `adc`: el acarreo viene de la de abajo
 	daa			;4626
 	ld (hl),a			;4627
 	ld d,a			;4628
 	inc hl			;4629
 	jr nc,COMPARA_RECORD		;462a
 	ld a,(hl)			;462c
-	adc a,000h		;462d
+	adc a,000h		;462d   ; y la de arriba igual, con su `daa`
 	daa			;462f
 	ld (hl),a			;4630
 	jr nc,COMPARA_RECORD		;4631
 	ld bc,09999h		;4633   ; Al pasarse de 999999 el record se clava en ese tope
-	ld (0e040h),bc		;4636
+	ld (0e040h),bc		;4636   ; los seis nueves se escriben dos veces, en 0xE040 y 0xE041, que es como se cubre la pareja de en medio
 	ld (0e041h),bc		;463a
 	jr PINTA_RECORD		;463e
 COMPARA_RECORD:
-	ld a,(0e042h)		;4640
+	ld a,(0e042h)		;4640   ; el record se compara de arriba abajo, y solo se mira lo de abajo si lo de arriba empata
 	ld b,(hl)			;4643
 	sub (hl)			;4644   ; Byte alto contra byte alto: con acarreo hay record nuevo; empatados, deciden las parejas bajas
 	jr c,NUEVO_RECORD		;4645
@@ -1210,12 +1210,12 @@ COMPARA_RECORD:
 	sbc hl,de		;464c
 	jr nc,PINTA_MARCADOR		;464e
 NUEVO_RECORD:
-	ld (0e040h),de		;4650
+	ld (0e040h),de		;4650   ; el record nuevo son las dos parejas bajas y la alta, en ese orden
 	ld a,b			;4654
 	ld (0e042h),a		;4655
 	jr PINTA_RECORD		;4658
 CUENTA_EL_TIEMPO:		; Descuenta un segundo cada 64 fotogramas mientras 0xE133 diga que el reloj corre
-	ld a,(0e133h)		;465a
+	ld a,(0e133h)		;465a   ; 0xE133 apagado es el reloj parado: en el menu y en las cortinillas no corre
 	or a			;465d
 	ret z			;465e
 	ld hl,(0e0e3h)		;465f   ; Si el reloj esta a cero, 0xE00C avisa de que se acabo el tiempo
@@ -1226,12 +1226,12 @@ CUENTA_EL_TIEMPO:		; Descuenta un segundo cada 64 fotogramas mientras 0xE133 dig
 	ld (0e00ch),a		;4667
 	ret			;466a
 TIEMPO_CADA_64:
-	ld a,(0e003h)		;466b
+	ld a,(0e003h)		;466b   ; uno de cada 64 fotogramas, y 0xE003 sube uno por interrupcion: el "segundo" del juego dura 1,28 s en una maquina PAL y 1,07 en una NTSC, o sea que en las dos es mas largo que el de verdad
 	and 03fh		;466e
 	ret nz			;4670
 	ld c,001h		;4671
 RESTA_UN_SEGUNDO:		; Baja el reloj en uno, en BCD, y avisa con un pitido cuando quedan menos de once
-	ld hl,0e0e3h		;4673
+	ld hl,0e0e3h		;4673   ; el reloj tambien va en BCD, dos parejas
 	ld a,(hl)			;4676
 	sub 001h		;4677   ; `sub 1 / daa` en vez de `dec`: el `dec` no deja el acarreo que la pareja alta BCD necesita
 	daa			;4679
@@ -1251,29 +1251,29 @@ TIEMPO_MIRA_AVISO:
 	jr nc,PINTA_TIEMPO		;468a
 	dec c			;468c
 	jr nz,PINTA_TIEMPO		;468d
-	push af			;468f
+	push af			;468f   ; el aviso suena y la vuelta sigue: el `push` guarda las banderas que hacen falta despues
 	push hl			;4690
 	ld a,009h		;4691
 	call PIDE_SONIDO		;4693   ; Sonido 9
 	pop hl			;4696
 	pop af			;4697
 PINTA_TIEMPO:		; Las cuatro cifras del reloj
-	ld b,002h		;4698
+	ld b,002h		;4698   ; dos parejas BCD: los cuatro digitos del reloj
 	ld de,03827h		;469a
 	ld hl,0e0e4h		;469d
 	jp PINTA_BCD		;46a0
 PINTA_PANEL:		; Pinta el panel entero: rotulos, tiempo, distancia, fase, record y marcador
-	ld hl,05745h		;46a3
+	ld hl,05745h		;46a3   ; el panel se pinta entero de una vez: rotulos, reloj, distancia, fase, record y marcador
 	call ESCRIBE_CADENA		;46a6
 	call PINTA_TIEMPO		;46a9
 	call PINTA_DISTANCIA		;46ac
 	call PINTA_FASE		;46af
 PINTA_RECORD:		; Las seis cifras del record
-	ld hl,0e042h		;46b2
+	ld hl,0e042h		;46b2   ; el record va en 0x380F, tres bytes
 	ld de,0380fh		;46b5
 	call PINTA_TRES_BYTES		;46b8
 PINTA_MARCADOR:		; Las seis cifras del marcador
-	ld de,03805h		;46bb
+	ld de,03805h		;46bb   ; y el marcador en 0x3805
 	ld hl,0e045h		;46be
 PINTA_TRES_BYTES:
 	ld b,003h		;46c1
@@ -1283,11 +1283,11 @@ AVANZA_DISTANCIA:		; Descuenta la distancia que queda al ritmo que marca la velo
 	dec (hl)			;46c8   ; 0xE0E9 es el contador; se recarga con la mitad del periodo de 0xE100, y esa recarga es lo que demuestra que 0xE100 es un periodo y no una velocidad
 	ret nz			;46c9
 	ld a,(0e100h)		;46ca
-	srl a		;46cd
+	srl a		;46cd   ; la mitad del periodo: la distancia baja al doble de ritmo que la animacion
 	dec a			;46cf
 	ld (hl),a			;46d0
 	ld hl,0e0e6h		;46d1   ; Distancia a cero: 0xE00D avisa de que se ha llegado a la meta
-	ld a,(hl)			;46d4
+	ld a,(hl)			;46d4   ; los dos bytes de la distancia mirados de una vez con el `or`
 	dec hl			;46d5
 	or (hl)			;46d6
 	jr nz,DISTANCIA_RESTA		;46d7
@@ -1295,7 +1295,7 @@ AVANZA_DISTANCIA:		; Descuenta la distancia que queda al ritmo que marca la velo
 	ld (0e00dh),a		;46da
 	ret			;46dd
 DISTANCIA_RESTA:
-	ld a,(hl)			;46de
+	ld a,(hl)			;46de   ; un metro por paso, en BCD
 	sub 001h		;46df   ; Un descuento por paso, en BCD, con el prestamo subiendo al byte alto
 	daa			;46e1
 	ld (hl),a			;46e2
@@ -1310,22 +1310,22 @@ DISTANCIA_MIRA:
 	ld a,c			;46ec
 	or a			;46ed
 	jr nz,DISTANCIA_PINTA		;46ee
-	or (hl)			;46f0
+	or (hl)			;46f0   ; con el byte bajo a cero y el alto distinto, se acaba de cruzar una centena
 	jr z,DISTANCIA_PINTA		;46f1
 	ld a,(hl)			;46f3
-	and 003h		;46f4
+	and 003h		;46f4   ; y de esas, una de cada cuatro: cada 400 metros
 	jr nz,DISTANCIA_PINTA		;46f6
 	inc a			;46f8
 	ld (0e107h),a		;46f9   ; Cada 400 metros (?), 0xE107
 DISTANCIA_PINTA:
 	call MIRA_LA_CURVA		;46fc
 PINTA_DISTANCIA:		; Las cuatro cifras de la distancia
-	ld b,002h		;46ff
+	ld b,002h		;46ff   ; dos parejas: los cuatro digitos de la distancia
 	ld de,0382fh		;4701
 	ld hl,0e0e6h		;4704
 	jr PINTA_BCD		;4707
 PINTA_FASE:		; Las dos cifras del numero de fase
-	ld de,0381ch		;4709
+	ld de,0381ch		;4709   ; la fase es un solo byte, dos digitos
 	ld hl,0e0e0h		;470c
 	ld b,001h		;470f
 PINTA_BCD:		; Escribe B bytes BCD de (HL) hacia abajo en la VRAM (DE) hacia arriba, dos cifras por byte
@@ -1333,7 +1333,7 @@ PINTA_BCD:		; Escribe B bytes BCD de (HL) hacia abajo en la VRAM (DE) hacia arri
 	push af			;4712
 	and 00fh		;4713
 	or 010h		;4715   ; Los digitos empiezan en la casilla 0x10, que es el '0' de la fuente
-	ld c,a			;4717
+	ld c,a			;4717   ; el nibble bajo se guarda en C mientras se saca el alto
 	pop af			;4718   ; El mismo byte otra vez: ahora el nibble alto, bajado con las cuatro rotaciones
 	and 0f0h		;4719
 	rra			;471b
@@ -1342,7 +1342,7 @@ PINTA_BCD:		; Escribe B bytes BCD de (HL) hacia abajo en la VRAM (DE) hacia arri
 	rra			;471e
 	or 010h		;471f
 	call ESCRIBE_EN_VRAM		;4721
-	inc de			;4724
+	inc de			;4724   ; el alto se escribe primero y el bajo detras, que en pantalla van en ese orden
 	ld a,c			;4725
 	call ESCRIBE_EN_VRAM		;4726
 	dec hl			;4729   ; Los bytes BCD se recorren hacia abajo y la pantalla hacia arriba: van al reves
@@ -1363,10 +1363,10 @@ PINTA_BCD:		; Escribe B bytes BCD de (HL) hacia abajo en la VRAM (DE) hacia arri
 ; 0x4784  cinco listas de ocho bytes -> 0xE18B
 ; ----------------------------------------------------------------------
 ELIGE_DECORADO:		; Segun la fase y la distancia, deja en 0xE18A y 0xE18B lo que toca dibujar a los lados de la pista
-	ld a,(0e0e0h)		;472e
+	ld a,(0e0e0h)		;472e   ; la fase, en su nibble bajo, elige la pareja de decorados
 	and 00fh		;4731
 	ld hl,04770h		;4733
-	add a,a			;4736
+	add a,a			;4736   ; por dos: la tabla son parejas
 	call SUMA_A_HL		;4737
 	ld a,(0e0e6h)		;473a
 	and 010h		;473d   ; Bit 4 de la distancia: uno u otro
@@ -1385,11 +1385,11 @@ DECORADO_SEGUNDA:
 	ld d,(hl)			;4754
 	ex de,hl			;4755
 	ld a,(0e0e6h)		;4756   ; La distancia, por cuartos
-	and 0fch		;4759
+	and 0fch		;4759   ; los dos bits de abajo fuera y dos rotaciones: la distancia partida en cuartos de centena
 	rrca			;475b
 	rrca			;475c
 	res 3,a		;475d
-	cp 004h		;475f
+	cp 004h		;475f   ; por debajo de cuatro se coge la entrada tal cual
 	jr c,DECORADO_INDICE		;4761
 	dec a			;4763
 DECORADO_INDICE:
@@ -1453,7 +1453,7 @@ DATA_decorado_punteros:
 
 
 HAY_SORPRESA:		; Mientras 0xE18E este encendido devuelve C=3, y descuenta 0xE18F hasta apagarlo
-	ld a,(0e18eh)		;47e8
+	ld a,(0e18eh)		;47e8   ; la sorpresa es la que aparece de tarde en tarde y no en cada tramo
 	rra			;47eb   ; El bit 0 de 0xE18E al acarreo: apagado, no hay sorpresa
 	ret nc			;47ec
 	ld hl,0e18fh		;47ed
@@ -1462,10 +1462,10 @@ HAY_SORPRESA:		; Mientras 0xE18E este encendido devuelve C=3, y descuenta 0xE18F
 	xor a			;47f3
 	ld (0e18eh),a		;47f4
 SORPRESA_SI:
-	ld c,003h		;47f7
+	ld c,003h		;47f7   ; C = 3 al apagarse: es lo que el llamador lee para saber que ya no esta
 	ret			;47f9
 MIRA_SORPRESA:		; Enciende 0xE18E en ciertos multiplos de 100 metros, con la duracion que da la tabla de al lado
-	ld a,(0e0e0h)		;47fa
+	ld a,(0e0e0h)		;47fa   ; la tabla de 0x4822 da la vida de la sorpresa, una por fase
 	and 00fh		;47fd
 	ld hl,04822h		;47ff
 	call SUMA_A_HL		;4802
@@ -1477,12 +1477,12 @@ MIRA_SORPRESA:		; Enciende 0xE18E en ciertos multiplos de 100 metros, con la dur
 	or a			;480e
 	ret nz			;480f
 	ld a,(0e0e0h)		;4810
-	add a,d			;4813
+	add a,d			;4813   ; y la fase corre el reparto, asi que no salen siempre en los mismos sitios
 	and 003h		;4814   ; Una de cada cuatro centenas, corrida segun la fase
 	cp 002h		;4816
 	ret nz			;4818
 	inc a			;4819
-	ld (0e18eh),a		;481a
+	ld (0e18eh),a		;481a   ; encendida, con su vida cargada
 	ld a,(hl)			;481d
 	ld (0e18fh),a		;481e
 	ret			;4821
@@ -1503,20 +1503,20 @@ PREPARA_ROTULO:		; Limpia la pantalla y pone en blanco los colores del tercio de
 	call MONTA_LA_FUENTE		;482c
 	ld de,01080h		;482f   ; Colores del banco 2, casillas 0x10 a 0x40
 	ld bc,00180h		;4832
-	ld a,070h		;4835
+	ld a,070h		;4835   ; el 0x70 en los colores del banco 2 antes de escribir nada
 	call RELLENA_VRAM		;4837
 	xor a			;483a
 	ld (0e00ah),a		;483b
-	ld de,03966h		;483e
+	ld de,03966h		;483e   ; 0x13 casillas en 0x3966: el hueco del rotulo, limpio
 	ld bc,00013h		;4841
 	jp RELLENA_VRAM		;4844
 DIBUJA_ROTULO:		; Dibuja una columna del rotulo por llamada, 23 columnas de dos casillas; devuelve C mientras queda
-	ld hl,0e00ah		;4847
+	ld hl,0e00ah		;4847   ; 0xE00A cuenta por que columna va el rotulo
 	ld a,(hl)			;484a
 	inc (hl)			;484b
 	cp 017h		;484c   ; 23 columnas
 	jr nc,ROTULO_ESPERA		;484e
-	ld de,03885h		;4850
+	ld de,03885h		;4850   ; 0x3885 es la casilla por la que empieza
 	ld c,a			;4853
 	add a,e			;4854
 	ld e,a			;4855
@@ -1524,11 +1524,11 @@ DIBUJA_ROTULO:		; Dibuja una columna del rotulo por llamada, 23 columnas de dos 
 	add a,a			;4857
 	add a,0b2h		;4858   ; Las casillas van de dos en dos: 0xB2, 0xB4, 0xB6...
 	ld c,a			;485a
-	ld b,003h		;485b
+	ld b,003h		;485b   ; tres escrituras por columna, una fila cada una
 	xor a			;485d
 ROTULO_COLUMNA:
 	call ESCRIBE_EN_VRAM		;485e   ; La primera pasada escribe un 0 -la casilla vacia de encima- y las otras dos, las dos casillas del rotulo, una fila cada una
-	ld a,020h		;4861
+	ld a,020h		;4861   ; 0x20 casillas para bajar de fila
 	call SUMA_A_DE		;4863
 	ld a,c			;4866
 	inc c			;4867
@@ -1536,7 +1536,7 @@ ROTULO_COLUMNA:
 	scf			;486a   ; El acarreo dice que quedan columnas
 	ret			;486b
 ROTULO_ESPERA:
-	push af			;486c
+	push af			;486c   ; y con las 23 columnas puestas, el copyright debajo
 	ld hl,05774h		;486d   ; "(c)KONAMI 1984"
 	call ESCRIBE_CADENA		;4870
 	pop af			;4873
@@ -1545,7 +1545,7 @@ ROTULO_ESPERA:
 	or a			;4877
 	ret			;4878
 SUBE_LOGO:		; Dibuja el logotipo -tres filas de 3, 11 y 12 casillas- una fila mas arriba cada vez, y borra el rastro que deja debajo
-	ld hl,(0e00eh)		;4879
+	ld hl,(0e00eh)		;4879   ; 0xE00E lleva la altura a la que va el logotipo
 	ld de,00020h		;487c
 	add hl,de			;487f   ; Una fila menos en cada llamada
 	ld (0e00eh),hl		;4880
@@ -1555,7 +1555,7 @@ SUBE_LOGO:		; Dibuja el logotipo -tres filas de 3, 11 y 12 casillas- una fila ma
 	sbc hl,de		;4888
 	ex de,hl			;488a
 	ld a,044h		;488b   ; Las 26 casillas van seguidas desde la 0x44; las filas las corta el 0x0E - C de abajo: 3, 11 y 12 de ancho
-	ld bc,00303h		;488d
+	ld bc,00303h		;488d   ; tres filas y tres columnas para empezar
 LOGO_FILA:
 	push de			;4890
 LOGO_CASILLA:
@@ -1590,7 +1590,7 @@ ESCRIBE_EN_VRAM:		; Escribe el byte A en la VRAM DE: apunta con el bit de escrit
 	ei			;48be   ; El dato por el puerto 0x98
 	ret			;48bf
 LEE_DE_VRAM_MUERTA:		; Lee un byte de la VRAM. Nadie la llama: el juego solo escribe en pantalla
-	call APUNTA_VRAM		;48c0
+	call APUNTA_VRAM		;48c0   ; leer es igual, pero sin encender el bit 6
 	nop			;48c3   ; Los dos `nop` son la espera que el VDP pide entre la direccion y el dato; la gemela de escribir no los necesita
 	nop			;48c4
 	in a,(098h)		;48c5
@@ -1604,19 +1604,19 @@ APUNTA_VRAM:		; Manda DE al puerto 0x99 en dos escrituras, que es como se le dic
 	out (099h),a		;48ce
 	ret			;48d0
 SUMA_A_HL:		; HL = HL + A
-	add a,l			;48d1
+	add a,l			;48d1   ; suma A a HL de 16 bits, que el Z80 no tiene `add hl,a`
 	ld l,a			;48d2
 	ret nc			;48d3
 	inc h			;48d4
 	ret			;48d5
 SUMA_A_DE:		; DE = DE + A
-	add a,e			;48d6
+	add a,e			;48d6   ; y la misma para DE
 	ld e,a			;48d7
 	ret nc			;48d8
 	inc d			;48d9
 	ret			;48da
 ESTADO_15_MAPA:		; Estado 15: el mapa, en siete pasos
-	ld a,(0e001h)		;48db
+	ld a,(0e001h)		;48db   ; el mapa tambien va por pasos, con su tabla
 	call DESPACHA		;48de
 
 ; ----------------------------------------------------------------------
@@ -1642,17 +1642,17 @@ MAPA_0_PREPARA:		; Paso 0: prepara los punteros y pinta de blanco los colores de
 	ld (0e0f2h),hl		;48f2
 	ld hl,03884h		;48f5   ; Y esta es la casilla por la que se empieza a pintar
 	ld (0e0f0h),hl		;48f8
-	ld de,01080h		;48fb
+	ld de,01080h		;48fb   ; los colores del banco 2 a 0xF4 antes de dibujar el mapa
 	ld bc,00180h		;48fe
 	ld a,0f4h		;4901
 	call RELLENA_VRAM		;4903
 	jp SIGUIENTE_PASO		;4906
 MAPA_1_BORDE:		; Paso 1: la linea de arriba del marco
-	ld de,03883h		;4909
+	ld de,03883h		;4909   ; y el borde de arriba con el tile 0x92
 	ld a,092h		;490c
 	jr MAPA_BORDE		;490e
 MAPA_2_FILA:		; Paso 2: una fila del mapa cada dos fotogramas, hasta el 0x00 que cierra los datos
-	ld a,(0e003h)		;4910
+	ld a,(0e003h)		;4910   ; una fila cada dos fotogramas: el mapa se dibuja a la vista
 	rra			;4913
 	ret c			;4914
 	ld hl,(0e0f0h)		;4915
@@ -1665,7 +1665,7 @@ MAPA_2_FILA:		; Paso 2: una fila del mapa cada dos fotogramas, hasta el 0x00 que
 	ld bc,00018h		;4924
 	call RELLENA_VRAM		;4927
 	pop de			;492a
-	inc de			;492b
+	inc de			;492b   ; y por dentro el 4, 0x16 casillas: el marco deja una a cada lado
 	ld a,004h		;492c
 	ld c,016h		;492e
 	call RELLENA_VRAM		;4930
@@ -1682,7 +1682,7 @@ MAPA_2_GUARDA:
 	ld (0e0f2h),hl		;4943
 	ret			;4946
 MAPA_3_BORDE:		; Paso 3: la linea de abajo del marco
-	ld de,03aa3h		;4947
+	ld de,03aa3h		;4947   ; el borde de abajo: esquina, tramo de 24 y la otra esquina
 	ld a,091h		;494a
 MAPA_BORDE:
 	call ESCRIBE_EN_VRAM		;494c
@@ -1702,7 +1702,7 @@ MAPA_4_TRAZO:		; Paso 4: prepara el trazado del recorrido
 	ld (0e0f6h),a		;4968
 	jp SIGUIENTE_PASO		;496b
 MAPA_5_TRAZA:		; Paso 5: un paso del recorrido cada dos fotogramas
-	ld a,(0e003h)		;496e
+	ld a,(0e003h)		;496e   ; tambien uno de cada dos fotogramas
 	rra			;4971
 	ret c			;4972
 	ld hl,0e0f6h		;4973
@@ -1733,7 +1733,7 @@ TRAZO_PARTE:
 	ld a,b			;49aa
 	add a,c			;49ab
 	call ESCRIBE_EN_VRAM		;49ac
-	scf			;49af
+	scf			;49af   ; el acarreo dice que quedan pasos por trazar
 	ret			;49b0
 SALTA_A_HL:		; El otro despachador: aqui A no indexa direcciones sino el codigo de abajo
 	jp (hl)			;49b1
@@ -1746,10 +1746,10 @@ SALTA_A_HL:		; El otro despachador: aqui A no indexa direcciones sino el codigo 
 ; del dato (0, 4, 8 o C) caiga clavado en uno de ellos.
 ; ----------------------------------------------------------------------
 PASO_ARRIBA:		; Una fila menos: -0x20
-	ld a,0e0h		;49b2
+	ld a,0e0h		;49b2   ; arriba es restar 0x20, o sea sumar 0xE0
 	jr PASO_ARRIBA_SUMA		;49b4
 PASO_DERECHA:		; Una casilla mas
-	ld a,001h		;49b6
+	ld a,001h		;49b6   ; y a la derecha, una casilla
 	jr PASO_SUMA		;49b8
 PASO_ABAJO:		; Una fila mas: +0x20
 	ld a,020h		;49ba
@@ -1825,19 +1825,19 @@ MONTA_LA_FASE:		; Prepara la fase entera: borra las variables de pista, carga lo
 	ld hl,0e0f0h		;4ad2   ; Borra 0x130 bytes de variables de pista, obstaculos y sonido
 	ld de,0e0f1h		;4ad5
 	ld bc,00130h		;4ad8
-	ld (hl),000h		;4adb
+	ld (hl),000h		;4adb   ; el `ld (hl),0` mas el `ldir` es el borrado clasico: se siembra el primero y se arrastra
 	ldir		;4add
 	ld a,010h		;4adf
 	ld h,a			;4ae1
 	ld l,a			;4ae2
 	ld (0e100h),hl		;4ae3   ; Periodo inicial 0x10, cerca del tope lento: cada fase arranca despacio
-	ld (0e110h),a		;4ae6
-	ld a,008h		;4ae9
+	ld (0e110h),a		;4ae6   ; 0xE110 es el otro periodo, el del decorado
+	ld a,008h		;4ae9   ; 0xE149 arranca en 8
 	ld (0e149h),a		;4aeb
 	ld a,005h		;4aee
-	ld (0e0e9h),a		;4af0
+	ld (0e0e9h),a		;4af0   ; y 0xE0E9 en 5, que es lo que tarda el primer descuento de distancia
 	ld hl,03030h		;4af3   ; Segun sea la fase par o impar, una pareja de casillas u otra
-	ld a,(0e0e0h)		;4af6
+	ld a,(0e0e0h)		;4af6   ; el bit 0 de la fase: par o impar
 	rra			;4af9
 	jr nc,FASE_CASILLAS		;4afa
 	ld hl,03434h		;4afc
@@ -1851,7 +1851,7 @@ FASE_CASILLAS:
 	call MONTA_SPRITES_PARTIDA		;4b10
 	call MONTA_LA_PISTA		;4b13   ; Y el montaje de la pista
 	xor a			;4b16
-	ld (0e13bh),a		;4b17
+	ld (0e13bh),a		;4b17   ; montada la fase, se levanta el cerrojo
 	ret			;4b1a
 
 ; ----------------------------------------------------------------------
@@ -1860,7 +1860,7 @@ FASE_CASILLAS:
 ; ############################################################
 ; ----------------------------------------------------------------------
 PASO_DE_PARTIDA:		; Todo lo que pasa en un fotograma de juego
-	call PINTA_VELOCIMETRO		;4b1b
+	call PINTA_VELOCIMETRO		;4b1b   ; el paso de partida empieza por lo que se ve: el velocimetro y el pez
 	call MUEVE_EL_PEZ		;4b1e
 	ld a,(0e140h)		;4b21   ; 0xE140: esta en el agua, y entonces no se juega
 	or a			;4b24
@@ -1868,19 +1868,19 @@ PASO_DE_PARTIDA:		; Todo lo que pasa en un fotograma de juego
 	ld a,(0e142h)		;4b28   ; 0xE142: se esta cayendo
 	or a			;4b2b
 	jp nz,SIGUE_CAIDA		;4b2c
-	call AJUSTA_DIFICULTAD		;4b2f
+	call AJUSTA_DIFICULTAD		;4b2f   ; la dificultad se ajusta antes de leer el mando
 	call MUEVE_PINGUINO		;4b32   ; Los mandos
 	call ARRASTRA_PINGUINO		;4b35
 	call MIRA_EL_PEZ		;4b38   ; El pez
-	call MIRA_EL_BORDE		;4b3b
-	ld a,(0e140h)		;4b3e
+	call MIRA_EL_BORDE		;4b3b   ; y el borde se mira despues de moverse, no antes
+	ld a,(0e140h)		;4b3e   ; si se ha caido al agua, la pista ya no avanza en este paso
 	or a			;4b41
 	ret nz			;4b42
 	call AVANZA_LA_PISTA		;4b43
 	call DIBUJA_LA_META		;4b46
 	call AVANZA_DISTANCIA		;4b49   ; La distancia que queda y el decorado que toca
 	call ELIGE_DECORADO		;4b4c
-	call CREA_OBSTACULO		;4b4f
+	call CREA_OBSTACULO		;4b4f   ; y por ultimo los obstaculos nuevos y las nubes
 	jp LAS_NUBES		;4b52
 
 ; ----------------------------------------------------------------------
@@ -1912,7 +1912,7 @@ MUEVE_PINGUINO:		; Lee los mandos y mueve al pinguino, o sigue el salto si ya es
 	jp nz,SIGUE_SALTO		;4b82
 	call LEE_GATILLOS_NUEVOS		;4b85   ; Gatillo recien pulsado: empieza el salto
 	jp nz,EMPIEZA_SALTO		;4b88
-	ld a,b			;4b8b
+	ld a,b			;4b8b   ; B trae el mando: en el salto solo importan los bits de los lados
 	ld de,(0e078h)		;4b8c   ; Posicion actual: E la Y, D la X
 	call MUEVE_A_LOS_LADOS		;4b90
 PINGUINO_COLOCA:
@@ -1922,12 +1922,12 @@ PINGUINO_SPRITES:
 PINGUINO_A_VRAM:		; Vuelca los cuatro atributos del pinguino a la VRAM
 	ld hl,0e078h		;4b97
 	ld de,03b28h		;4b9a   ; Sprites 10 a 13
-	ld bc,00010h		;4b9d
+	ld bc,00010h		;4b9d   ; 0x10 bytes: cuatro atributos de cuatro
 	call COPIA_A_VRAM		;4ba0
 	jp COLOCA_SOMBRA		;4ba3
 PONE_POSE:		; Copia los cuatro patrones de la pose A a los atributos, saltando de cuatro en cuatro
-	exx			;4ba6
-	ld hl,04b55h		;4ba7
+	exx			;4ba6   ; la pose se escribe en el juego alterno para no gastar los registros del llamador
+	ld hl,04b55h		;4ba7   ; la tabla de 0x4B55 son los cuatro patrones de cada pose
 	call SUMA_A_HL		;4baa
 	ld de,0e07ah		;4bad
 	ld b,004h		;4bb0
@@ -1945,7 +1945,7 @@ COLOCA_SPRITES:		; Reparte HL (Y en L, X en H) por los cuatro sprites, sumando 1
 	ld d,h			;4bbd   ; El pinguino son cuatro sprites de 16x16 en cuadro: 0xE078, 0xE07C, 0xE080 y 0xE084
 	ld (0e078h),hl		;4bbe
 	ld a,h			;4bc1
-	add a,010h		;4bc2
+	add a,010h		;4bc2   ; la pareja de la derecha, 16 pixeles mas alla
 	ld h,a			;4bc4
 	ld (0e07ch),hl		;4bc5
 	ld a,l			;4bc8
@@ -1969,7 +1969,7 @@ COLOCA_SPRITES:		; Reparte HL (Y en L, X en H) por los cuatro sprites, sumando 1
 EMPIEZA_SALTO:		; Gatillo: suena el salto y se apunta hacia donde va
 	ld a,002h		;4bd5
 	call PIDE_SONIDO		;4bd7   ; Sonido 2
-	ld a,b			;4bda
+	ld a,b			;4bda   ; el mando se mira una sola vez, al arrancar el salto: lo que se pulse despues ya no cambia el rumbo
 	and 00ch		;4bdb   ; Bits 2 y 3: izquierda y derecha
 	jr z,SALTO_SENTIDO		;4bdd
 	ld a,(0e0fah)		;4bdf
@@ -1978,12 +1978,12 @@ SALTO_SENTIDO:
 	ld (0e0fbh),a		;4be4
 	jr SALTO_PASO		;4be7
 SIGUE_SALTO:		; Un paso de salto cada cuatro fotogramas
-	ld a,(0e003h)		;4be9
+	ld a,(0e003h)		;4be9   ; el salto avanza uno de cada cuatro fotogramas
 	and 003h		;4bec
 	ret nz			;4bee
 SALTO_PASO:
 	ld a,(hl)			;4bef
-	inc (hl)			;4bf0
+	inc (hl)			;4bf0   ; el paso sube y el valor leido es el de antes
 	cp 00bh		;4bf1   ; Once pasos y vuelta a cero
 	jr nz,SALTO_POSE		;4bf3
 	ld (hl),000h		;4bf5
@@ -2003,7 +2003,7 @@ SALTO_COLOCA:
 	ld hl,04c51h		;4c0a   ; La curva del salto, que se suma a la Y
 	call SUMA_A_HL		;4c0d
 	ld a,(hl)			;4c10
-	ld de,(0e078h)		;4c11
+	ld de,(0e078h)		;4c11   ; la altura se le suma a la Y del pinguino
 	add a,e			;4c15
 	ld e,a			;4c16
 	ld hl,0e0fbh		;4c17
@@ -2015,22 +2015,22 @@ SALTO_COLOCA:
 SALTO_TERMINA:
 	ex de,hl			;4c21
 	call PINGUINO_SPRITES		;4c22
-	ld a,(0e0f9h)		;4c25
+	ld a,(0e0f9h)		;4c25   ; si el salto se acabo en este paso, no se miran choques
 	or a			;4c28
 	ret nz			;4c29
 	call MIRA_CHOQUES		;4c2a   ; La sombra
-	ld a,(0e140h)		;4c2d
+	ld a,(0e140h)		;4c2d   ; ni en el agua ni cayendose se puntua el salto
 	ld hl,0e142h		;4c30
 	add a,(hl)			;4c33
 	ret nz			;4c34
-	ld hl,0e132h		;4c35
+	ld hl,0e132h		;4c35   ; 0xE132 evita cobrar el mismo salto dos veces
 	cp (hl)			;4c38
 	ret z			;4c39
 	ld (hl),a			;4c3a
 	ld de,00030h		;4c3b   ; Treinta puntos por saltar (?)
 	jp SUMA_AL_MARCADOR		;4c3e
 SALTO_A_LA_IZQUIERDA:
-	call MUEVE_IZQUIERDA		;4c41
+	call MUEVE_IZQUIERDA		;4c41   ; el salto lateral mueve DOS casillas, no una: por eso las dos llamadas seguidas
 	call MUEVE_IZQUIERDA		;4c44
 	jr SALTO_TERMINA		;4c47
 SALTO_A_LA_DERECHA:
@@ -2061,7 +2061,7 @@ MUEVE_A_LOS_LADOS:		; Mueve al pinguino a izquierda o derecha segun los bits 2 y
 	cp 004h		;4c69
 	jr nz,MUEVE_DERECHA		;4c6b
 MUEVE_IZQUIERDA:		; Una columna a la izquierda; el borde esta en X=0x14
-	ld a,d			;4c6d
+	ld a,d			;4c6d   ; con la columna por debajo de 0x14 no se puede ir mas a la izquierda
 	cp 014h		;4c6e
 	ret c			;4c70
 	dec d			;4c71
@@ -2069,7 +2069,7 @@ MUEVE_IZQUIERDA:		; Una columna a la izquierda; el borde esta en X=0x14
 	res 1,(hl)		;4c74
 	ret			;4c76
 MANTIENE_SENTIDO:		; Con las dos direcciones metidas, la primera vez INVIERTE el sentido que llevaba y lo deja apuntado (bit 7 de 0xE0FA); las siguientes repite el nuevo
-	ld a,(hl)			;4c77
+	ld a,(hl)			;4c77   ; 0xE0FA a cero: no habia sentido anterior que mantener
 	or a			;4c78
 	ret z			;4c79
 	bit 7,a		;4c7a   ; El bit 7 marca el empate ya resuelto: la primera vez se invierte el sentido (bit 1: venia de la derecha) y las siguientes se repite el nuevo (bit 0)
@@ -2083,7 +2083,7 @@ SENTIDO_CAMBIA:
 	jr nz,MUEVE_IZQUIERDA		;4c88
 MUEVE_DERECHA:		; Una columna a la derecha; el borde esta en X=0xCC
 	ld a,d			;4c8a
-	cp 0cch		;4c8b
+	cp 0cch		;4c8b   ; y por la derecha el tope es 0xCC
 	ret nc			;4c8d
 	set 1,(hl)		;4c8e   ; El espejo de la izquierda: enciende el bit 1 y apaga el 0
 	res 0,(hl)		;4c90
@@ -2094,12 +2094,12 @@ ANIMA_ANDAR:		; Las tres poses de andar, una cada ocho fotogramas. La llama la i
 	ld a,(0e130h)		;4c97
 	or (hl)			;4c9a
 	ret nz			;4c9b
-	ld a,(0e003h)		;4c9c
+	ld a,(0e003h)		;4c9c   ; uno de cada ocho fotogramas: una zancada
 	and 007h		;4c9f
 	ret nz			;4ca1
 ANDAR_PASO:
 	ld hl,0e0f8h		;4ca2
-	inc (hl)			;4ca5
+	inc (hl)			;4ca5   ; 0xE0F8 cuenta las zancadas
 	ld a,(hl)			;4ca6
 	ld c,000h		;4ca7   ; Los bits 0-1 de la cuenta reparten el ciclo de poses 0, 4, 0, 8: el paso central entre cada zancada
 	rra			;4ca9
@@ -2114,7 +2114,7 @@ ANDAR_POSE:
 	jp PINGUINO_A_VRAM		;4cb7
 COLOCA_SOMBRA:		; Los dos sprites de debajo del pinguino; en el salto y en la caida las dos mitades se MONTAN una sobre otra y la sombra se estrecha cuanto mas alto va
 	ld hl,(0e078h)		;4cba
-	ld a,l			;4cbd
+	ld a,l			;4cbd   ; la sombra va 0x1E pixeles mas abajo y 0x10 a la derecha del pinguino
 	add a,01eh		;4cbe
 	ld l,a			;4cc0
 	ld c,a			;4cc1
@@ -2130,7 +2130,7 @@ COLOCA_SOMBRA:		; Los dos sprites de debajo del pinguino; en el salto y en la ca
 	or a			;4cd5
 	jr z,SOMBRA_GUARDA		;4cd6
 SOMBRA_SEPARA:
-	ex de,hl			;4cd8
+	ex de,hl			;4cd8   ; la tabla se recorre con el paso de la caida
 	call SUMA_A_HL		;4cd9
 	ld l,(hl)			;4cdc
 	ld a,d			;4cdd   ; La separacion se SUMA a la mitad izquierda y se RESTA a la derecha: las medias sombras se montan y la sombra se estrecha
@@ -2143,12 +2143,12 @@ SOMBRA_SEPARA:
 	ld c,0aeh		;4ce5
 	ex de,hl			;4ce7
 SOMBRA_GUARDA:
-	ld (0e0a0h),hl		;4ce8
+	ld (0e0a0h),hl		;4ce8   ; las dos mitades de la sombra van a 0xE0A0 y 0xE0A4
 	ld (0e0a4h),bc		;4ceb
 SOMBRA_A_VRAM:
 	ld hl,0e0a0h		;4cef
 	ld de,03b50h		;4cf2   ; Sprites 20 y 21
-	ld bc,00008h		;4cf5
+	ld bc,00008h		;4cf5   ; ocho bytes: los dos atributos de la sombra
 	jp COPIA_A_VRAM		;4cf8
 
 ; ----------------------------------------------------------------------
@@ -2183,10 +2183,10 @@ DATA_arco_de_la_caida:
 
 
 MIRA_CHOQUES:		; Con el pinguino en el suelo: recorre las fichas y mira si alguna esta en el paso 13 a su altura
-	ld a,(0e0f9h)		;4d1a
+	ld a,(0e0f9h)		;4d1a   ; saltando no se choca con nada: se pasa por encima
 	or a			;4d1d
 	ret nz			;4d1e
-	ld b,004h		;4d1f
+	ld b,004h		;4d1f   ; cuatro fichas de obstaculo, cinco a partir de la fase 5
 	ld a,(0e0e0h)		;4d21   ; A partir de la fase 5 hay una ficha mas
 	cp 005h		;4d24
 	jr c,CHOQUES_EMPIEZA		;4d26
@@ -2207,7 +2207,7 @@ CHOQUES_FICHA:
 	inc hl			;4d39
 	ld d,(hl)			;4d3a
 	ex de,hl			;4d3b
-	dec a			;4d3c
+	dec a			;4d3c   ; el tipo se compara con 5: los de mas arriba son objetos que se cogen
 	cp c			;4d3d
 	ld a,(0e079h)		;4d3e   ; La X del pinguino
 	jr nc,CHOQUES_AGUJERO		;4d41
@@ -2217,7 +2217,7 @@ CHOQUES_FICHA:
 	jp c,COGE_OBJETO		;4d46   ; Tipos 5 y 6: se cogen y dan puntos
 	jr CHOQUES_NADA		;4d49
 CHOQUES_AGUJERO:
-	ld c,(hl)			;4d4b
+	ld c,(hl)			;4d4b   ; el hueco tiene dos zonas: el agua por dentro y el borde por fuera
 	dec c			;4d4c
 	jr z,CHOQUES_BORDE		;4d4d
 	ld c,a			;4d4f
@@ -2236,15 +2236,15 @@ CHOQUES_NADA:
 	ex de,hl			;4d5e
 	xor a			;4d5f
 CHOQUES_SIGUIENTE:
-	inc a			;4d60
+	inc a			;4d60   ; seis bytes de una ficha a la siguiente
 	call SUMA_A_HL		;4d61
 	djnz CHOQUES_FICHA		;4d64
 	ret			;4d66
 MIRA_CHOQUES_SALTANDO:		; Lo mismo, pero en el aire: solo mira una lista propia, la de 0x4D99
-	ld a,(0e0f9h)		;4d67
+	ld a,(0e0f9h)		;4d67   ; esta es la gemela de arriba para cuando SI se esta saltando
 	or a			;4d6a
 	ret z			;4d6b
-	ld b,005h		;4d6c
+	ld b,005h		;4d6c   ; aqui siempre son cinco fichas
 	ld hl,0e112h		;4d6e
 SALTANDO_FICHA:
 	ld a,(hl)			;4d71
@@ -2254,7 +2254,7 @@ SALTANDO_FICHA:
 	jr nz,SALTANDO_SIGUIENTE		;4d77
 	ex de,hl			;4d79
 	ld a,(de)			;4d7a
-	cp 005h		;4d7b
+	cp 005h		;4d7b   ; el `cp 5` y el `add a,a` juntos: el tipo por dos, que la tabla son parejas
 	add a,a			;4d7d
 	ld hl,04d99h		;4d7e
 	call SUMA_A_HL		;4d81
@@ -2265,7 +2265,7 @@ SALTANDO_FICHA:
 	jr c,SALTANDO_ACIERTA		;4d8a
 	ex de,hl			;4d8c
 SALTANDO_SIGUIENTE:
-	call SUMA_A_HL		;4d8d
+	call SUMA_A_HL		;4d8d   ; y a la ficha siguiente
 	djnz SALTANDO_FICHA		;4d90
 	ret			;4d92
 SALTANDO_ACIERTA:
@@ -2291,11 +2291,11 @@ DATA_choque_en_el_aire:
 
 
 MIRA_EL_PEZ:		; Si el pinguino pisa el pez, suena, se lo lleva y suma 300 puntos
-	ld a,(0e142h)		;4da3
+	ld a,(0e142h)		;4da3   ; ni en el agua ni cayendose se puede coger el pez
 	ld hl,0e140h		;4da6
 	add a,(hl)			;4da9
 	ret nz			;4daa
-	ld de,(0e188h)		;4dab
+	ld de,(0e188h)		;4dab   ; 0xE188 es donde esta el pez
 	ld a,e			;4daf
 	cp 0e0h		;4db0   ; 0xE0 en la Y: el pez no esta en la pantalla
 	ret z			;4db2
@@ -2304,7 +2304,7 @@ MIRA_EL_PEZ:		; Si el pinguino pisa el pez, suena, se lo lleva y suma 300 puntos
 	ld e,a			;4db7
 	sub 00ah		;4db8   ; Tiene que estar a menos de diez pixeles en vertical
 	ret nc			;4dba
-	ld a,013h		;4dbb
+	ld a,013h		;4dbb   ; la caja del pez no es un rectangulo: el ancho depende de la diferencia de altura, asi que es un rombo
 	add a,e			;4dbd
 	ld l,a			;4dbe
 	ld a,e			;4dbf
@@ -2318,14 +2318,14 @@ MIRA_EL_PEZ:		; Si el pinguino pisa el pez, suena, se lo lleva y suma 300 puntos
 	ret nc			;4dc8
 	ld a,007h		;4dc9
 	call PIDE_SONIDO		;4dcb   ; Sonido 7
-	ld hl,0e08ch		;4dce
+	ld hl,0e08ch		;4dce   ; cogido el pez, se le quita de la pantalla y se avanza su ciclo
 	ld de,0e183h		;4dd1
 	call QUITA_EL_PEZ		;4dd4
 	call PEZ_PASO		;4dd7
 	ld de,00300h		;4dda   ; Trescientos puntos
 	jp SUMA_AL_MARCADOR		;4ddd
 MIRA_EL_BORDE:		; Choque con lo que haya en 0xE090 cuando esta abajo del todo
-	ld hl,(0e090h)		;4de0
+	ld hl,(0e090h)		;4de0   ; la foca solo pilla cuando esta asomada del todo
 	ld a,l			;4de3
 	cp 08fh		;4de4   ; Solo con la Y de 0xE090 en 0x8F: la foca asomada del todo
 	ret nz			;4de6
@@ -2343,20 +2343,20 @@ TROPIEZA:		; El pinguino tropieza y rueda hacia el lado por el que iba
 	ld a,(0e135h)		;4df7   ; Durante la escena de la base no se tropieza
 	or a			;4dfa
 	ret nz			;4dfb
-	ld a,003h		;4dfc
+	ld a,003h		;4dfc   ; el sonido 3 es el tropiezo
 	call PIDE_SONIDO		;4dfe   ; Sonido 3
-	ld hl,00101h		;4e01
+	ld hl,00101h		;4e01   ; el bit 0 de 0xE0FA -el ultimo sentido- decide hacia donde se cae
 	ld a,(0e0fah)		;4e04
 	cpl			;4e07
 	rra			;4e08
 	jr PONE_CAIDA		;4e09
 CHOCA:		; Choque de frente: se cae hacia atras
-	ld hl,00101h		;4e0b
+	ld hl,00101h		;4e0b   ; y esta es la caida al agua, con su sonido 8
 	ld (0e136h),hl		;4e0e
 	ld a,008h		;4e11
 	call PIDE_SONIDO		;4e13   ; Sonido 8
 	ld hl,00102h		;4e16
-	ld a,(0e0f9h)		;4e19
+	ld a,(0e0f9h)		;4e19   ; cayendo desde un salto la cuenta empieza un paso mas alla
 	or a			;4e1c
 	jr z,CAIDA_RECUPERA		;4e1d
 	inc l			;4e1f
@@ -2375,7 +2375,7 @@ CAIDA_POSE:
 	ld (0e100h),hl		;4e36
 	ret			;4e39
 SIGUE_CAIDA:		; Un paso de caida cada cuatro fotogramas: rueda de lado y baja
-	ld a,(0e003h)		;4e3a
+	ld a,(0e003h)		;4e3a   ; la caida avanza uno de cada cuatro fotogramas, como el salto
 	and 003h		;4e3d
 	ret nz			;4e3f
 	ld hl,0e142h		;4e40
@@ -2383,11 +2383,11 @@ SIGUE_CAIDA:		; Un paso de caida cada cuatro fotogramas: rueda de lado y baja
 	cp 003h		;4e44   ; Tres pasos y se acaba
 	jp z,CAIDA_TERCER_PASO		;4e46
 	inc hl			;4e49
-	ld a,(hl)			;4e4a
+	ld a,(hl)			;4e4a   ; y su propio contador de paso
 	inc (hl)			;4e4b
 	ld hl,RET_COMPARTIDO		;4e4c   ; El desplazamiento de este paso, apuntado un byte antes
 	call SUMA_A_HL		;4e4f
-	ld c,(hl)			;4e52
+	ld c,(hl)			;4e52   ; C se queda el desplazamiento de este paso
 	ld de,(0e078h)		;4e53
 CAIDA_LADO:
 	ld hl,0e0d0h		;4e57
@@ -2403,7 +2403,7 @@ CAIDA_LADO:
 	jr CAIDA_LADO		;4e6d
 CAIDA_COLOCA:
 	ex de,hl			;4e6f
-	ld a,l			;4e70
+	ld a,l			;4e70   ; el desplazamiento se le suma a la Y y se recolocan los cuatro sprites
 	add a,c			;4e71
 	ld l,a			;4e72
 	call PINGUINO_SPRITES		;4e73
@@ -2413,7 +2413,7 @@ CAIDA_COLOCA:
 CAIDA_ABAJO:
 	ld a,004h		;4e7d
 	call PIDE_SONIDO		;4e7f   ; Sonido 4
-	call PISTA_GRUPO_B		;4e82
+	call PISTA_GRUPO_B		;4e82   ; al tocar el suelo se cambia de grupo de pista y se pasa a la siguiente
 	call PISTA_SIGUIENTE		;4e85
 	xor a			;4e88
 	ld b,a			;4e89
@@ -2424,7 +2424,7 @@ CAIDA_ABAJO:
 	inc a			;4e91
 	ld (0e135h),a		;4e92
 CAIDA_REPINTA:
-	call MUEVE_OBSTACULOS		;4e95
+	call MUEVE_OBSTACULOS		;4e95   ; los obstaculos se mueven con el repintado especial levantado
 	xor a			;4e98
 	ld (0e135h),a		;4e99
 CAIDA_CUENTA:
@@ -2433,16 +2433,16 @@ CAIDA_CUENTA:
 	sub 015h		;4ea0   ; Veintiun pasos y se acabo la caida
 	ret nz			;4ea2
 	ld (hl),a			;4ea3
-	dec hl			;4ea4
+	dec hl			;4ea4   ; los tres contadores de la caida a cero
 	ld (hl),a			;4ea5
 	ld (0e137h),a		;4ea6
 	ret			;4ea9
 TRES_A_LA_DERECHA:		; Tres columnas de golpe
-	call MUEVE_DERECHA		;4eaa
+	call MUEVE_DERECHA		;4eaa   ; tres a la derecha de una vez: la caida arrastra tres columnas por tanda
 	call MUEVE_DERECHA		;4ead
 	jp MUEVE_DERECHA		;4eb0
 TRES_A_LA_IZQUIERDA:
-	call MUEVE_IZQUIERDA		;4eb3
+	call MUEVE_IZQUIERDA		;4eb3   ; y su espejo, tres a la izquierda
 	call MUEVE_IZQUIERDA		;4eb6
 	call MUEVE_IZQUIERDA		;4eb9
 	xor a			;4ebc
@@ -2464,7 +2464,7 @@ DATA_rodada_de_la_caida:
 
 
 CAIDA_TERCER_PASO:		; El tercer paso de la caida, que ya es levantarse
-	ld hl,0e0f9h		;4ed2
+	ld hl,0e0f9h		;4ed2   ; levantarse son once pasos, contados con el mismo byte que el salto
 	ld a,(hl)			;4ed5   ; 0xE0F9 vuelve a contar como en el salto: once pasos de levantarse
 	inc (hl)			;4ed6
 	cp 00bh		;4ed7
@@ -2472,7 +2472,7 @@ CAIDA_TERCER_PASO:		; El tercer paso de la caida, que ya es levantarse
 	ld (hl),000h		;4edb
 CAIDA_LEVANTA:
 	push af			;4edd
-	ld a,(0e144h)		;4ede
+	ld a,(0e144h)		;4ede   ; la pose de levantarse sale de 0xE144, el lado por el que se cayo
 	ld c,a			;4ee1
 	call PONE_POSE		;4ee2
 	pop af			;4ee5
@@ -2491,12 +2491,12 @@ CAIDA_LEVANTA:
 	ld a,(0e0f9h)		;4f02
 	or a			;4f05
 	ret nz			;4f06
-	ld a,001h		;4f07
+	ld a,001h		;4f07   ; el remate levanta 0xE135 para que el repintado sepa que es especial
 	ld (0e135h),a		;4f09
 	call CAIDA_ABAJO		;4f0c   ; El remate reutiliza CAIDA_ABAJO para repintar la fila y los obstaculos donde ha quedado
 	xor a			;4f0f
 	ld (0e135h),a		;4f10
-	dec hl			;4f13
+	dec hl			;4f13   ; y deja la cuenta de la caida como se la encontro
 	inc a			;4f14
 	ld (hl),a			;4f15
 	ld a,004h		;4f16
@@ -2513,16 +2513,16 @@ CAIDA_LEVANTA:
 ; tiempo sigue corriendo, que es el castigo.
 ; ----------------------------------------------------------------------
 CAE_AL_AGUA:		; Se cae por el agujero: ocho sprites y a esperar
-	ld hl,00001h		;4f1c
+	ld hl,00001h		;4f1c   ; caer al agua enciende 0xE140 y apaga la caida
 	ld (0e140h),hl		;4f1f   ; 0xE140: esta en el agua
 	xor a			;4f22
 	ld (0e142h),a		;4f23
-	ld a,0ffh		;4f26
+	ld a,0ffh		;4f26   ; 0xE0F8 a 0xFF: el ciclo de zancadas se reinicia al salir
 	ld (0e0f8h),a		;4f28
 	ld a,005h		;4f2b
 	call PIDE_SONIDO		;4f2d   ; Sonido 5
 	ld hl,0e068h		;4f30
-	ld bc,004b6h		;4f33
+	ld bc,004b6h		;4f33   ; los cuatro sprites del chapoteo, de cuatro en cuatro bytes
 AGUA_SPRITES:
 	ld (hl),c			;4f36
 	ld a,004h		;4f37
@@ -2546,7 +2546,7 @@ AGUA_SPRITES:
 ; ----------------------------------------------------------------------
 DIBUJA_EN_EL_AGUA:		; Coloca al pinguino asomando por el agujero, en Y=0x9F, y le PONE LAS PATAS AMARILLAS
 	ld hl,(0e078h)		;4f3e
-	ld l,09fh		;4f41
+	ld l,09fh		;4f41   ; la Y se clava en 0x9F: la altura del agua
 	call COLOCA_SPRITES		;4f43
 	ld a,010h		;4f46
 	call PONE_POSE		;4f48
@@ -2556,14 +2556,14 @@ DIBUJA_EN_EL_AGUA:		; Coloca al pinguino asomando por el agujero, en Y=0x9F, y l
 	ld (0e0a3h),hl		;4f53
 VUELCA_OCHO_SPRITES:		; Los ocho atributos de 0xE068 a la VRAM, sprites 6 a 13
 	ld hl,0e068h		;4f56
-	ld de,03b18h		;4f59
+	ld de,03b18h		;4f59   ; 0x3B18 son los sprites 6 a 13
 	ld bc,00020h		;4f5c
 	call COPIA_A_VRAM		;4f5f
 	jp SOMBRA_A_VRAM		;4f62
 SIGUE_EN_EL_AGUA:		; Manotea hasta que se pulsa el gatillo
-	ld hl,0e141h		;4f65
+	ld hl,0e141h		;4f65   ; 0xE141 cuenta lo que se lleva en el agua
 	inc (hl)			;4f68
-	res 7,(hl)		;4f69
+	res 7,(hl)		;4f69   ; el bit 7 se apaga cada vuelta: la cuenta no pasa de 0x7F
 	ld a,(hl)			;4f6b
 	cp 020h		;4f6c   ; Los primeros 32 fotogramas no vale pulsar
 	jr c,DIBUJA_EN_EL_AGUA		;4f6e
@@ -2577,7 +2577,7 @@ CHAPUZON_CADA_OCHO:		; Uno de cada ocho fotogramas mientras se manotea en el agu
 	ld a,008h		;4f7c
 	ld b,099h		;4f7e
 	ld de,01470h		;4f80   ; Los tres patrones de pataleo: 0x70, 0x74 y 0x78
-	bit 3,c		;4f83
+	bit 3,c		;4f83   ; los bits 3 y 4 del contador reparten los tres dibujos
 	jr z,AGUA_ANIMA		;4f85
 	ld a,004h		;4f87
 	ld b,096h		;4f89
@@ -2597,12 +2597,12 @@ AGUA_ANIMA:		; Mueve las patas: el patron va cambiando entre 0x70, 0x74 y 0x78, 
 	add a,010h		;4fa3   ; La Y del sprite de las patas queda 16 por debajo del cuerpo, que sube y baja con el manoteo
 	ld (0e0a0h),a		;4fa5
 	push de			;4fa8
-	call COLOCA_SPRITES		;4fa9
+	call COLOCA_SPRITES		;4fa9   ; los cuatro sprites del pinguino se recolocan con la Y del manoteo
 	pop af			;4fac
 	call PONE_POSE		;4fad
 	jp VUELCA_OCHO_SPRITES		;4fb0
 SALE_DEL_AGUA:		; Con el gatillo se sale, y el periodo vuelve a 0x13: se sale del agua a la minima velocidad
-	xor a			;4fb3
+	xor a			;4fb3   ; salir del agua apaga las dos banderas y reinicia las zancadas
 	ld (0e140h),a		;4fb4
 	ld (0e0f8h),a		;4fb7
 	ld hl,00313h		;4fba   ; 0xE100 vuelve al periodo 0x13: del agua se sale a la minima velocidad
@@ -2622,7 +2622,7 @@ SALIDA_SPRITES:
 	pop bc			;4fd7
 	djnz SALIDA_SPRITES		;4fd8
 	pop hl			;4fda
-	ld l,090h		;4fdb
+	ld l,090h		;4fdb   ; y el pinguino vuelve a la Y de andar, 0x90
 	call COLOCA_SPRITES		;4fdd
 	ld hl,004a0h		;4fe0   ; El patron 0xA0 y el color 4: la sombra vuelve a ser sombra
 	ld (0e0a2h),hl		;4fe3
@@ -2630,7 +2630,7 @@ SALIDA_SPRITES:
 	call VUELCA_ATRIBUTOS		;4fe9
 	ret			;4fec
 COGE_OBJETO:		; LAS BANDERAS DE LA PISTA. Los tipos 5 y 6 son las dos banderas que hay plantadas en el hielo -una inclinada a cada lado- y NO se esquivan: se recogen. Al tocarlas suena, se borra la ficha, se repinta el hueco y suman 500 puntos. Lo dice tambien el reparto de 0x4D3C: los tipos 0 a 4 se van al choque y solo el 5 y el 6 caen aqui. OJO, no confundirlas con la bandera que sube por el mastil de la base, que es otra cosa y va por sprites (0x55AD)
-	ex de,hl			;4fed
+	ex de,hl			;4fed   ; el dibujo se lee hacia ATRAS: los bytes que van delante del puntero
 	dec hl			;4fee
 	dec hl			;4fef
 	ld d,(hl)			;4ff0
@@ -2649,7 +2649,7 @@ COGE_OBJETO:		; LAS BANDERAS DE LA PISTA. Los tipos 5 y 6 son las dos banderas q
 	ld a,006h		;5003
 	call PIDE_SONIDO		;5005   ; Sonido 6
 	ld hl,0e1a0h		;5008
-	call DIBUJA_BLOQUE		;500b
+	call DIBUJA_BLOQUE		;500b   ; y de ahi lo pinta el interprete de bloques normal
 	ld de,00500h		;500e   ; Quinientos puntos
 	call SUMA_AL_MARCADOR		;5011
 	ret			;5014
@@ -2658,7 +2658,7 @@ MONTA_LA_PISTA:		; Monta la pista de la fase: colores, cielo, hielo, decorados y
 	ld hl,05141h		;5018
 	call SUMA_A_HL		;501b
 	ld a,007h		;501e
-	bit 0,(hl)		;5020
+	bit 0,(hl)		;5020   ; el bit 0 elige entre la casilla 7 y la 9 para el cielo
 	jr z,PISTA_COLORES		;5022
 	ld a,009h		;5024
 PISTA_COLORES:
@@ -2672,13 +2672,13 @@ PISTA_COLORES:
 	ld de,0620ch		;5036
 PISTA_DESCOMPRIME:
 	push de			;5039   ; Las dos tiradas del descompresor -a 0x4588 y a 0x4F78- van con el juego de flujos del tipo de fase
-	ld de,04588h		;503a
+	ld de,04588h		;503a   ; y se descomprimen en dos sitios: la tabla de colores y los patrones
 	call DESCOMPRIME_DE		;503d
 	pop hl			;5040
 	ld de,CHAPUZON_CADA_OCHO		;5041
 	call DESCOMPRIME_DE		;5044
 	ld de,03860h		;5047   ; El cielo, con la casilla 7 o la 9
-	ld bc,000e0h		;504a
+	ld bc,000e0h		;504a   ; 0xE0 casillas: siete filas de cielo
 	ld a,(0e10ch)		;504d
 	call RELLENA_VRAM		;5050
 	ld de,03940h		;5053   ; Y el hielo, con la 0x0F

@@ -41,7 +41,7 @@ byte along the way.
 ## Without the cartridge
 
 You can still read `src/jap2/antarctic.asm` and the notes, which is where the work
-actually lives: 394 named routines, 445 comments anchored to their address, and
+actually lives: 394 named routines, 663 comments anchored to their address, and
 63 data ranges with an explanation beside each one.
 
 ## How it's laid out

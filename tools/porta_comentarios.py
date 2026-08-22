@@ -109,19 +109,41 @@ def main():
     if "--escribe" in sys.argv:
         path = "src/%s/antarctic.notes" % vd
         with open(path, encoding="utf-8") as f:
-            viejo = f.read()
-        # Se quitan las L, C y B que hubiera, y se ponen las portadas.
-        base = [ln for ln in viejo.splitlines()
-                if not re.match(r"^[LCB]\s+0x", ln)]
+            viejo = f.read().splitlines()
+        # LO QUE YA TIENE EL DESTINO MANDA. Antes esto borraba todas las L, C
+        # y B del destino y ponia las portadas en su lugar; asi se perdian las
+        # que esa version tenia y el origen no. Al portar de eu a jap2 se
+        # llevo por delante 52 etiquetas suyas -INIT, PARADO y H_TIMI entre
+        # ellas- y lo cazaron los tests. Ahora solo se anade lo que el destino
+        # no tenga ya en esa direccion.
+        suyas = {"L": set(), "C": set(), "B": set()}
+        for ln in viejo:
+            m = re.match(r"^([LCB])\s+(0x[0-9A-Fa-f]+)", ln)
+            if m:
+                suyas[m.group(1)].add(int(m.group(2), 16))
+        nuevas, repetidas = [], 0
+        for ln in salida:
+            m = re.match(r"^([LCB])\s+(0x[0-9A-Fa-f]+)", ln)
+            if int(m.group(2), 16) in suyas[m.group(1)]:
+                repetidas += 1
+                continue
+            nuevas.append(ln)
+        if not nuevas:
+            print("  nada que anadir: %s ya tiene todo lo portable" % vd)
+            return 0
+        cabecera = (
+            "\n# --- Etiquetas y comentarios portados de src/" + vo + " con\n"
+            "# tools/porta_comentarios.py: cada uno va donde el mapa de\n"
+            "# direcciones dice que esta LA MISMA INSTRUCCION, y las\n"
+            "# direcciones del texto estan traducidas con ese mismo mapa.\n"
+            "# Solo se anade lo que esta version no tuviera ya: lo suyo\n"
+            "# manda siempre.\n\n")
         with open(path, "w", encoding="utf-8") as f:
-            f.write("\n".join(base) + "\n\n"
-                    "# --- Etiquetas y comentarios portados de src/%s con\n"
-                    "# tools/porta_comentarios.py: cada uno va donde el mapa de\n"
-                    "# direcciones dice que esta LA MISMA INSTRUCCION, y las\n"
-                    "# direcciones del texto estan traducidas con ese mismo mapa.\n\n"
-                    % vo)
-            f.write("\n".join(salida) + "\n")
-        print("  escrito en %s" % path)
+            f.write("\n".join(viejo).rstrip("\n") + "\n")
+            f.write(cabecera)
+            f.write("\n".join(nuevas) + "\n")
+        print("  escrito en %s: %d anadidas, %d que ya tenia y se respetan"
+              % (path, len(nuevas), repetidas))
     return 0
 
 

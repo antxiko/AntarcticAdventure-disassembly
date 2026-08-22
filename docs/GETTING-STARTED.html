@@ -99,7 +99,7 @@ original   : 16384 bytes  a33f9298...dc3c452
 OK: reproducible byte a byte</code></pre>
 <p>As long as that line shows up, no comment in this repository can have eaten a byte along the way.</p>
 <h2 id="without-the-cartridge">Without the cartridge</h2>
-<p>You can still read <code>src/jap2/antarctic.asm</code> and the notes, which is where the work actually lives: 394 named routines, 445 comments anchored to their address, and 63 data ranges with an explanation beside each one.</p>
+<p>You can still read <code>src/jap2/antarctic.asm</code> and the notes, which is where the work actually lives: 394 named routines, 663 comments anchored to their address, and 63 data ranges with an explanation beside each one.</p>
 <h2 id="how-it-s-laid-out">How it&#x27;s laid out</h2>
 <p>The listing is <b>never edited by hand</b>. It&#x27;s generated, and three files govern it:</p>
 <table><tr><th></th><th></th></tr><tr><td><code>src/jap2/antarctic.entries</code></td><td>the entry points: where tracing starts</td></tr><tr><td><code>src/jap2/antarctic.nocode</code></td><td>the ranges that are NOT code, and how we know</td></tr><tr><td><code>src/jap2/antarctic.notes</code></td><td>the names, the comments and the data ranges</td></tr></table>

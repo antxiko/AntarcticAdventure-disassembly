@@ -61,7 +61,7 @@ lo que decimos de ellos. Así que van dos comprobaciones más al lado:
 | bytes de datos | 10.437 |
 | bytes sin explicar | **0** |
 | etiquetas con nombre | 394 |
-| comentarios anclados | 445 |
+| comentarios anclados | 663 |
 | rangos de datos con explicación | 63 |
 
 ## Algunas cosas que aparecieron
