@@ -1465,3 +1465,60 @@ C 0x5004 y de ahi lo pinta el interprete de bloques normal
 C 0x5019 el bit 0 elige entre la casilla 7 y la 9 para el cielo
 C 0x5033 y se descomprimen en dos sitios: la tabla de colores y los patrones
 C 0x5043 0xE0 casillas: siete filas de cielo
+
+C 0x7652 cuatro bytes: el atributo entero del sprite
+C 0x765C los dos bits bajos: la fase del vuelo del pez
+C 0x766A dos pixeles por paso al subir
+C 0x79D0 la cuenta de arranque, a uno
+C 0x79E5 tantos canales como diga B
+C 0x74FF el `add a,a` remata el por 16
+C 0x750B el nibble alto es el caracter
+C 0x7510 y los dos bits bajos, el tercio
+C 0x7678 hasta el 8 sube
+C 0x767C del 8 al 0x10 vuela plano
+C 0x771C 0x0C fotogramas para subir un escalon de velocidad
+
+C 0x50F7 el aviso se consume al atenderlo
+C 0x5103 el bit 0 de 0xE109 elige entre los dos decorados apuntados
+C 0x51D3 el bloque se pinta antes de avanzar el puntero
+C 0x51DD cuatro bytes por ficha de obstaculo
+C 0x534F los cuatro bits bajos: una tanda cada dieciseis pasos
+C 0x5358 y una tanda menos
+C 0x7750 el bit 0 elige entre las dos medias casillas
+C 0x7758 los cuatro bits bajos son la longitud de la barra
+C 0x7837 dos bytes por entrada
+C 0x783F cuatro sprites para la foca
+C 0x7795 dos bytes por entrada
+C 0x77A7 y la nube queda encendida
+C 0x5263 los dos bits bajos son el lado
+C 0x526D la ficha reservada queda ocupada
+C 0x7733 cuatro fotogramas para bajar un escalon de velocidad
+C 0x773E y se baja un escalon
+
+C 0x4216 0x20 casillas: la fila entera
+C 0x421E dos rotaciones: el bit 4 se convierte en 0x40, que son dos filas
+C 0x4232 y un parpadeo menos
+C 0x423A el `ret p` vuelve mientras la cortinilla no acabe
+C 0x4268 y del tiempo de la fase se descuenta lo que sobro
+
+C 0x42B0 y el reloj se para
+C 0x42CC cuatro nubes
+C 0x42CE la Y 0xE0 deja el sprite fuera de la pantalla
+C 0x4327 el `daa` ajusta la suma, que el numero va en BCD
+C 0x4342 el aviso de meta se consume
+
+C 0x434A diez fases y vuelta a empezar
+C 0x4366 hasta que no llega, no se pasa de paso
+C 0x43C3 y mientras quede, se descuenta
+C 0x43C8 los dos bits bajos: uno de cada cuatro
+C 0x43E6 el `ret p` vuelve mientras la cortinilla no acabe
+
+C 0x4ED4 y a los once vuelve a cero
+C 0x4F2F el 0xB6 es el primer patron del chapoteo
+C 0x4F35 cuatro sprites
+C 0x4F55 0x20 bytes: los ocho atributos
+C 0x4F44 la Y 0xE0 deja el sprite fuera de la pantalla
+
+C 0x4FC3 cuatro sprites con el mismo atributo
+C 0x4FC8 cuatro juegos mas
+C 0x4FD1 tantos juegos como diga B

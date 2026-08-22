@@ -60,7 +60,7 @@ what we say about them does. So two more checks run alongside:
 | bytes of data | 10,437 |
 | bytes unexplained | **0** |
 | named labels | 394 |
-| anchored comments | 663 |
+| anchored comments | 713 |
 | data ranges with an explanation | 63 |
 
 ## A few things that turned up

@@ -412,10 +412,10 @@ MENU_2_PARPADEA:		; Paso 2: parpadea la linea elegida, ocho fotogramas encendida
 	bit 3,a		;420f   ; ...y el bit 3 dice si toca encender o apagar
 	jr nz,MENU_2_ENCIENDE		;4211
 	ld de,03a00h		;4213   ; 0x3A00 es la fila 16 de la tabla de nombres
-	ld bc,00020h		;4216
+	ld bc,00020h		;4216   ; 0x20 casillas: la fila entera
 	ld a,(0e002h)		;4219   ; Bit 4 de 0xE002: 0 joystick (fila 16), 1 teclado (fila 18)
 	and 010h		;421c
-	rlca			;421e
+	rlca			;421e   ; dos rotaciones: el bit 4 se convierte en 0x40, que son dos filas
 	rlca			;421f
 	call SUMA_A_DE		;4220   ; Suma 0x00 o 0x40 al destino, o sea dos filas
 	ld a,001h		;4223
@@ -425,12 +425,12 @@ MENU_2_ENCIENDE:		; La otra mitad del parpadeo: repinta el texto
 	ld hl,057b7h		;4229   ; y encenderla es volver a escribir el texto
 	call ESCRIBE_CADENA		;422c
 	ld hl,0e18dh		;422f   ; 0xE18D cuenta los parpadeos que quedan; agotados, la espera de 0x80 y al paso siguiente
-	dec (hl)			;4232
+	dec (hl)			;4232   ; y un parpadeo menos
 	ret nz			;4233
 	jp ESPERA_80_Y_PASO		;4234
 MENU_3_CORTINILLA:		; Paso 3: cortinilla y a empezar la partida
 	call CORTINILLA		;4237   ; la cortinilla otra vez, y detras el reinicio de la partida
-	ret p			;423a
+	ret p			;423a   ; el `ret p` vuelve mientras la cortinilla no acabe
 	call REINICIA_PARTIDA		;423b
 	jp SIGUIENTE_ESTADO		;423e
 ESTADO_09_PREPARA:		; Estado 9: saca de la tabla la distancia y el tiempo de la fase que toca
@@ -456,7 +456,7 @@ ESTADO_09_PREPARA:		; Estado 9: saca de la tabla la distancia y el tiempo de la 
 	daa			;4265   ; el `daa` detras de cada resta: el tiempo va en BCD y hay que ajustarlo a mano
 	ld c,a			;4266
 	ld a,e			;4267
-	sub c			;4268
+	sub c			;4268   ; y del tiempo de la fase se descuenta lo que sobro
 	jr nc,PREPARA_AJUSTA		;4269
 	daa			;426b
 	dec d			;426c   ; la resta se lleva una centena
@@ -494,7 +494,7 @@ ESTADO_11_PARTIDA:		; Estado 11: la partida. Un paso de juego por fotograma hast
 	ret z			;42ab
 	ld a,l			;42ac
 	ld hl,0e133h		;42ad
-	ld (hl),000h		;42b0
+	ld (hl),000h		;42b0   ; y el reloj se para
 	or a			;42b2
 	ld a,00ch		;42b3   ; Estado 12, se acabo el tiempo
 	jr nz,PARTIDA_CAMBIA		;42b5
@@ -510,9 +510,9 @@ ESTADO_12_TIME_OUT:		; Estado 12: se acabo el tiempo
 	ld (0e00ch),a		;42c3
 	ld hl,0e0b8h		;42c6   ; Aparca las cuatro nubes fuera de la pantalla
 	ld de,00004h		;42c9
-	ld b,004h		;42cc
+	ld b,004h		;42cc   ; cuatro nubes
 TIME_OUT_SPRITES:
-	ld (hl),0e0h		;42ce
+	ld (hl),0e0h		;42ce   ; la Y 0xE0 deja el sprite fuera de la pantalla
 	add hl,de			;42d0
 	djnz TIME_OUT_SPRITES		;42d1
 	call VUELCA_ATRIBUTOS		;42d3   ; y los atributos se vuelcan ya, sin esperar al fotograma siguiente
@@ -577,7 +577,7 @@ META_1_SIGUIENTE:		; Paso 1: sube el numero de fase y guarda el tiempo que ha so
 	ld hl,0e0e0h		;4321   ; 0xE0E0 es el numero de fase que se ve, en BCD, y 0xE0E1 el indice de verdad
 	ld a,(hl)			;4324
 	add a,001h		;4325   ; El numero que se ve, en BCD
-	daa			;4327
+	daa			;4327   ; el `daa` ajusta la suma, que el numero va en BCD
 	ld (hl),a			;4328
 	inc hl			;4329
 	ld a,(hl)			;432a   ; Y el indice 0-9, que da la vuelta al llegar a diez
@@ -595,11 +595,11 @@ META_1_GUARDA:
 	ld a,(0e0e3h)		;433d
 	ld (hl),a			;4340
 	xor a			;4341
-	ld (0e00dh),a		;4342
+	ld (0e00dh),a		;4342   ; el aviso de meta se consume
 	ld hl,0e0e8h		;4345   ; La casilla del mapa tambien avanza y da la vuelta
 	inc (hl)			;4348
 	ld a,(hl)			;4349
-	cp 00ah		;434a
+	cp 00ah		;434a   ; diez fases y vuelta a empezar
 	jr nz,META_1_ANIMA		;434c
 	ld (hl),000h		;434e
 META_1_ANIMA:
@@ -613,7 +613,7 @@ META_1_ANIMA:
 META_2_ANDA:		; Paso 2: el pinguino sigue andando hasta la bandera
 	ld c,0ffh		;4361   ; C = 0xFF: que ANDA_HASTA_LA_BASE calcule la X de destino en su primer paso
 	call ANDA_HASTA_LA_BASE		;4363   ; el pinguino anda solo hasta la base; hasta que no llega, no se pasa de paso
-	ret nz			;4366
+	ret nz			;4366   ; hasta que no llega, no se pasa de paso
 	ld a,00ch		;4367   ; Llegado (dieciseis pasos), el paso 3 arranca con la cuenta en 12: cuatro pasos mas de subida
 	ld (0e138h),a		;4369
 	jp SIGUIENTE_PASO		;436c
@@ -660,11 +660,11 @@ META_6_BONUS:		; Paso 6: cada cuatro fotogramas cambia un segundo que sobra por 
 	ld a,(hl)			;43bf   ; una espera con su propio contador
 	or a			;43c0
 	jr z,BONUS_PASO		;43c1
-	dec (hl)			;43c3
+	dec (hl)			;43c3   ; y mientras quede, se descuenta
 	ret			;43c4
 BONUS_PASO:
 	ld a,(0e003h)		;43c5   ; uno de cada cuatro fotogramas: el bonus se descuenta despacio para que se vea
-	and 003h		;43c8
+	and 003h		;43c8   ; los dos bits bajos: uno de cada cuatro
 	ret nz			;43ca
 	ld hl,(0e0e3h)		;43cb   ; Cuando el reloj llega a cero se acabo el bonus
 	ld a,h			;43ce   ; los dos bytes del tiempo juntos: a cero, se acabo el bonus
@@ -679,7 +679,7 @@ BONUS_PASO:
 	ret			;43e2
 META_7_CORTINILLA:		; Paso 7: cortinilla y vuelta al estado 9 con la fase siguiente
 	call CORTINILLA		;43e3
-	ret p			;43e6
+	ret p			;43e6   ; el `ret p` vuelve mientras la cortinilla no acabe
 	ld a,008h		;43e7   ; el estado 8 con 0x50 fotogramas de espera
 	ld (0e000h),a		;43e9
 
@@ -2468,7 +2468,7 @@ CAIDA_TERCER_PASO:		; El tercer paso de la caida, que ya es levantarse
 	inc (hl)			;4ecf
 	cp 00bh		;4ed0
 	jr nz,CAIDA_LEVANTA		;4ed2
-	ld (hl),000h		;4ed4
+	ld (hl),000h		;4ed4   ; y a los once vuelve a cero
 CAIDA_LEVANTA:
 	push af			;4ed6
 	ld a,(0e144h)		;4ed7   ; la pose de levantarse sale de 0xE144, el lado por el que se cayo
@@ -2523,10 +2523,10 @@ CAE_AL_AGUA:		; Se cae por el agujero: ocho sprites y a esperar
 	ld hl,0e068h		;4f29
 	ld bc,004b6h		;4f2c   ; los cuatro sprites del chapoteo, de cuatro en cuatro bytes
 AGUA_SPRITES:
-	ld (hl),c			;4f2f
+	ld (hl),c			;4f2f   ; el 0xB6 es el primer patron del chapoteo
 	ld a,004h		;4f30
 	call SUMA_A_HL		;4f32
-	djnz AGUA_SPRITES		;4f35
+	djnz AGUA_SPRITES		;4f35   ; cuatro sprites
 
 ; ----------------------------------------------------------------------
 ; ----------------------------------------------------------------------
@@ -2549,14 +2549,14 @@ DIBUJA_EN_EL_AGUA:		; Coloca al pinguino asomando por el agujero, en Y=0x9F, y l
 	call COLOCA_SPRITES		;4f3c
 	ld a,010h		;4f3f
 	call PONE_POSE		;4f41
-	ld a,0e0h		;4f44
+	ld a,0e0h		;4f44   ; la Y 0xE0 deja el sprite fuera de la pantalla
 	ld (0e0a0h),a		;4f46   ; Saca de la pantalla el sprite de la sombra...
 	ld hl,0e00ah		;4f49   ; ...y con este par de bytes le cambia el COLOR a 0x0A, que es amarillo, y aparca el de al lado
 	ld (0e0a3h),hl		;4f4c
 VUELCA_OCHO_SPRITES:		; Los ocho atributos de 0xE068 a la VRAM, sprites 6 a 13
 	ld hl,0e068h		;4f4f
 	ld de,03b18h		;4f52   ; 0x3B18 son los sprites 6 a 13
-	ld bc,00020h		;4f55
+	ld bc,00020h		;4f55   ; 0x20 bytes: los ocho atributos
 	call COPIA_A_VRAM		;4f58
 	jp SOMBRA_A_VRAM		;4f5b
 SIGUE_EN_EL_AGUA:		; Manotea hasta que se pulsa el gatillo
@@ -2609,16 +2609,16 @@ SALE_DEL_AGUA:		; Con el gatillo se sale, y el periodo vuelve a 0x13: se sale de
 	push af			;4fbc
 	ld hl,066c8h		;4fbd   ; El atributo de 0x66C8, cuatro veces sobre los sprites 6 a 9: los que encendio el agua se recogen
 	ld de,0e068h		;4fc0
-	ld c,004h		;4fc3
+	ld c,004h		;4fc3   ; cuatro sprites con el mismo atributo
 	call REPITE_4_BYTES		;4fc5
-	ld b,004h		;4fc8
+	ld b,004h		;4fc8   ; cuatro juegos mas
 SALIDA_SPRITES:
 	ld c,(hl)			;4fca   ; La lista sigue con cuatro juegos mas: un byte de cuantas veces y los cuatro del atributo
 	inc hl			;4fcb
 	push bc			;4fcc
 	call REPITE_4_BYTES		;4fcd
 	pop bc			;4fd0
-	djnz SALIDA_SPRITES		;4fd1
+	djnz SALIDA_SPRITES		;4fd1   ; tantos juegos como diga B
 	pop hl			;4fd3
 	ld l,090h		;4fd4   ; y el pinguino vuelve a la Y de andar, 0x90
 	call COLOCA_SPRITES		;4fd6
@@ -2771,13 +2771,13 @@ AVANZA_DECORADO:		; Cada 400 metros toca decorado nuevo
 	ld a,(0e102h)		;50f2   ; Y solo con el contador de trozos en 1, para no pisar un trozo a medias
 	dec a			;50f5
 	ret nz			;50f6
-	ld (hl),a			;50f7
+	ld (hl),a			;50f7   ; el aviso se consume al atenderlo
 	call SIGUIENTE_DECORADO		;50f8
 	or a			;50fb
 	ret nz			;50fc
 	ld hl,(0e103h)		;50fd
 	ld a,(0e109h)		;5100
-	bit 0,a		;5103
+	bit 0,a		;5103   ; el bit 0 de 0xE109 elige entre los dos decorados apuntados
 	jr z,DECORADO_DIBUJA		;5105
 	ld hl,(0e105h)		;5107
 DECORADO_DIBUJA:
@@ -2890,7 +2890,7 @@ OBSTACULO_DIBUJA:
 	ex de,hl			;51d0
 	push de			;51d1
 	push bc			;51d2
-	call DIBUJA_BLOQUE		;51d3
+	call DIBUJA_BLOQUE		;51d3   ; el bloque se pinta antes de avanzar el puntero
 	pop bc			;51d6
 	pop de			;51d7
 	inc hl			;51d8   ; El puntero de dibujo se guarda avanzado: cada paso dibuja el trozo siguiente de la secuencia
@@ -2898,7 +2898,7 @@ OBSTACULO_DIBUJA:
 	ld (hl),d			;51da
 	dec hl			;51db
 	ld (hl),e			;51dc
-	ld a,004h		;51dd
+	ld a,004h		;51dd   ; cuatro bytes por ficha de obstaculo
 OBSTACULO_SIGUIENTE:
 	call SUMA_A_HL		;51df
 	djnz OBSTACULO_FICHA		;51e2
@@ -2980,13 +2980,13 @@ CREA_RELLENA:
 	ret nc			;525e
 	ld a,(0e191h)		;525f
 	cpl			;5262
-	and 003h		;5263
+	and 003h		;5263   ; los dos bits bajos son el lado
 	ld c,a			;5265
 	ld hl,0e12ah		;5266
 	ld a,(hl)			;5269   ; Solo si la reservada esta libre; si no, la pareja se pierde
 	or a			;526a
 	jr nz,CREA_PAREJA_FIN		;526b
-	inc (hl)			;526d
+	inc (hl)			;526d   ; la ficha reservada queda ocupada
 	inc hl			;526e
 	call RELLENA_FICHA		;526f
 CREA_PAREJA_FIN:
@@ -3130,13 +3130,13 @@ DESPLAZA_PINTA:
 	ld hl,0e197h		;534a
 	inc (hl)			;534d   ; 0xE197 cuenta los desplazamientos: cada dieciseis se consume una tanda de 0xE195
 	ld a,(hl)			;534e
-	and 00fh		;534f
+	and 00fh		;534f   ; los cuatro bits bajos: una tanda cada dieciseis pasos
 	jr nz,CURVA_ENDEREZA		;5351
 	dec hl			;5353
 	dec hl			;5354
 	cp (hl)			;5355
 	jr z,CURVA_ENDEREZA		;5356
-	dec (hl)			;5358
+	dec (hl)			;5358   ; y una tanda menos
 	jr nz,CURVA_ENDEREZA		;5359
 	dec hl			;535b   ; Agotadas las tandas, el rumbo (bit 0 de 0xE194) se INVIERTE y se repinta el horizonte: la curva se deshace girando al otro lado
 	ld a,(hl)			;535c
@@ -4215,7 +4215,7 @@ DIBUJA_LA_META:		; En los ultimos 100 metros, cada 32 dibuja un trozo mas de la 
 	rlca			;74fc   ; Las tres rotaciones y el doble convierten 0x00/0x20/0x40/0x60/0x80 en 0, 2, 4, 6 y 8: la palabra de la tabla que toca
 	rlca			;74fd
 	rlca			;74fe
-	add a,a			;74ff
+	add a,a			;74ff   ; el `add a,a` remata el por 16
 	ld hl,07535h		;7500
 	call SUMA_A_HL		;7503
 	ld e,(hl)			;7506
@@ -4223,11 +4223,11 @@ DIBUJA_LA_META:		; En los ultimos 100 metros, cada 32 dibuja un trozo mas de la 
 	ld d,(hl)			;7508
 	ex de,hl			;7509
 	ld a,(hl)			;750a
-	and 0f0h		;750b
+	and 0f0h		;750b   ; el nibble alto es el caracter
 	ld c,a			;750d
 	ld a,(hl)			;750e
 	inc hl			;750f
-	and 003h		;7510
+	and 003h		;7510   ; y los dos bits bajos, el tercio
 	add a,078h		;7512
 	ld d,a			;7514
 	ld a,c			;7515
@@ -4372,11 +4372,11 @@ PEZ_PASO:		; Lo coloca, lo copia a la VRAM y le lleva el arco del salto
 	ld (0e188h),hl		;7649   ; 0xE188 es lo que mira MIRA_EL_PEZ para saber si el pinguino lo pisa
 	ld hl,0e08ch		;764c
 	ld de,03b3ch		;764f   ; Sprite 15
-	ld bc,00004h		;7652
+	ld bc,00004h		;7652   ; cuatro bytes: el atributo entero del sprite
 	call COPIA_A_VRAM		;7655
 	ld de,0e183h		;7658
 	ld a,(de)			;765b
-	and 003h		;765c
+	and 003h		;765c   ; los dos bits bajos: la fase del vuelo del pez
 	ret z			;765e
 	ld hl,0e08eh		;765f
 	call PEZ_GIRA		;7662
@@ -4384,7 +4384,7 @@ PEZ_PASO:		; Lo coloca, lo copia a la VRAM y le lleva el arco del salto
 	dec hl			;7666
 	rra			;7667
 	jr c,PEZ_ARCO_SUBE		;7668
-	dec (hl)			;766a
+	dec (hl)			;766a   ; dos pixeles por paso al subir
 	dec (hl)			;766b
 	jr PEZ_ARCO		;766c
 PEZ_ARCO_SUBE:
@@ -4397,9 +4397,9 @@ PEZ_ARCO:
 	ld a,(hl)			;7675
 	pop hl			;7676
 	dec hl			;7677
-	cp 008h		;7678
+	cp 008h		;7678   ; hasta el 8 sube
 	jr c,PEZ_SUBE		;767a
-	cp 010h		;767c
+	cp 010h		;767c   ; del 8 al 0x10 vuela plano
 	ret c			;767e
 	jr z,PEZ_CAE		;767f
 	cp 022h		;7681
@@ -4546,7 +4546,7 @@ ACELERA:		; Un escalon MENOS de periodo cada doce fotogramas, hasta 8: el tope d
 	dec hl			;7719
 	inc (hl)			;771a
 	ld a,(hl)			;771b
-	sub 00ch		;771c
+	sub 00ch		;771c   ; 0x0C fotogramas para subir un escalon de velocidad
 	ret nz			;771e
 	ld (hl),a			;771f
 	ld hl,0e100h		;7720
@@ -4564,14 +4564,14 @@ FRENA:		; Un escalon MAS cada cuatro fotogramas, hasta 0x13
 	inc hl			;7730
 	inc (hl)			;7731
 	ld a,(hl)			;7732
-	sub 004h		;7733
+	sub 004h		;7733   ; cuatro fotogramas para bajar un escalon de velocidad
 	ret nz			;7735
 	ld (hl),a			;7736
 	ld hl,0e100h		;7737
 	ld a,(hl)			;773a
 	cp 013h		;773b   ; El tope lento es 0x13
 	ret nc			;773d
-	inc (hl)			;773e
+	inc (hl)			;773e   ; y se baja un escalon
 NI_UNA_COSA_NI_OTRA:
 	ret			;773f
 PINTA_VELOCIMETRO:		; Las seis casillas del velocimetro, en la fila 0
@@ -4582,13 +4582,13 @@ PINTA_VELOCIMETRO:		; Las seis casillas del velocimetro, en la fila 0
 	jr nz,VELOCIMETRO_VACIA		;774a
 	ld a,(0e100h)		;774c
 	ld b,a			;774f
-	and 001h		;7750
+	and 001h		;7750   ; el bit 0 elige entre las dos medias casillas
 	add a,042h		;7752
 	ld c,a			;7754
 	ld a,b			;7755
 	rra			;7756   ; La media vuelta y el `cpl` invierten el periodo -barra larga, periodo corto- y el bit 0 elige la media casilla (0x42/0x43)
 	cpl			;7757
-	and 00fh		;7758
+	and 00fh		;7758   ; los cuatro bits bajos son la longitud de la barra
 	sub 006h		;775a
 	jr z,VELOCIMETRO_CASILLA		;775c
 	ld b,a			;775e
@@ -4626,7 +4626,7 @@ NUBE_NUEVA:
 	inc (hl)			;7790
 	ld hl,0780eh		;7791   ; Donde empieza cada uno
 	ld a,b			;7794
-	add a,a			;7795
+	add a,a			;7795   ; dos bytes por entrada
 	call SUMA_A_HL		;7796
 	ld a,(hl)			;7799
 	ld (de),a			;779a
@@ -4640,7 +4640,7 @@ NUBE_NUEVA:
 	inc de			;77a3
 	ld a,00fh		;77a4
 	ld (de),a			;77a6
-	ld a,001h		;77a7
+	ld a,001h		;77a7   ; y la nube queda encendida
 	pop hl			;77a9
 NUBE_SIGUIENTE:
 	call SUMA_A_DE		;77aa
@@ -4746,13 +4746,13 @@ FOCA_FOTOGRAMA:		; Coge el fotograma del paso en que va
 	ld hl,07897h		;7831   ; paso-15+8 = paso-7: ocho entradas, para los pasos 7 a 14
 	add a,008h		;7834
 	ld b,a			;7836
-	add a,a			;7837
+	add a,a			;7837   ; dos bytes por entrada
 	call SUMA_A_HL		;7838
 	ld e,(hl)			;783b
 	inc hl			;783c
 	ld d,(hl)			;783d
 	ld a,b			;783e
-	ld b,004h		;783f
+	ld b,004h		;783f   ; cuatro sprites para la foca
 	cp 006h		;7841   ; En los pasos 13 y 14, con 0xE137 apagado, se enciende 0xE192: la foca pasa a los sprites 0-3, delante de todo
 	jr c,FOCA_PASO		;7843
 	ld hl,0e137h		;7845
@@ -4890,7 +4890,7 @@ SONIDO_PRIORIDAD:
 SONIDO_MONTA_CANAL:
 	dec hl			;79ce   ; Los dos `dec` bajan del +2 del canal al +0: un fotograma de arranque, duracion 1 y el numero, que es lo que marca el canal ocupado
 	dec hl			;79cf
-	ld (hl),001h		;79d0
+	ld (hl),001h		;79d0   ; la cuenta de arranque, a uno
 	inc hl			;79d2
 	ld (hl),001h		;79d3
 	inc hl			;79d5
@@ -4906,7 +4906,7 @@ SONIDO_MONTA_CANAL:
 	ld a,008h		;79df   ; Ocho mas alla del +4 es el +2 del canal siguiente; los flujos de un sonido de varios canales van seguidos en la tabla
 	call SUMA_A_HL		;79e1
 	inc de			;79e4
-	djnz SONIDO_MONTA_CANAL		;79e5
+	djnz SONIDO_MONTA_CANAL		;79e5   ; tantos canales como diga B
 SONIDO_NO:
 	ret			;79e7
 SONIDO_REPITE:		; El 0xFE: repite el trozo las veces que diga el byte de detras
