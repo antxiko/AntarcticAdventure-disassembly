@@ -106,12 +106,36 @@ class TestCifras(unittest.TestCase):
             self.assertIn(str(n), lee(os.path.join(RAIZ, pagina)),
                           "%s no publica los %d rangos" % (pagina, n))
 
+    # Las tres compilaciones que se desensamblan aqui, con el sha256 de su
+    # imagen. El de jap2 es ademas el que documentan las paginas de la web,
+    # porque la web sale de esa.
+    SHA = {
+        "jap1": "087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd",
+        "jap2": "a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452",
+        "eu":   "9b13aaa66661b69a8a9a19656d2d9fd052ddae11aba752e84ebb38b03137739a",
+    }
+
     def test_el_sha_del_cartucho_es_el_mismo_por_todas_partes(self):
-        SHA = "a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452"
+        """El de la version documentada, alli donde se habla de ella."""
         for fichero in ("Makefile", "README.md", "README.es.md",
                         "docs/es/EMPEZAR.md", "docs/GETTING-STARTED.md"):
-            self.assertIn(SHA, lee(os.path.join(RAIZ, fichero)),
+            self.assertIn(self.SHA["jap2"], lee(os.path.join(RAIZ, fichero)),
                           "%s no lleva el sha256 del cartucho" % fichero)
+
+    def test_los_README_publican_el_sha_de_LAS_TRES(self):
+        """Se desensamblan tres compilaciones, y quien traiga la suya tiene que
+        poder comprobar cual es.
+
+        Abreviar el sha en la tabla no vale: con ocho digitos por delante y
+        ocho por detras no se verifica nada. Este test existe porque se
+        publicaron abreviados y el guardian de arriba lo cazó a tiempo.
+        """
+        for fichero in ("README.md", "README.es.md"):
+            texto = lee(os.path.join(RAIZ, fichero))
+            for version, sha in self.SHA.items():
+                self.assertIn(sha, texto,
+                              "%s no lleva el sha256 entero de %s"
+                              % (fichero, version))
 
 
 class TestLasDiezFases(unittest.TestCase):

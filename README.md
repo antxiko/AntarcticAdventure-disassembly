@@ -83,8 +83,10 @@ what we say about them does. So two more checks run alongside:
 There's more, with the evidence, on
 [the findings page](https://antxiko.github.io/AntarcticAdventure-disassembly/FINDINGS.html).
 
-There are three different builds of this cartridge, and the one taken apart
-here is the **second Japanese version**. What changes between them — the
+There are three different builds of this cartridge, and **all three are taken
+apart here**, each in its own folder: `src/jap1/`, `src/jap2/` and `src/eu/`.
+All three reassemble into their own ROM byte for byte, and all three have every
+one of their 16,384 bytes accounted for. What changes between them — the
 background colour, the route, even how they talk to the video chip — is on
 [the versions page](https://antxiko.github.io/AntarcticAdventure-disassembly/THE-VERSIONS.html).
 
@@ -99,11 +101,19 @@ rest on
 ## Getting started
 
 You need `pasmo`, `z80dasm` and Python 3. The cartridge is **not** distributed
-here: put your own copy in the project root as `antarctic.rom`, 16384 bytes,
-sha256 `a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452`.
+here: put your own copies in the project root, 16384 bytes each, one file per
+build:
+
+| file | sha256 |
+|---|---|
+| `antarctic-jap1.rom` | `087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd` |
+| `antarctic-jap2.rom` | `a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452` |
+| `antarctic-eu.rom` | `9b13aaa66661b69a8a9a19656d2d9fd052ddae11aba752e84ebb38b03137739a` |
 
 ```sh
-make          # trace, build the listing and check everything
+make          # the second Japanese build, which is the default (V=jap2)
+make V=eu     # any one build: V is jap1, jap2 or eu
+make todas    # the three, one after another
 make verify   # just the acid test
 make graficos # decompress the artwork and dump it to PNG
 ```

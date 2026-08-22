@@ -84,9 +84,11 @@ lo que decimos de ellos. Así que van dos comprobaciones más al lado:
 Hay más, con la evidencia al lado, en
 [la página de hallazgos](https://antxiko.github.io/AntarcticAdventure-disassembly/es/HALLAZGOS.html).
 
-De este cartucho hay tres compilaciones distintas, y esta que se desensambla
-aquí es la **segunda versión japonesa**. Lo que cambia de una a otra —el color
-del fondo, el recorrido, y hasta cómo le hablan al chip gráfico— está en
+De este cartucho hay tres compilaciones distintas, y **aquí se desensamblan las
+tres**, cada una en su carpeta: `src/jap1/`, `src/jap2/` y `src/eu/`. Las tres
+reensamblan en su propia ROM byte a byte, y las tres tienen sus 16.384 bytes
+explicados. Lo que cambia de una a otra —el color del fondo, el recorrido, y
+hasta cómo le hablan al chip gráfico— está en
 [la página de las versiones](https://antxiko.github.io/AntarcticAdventure-disassembly/es/LAS-VERSIONES.html).
 
 ## Lo que queda abierto
@@ -99,11 +101,19 @@ lo que el jugador ve. Una cosa depende de eso, y están con las demás en
 ## Para empezar
 
 Hacen falta `pasmo`, `z80dasm` y Python 3. El cartucho **no** se distribuye
-aquí: pon tu propia copia en la raíz con el nombre `antarctic.rom`, 16384 bytes,
-sha256 `a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452`.
+aquí: pon tus propias copias en la raíz, 16384 bytes cada una y un fichero por
+compilación:
+
+| fichero | sha256 |
+|---|---|
+| `antarctic-jap1.rom` | `087378ddad1379a6e378f0810e9cf1dbb64ee03c36e630bb78020b754b7dfebd` |
+| `antarctic-jap2.rom` | `a33f9298bf6f740ebe8d88bdc8ed75c855404d804e07679d6c2f2ad00dc3c452` |
+| `antarctic-eu.rom` | `9b13aaa66661b69a8a9a19656d2d9fd052ddae11aba752e84ebb38b03137739a` |
 
 ```sh
-make          # traza, genera el listado y lo comprueba todo
+make          # la segunda japonesa, que es la que sale por defecto (V=jap2)
+make V=eu     # cualquiera de las tres: V es jap1, jap2 o eu
+make todas    # las tres seguidas
 make verify   # solo la prueba de fuego
 make graficos # descomprime los dibujos y los saca a PNG
 ```
