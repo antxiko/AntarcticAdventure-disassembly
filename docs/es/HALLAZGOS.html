@@ -89,6 +89,11 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 <p>Cuando el juego se queda solo, arranca una partida que juega sola. No hay ninguna inteligencia detrás: hay 64 bytes en 0x584A que llevan exactamente los mismos bits que devuelve el joystick, y el lector de mandos coge uno cada 32 fotogramas. Entre byte y byte se repite la dirección anterior, así que la grabación va a un ritmo muy lento y aun así basta.</p>
 <p>Se ve en los propios bytes: <code>01</code> es arriba, <code>09</code> arriba y derecha, <code>11</code> arriba y botón. Ni un valor sale del mapa de bits del mando.</p>
 <p>Y encaja hasta en la duración. La demo dura 0x073C pasos, que a un byte cada 32 son 58 bytes de los 64 que hay. La tira acaba exactamente donde empieza la primera instrucción de la rutina siguiente.</p>
+<h2 id="la-marca-oculta-de-konami-separa-las-compilaciones">La marca oculta de Konami separa las compilaciones</h2>
+<p>Konami escondió al final de muchos de sus cartuchos el número de catálogo y el título en katakana; lo descubrió <b>Manuel Pazos</b> (<a href="https://twitter.com/ManuelPazosMSX">@ManuelPazosMSX</a>). Aquí no la llevan todas:</p>
+<table><tr><th>compilación</th><th>marca</th><th>dónde acaba el contenido</th></tr><tr><td>primera japonesa</td><td>no</td><td>0x7E42, y detrás 445 bytes de relleno 0xFF</td></tr><tr><td>segunda japonesa</td><td><b>sí, RC-701</b></td><td>0x7FFF, el último byte del cartucho</td></tr><tr><td>europea</td><td>no</td><td>0x7E71, y detrás 398 bytes de relleno 0xFF</td></tr></table>
+<p>En la segunda japonesa el cartucho acaba en <code>14 01 AA</code>: veinte bytes de título, el <b>01</b> del RC-701 en BCD y el 0xAA que cierra la marca. El título, del revés y con el código de la casa, se lee KE·tsu·KI·yo·KU · NA·N·KI·yo·KU · TA·&quot;·I·HO·&quot;·U·KE·N: ケッキョク ナンキョク ダイボウケン.</p>
+<p>La cuarta compilación que circula, la que solo se distingue de la segunda japonesa en dos bytes (ver <a href="LAS-VERSIONES.html">las versiones</a>), también la lleva.</p>
 <h2 id="lo-primero-que-hace-el-cartucho-es-escribir-encima-de-la-bios">Lo primero que hace el cartucho es escribir encima de la BIOS</h2>
 <p>Entre inicializar la máquina y arrancar el juego hay estas cuatro instrucciones:</p>
 <pre><code>    ld hl,0411fh      ; origen: tres bytes que son C3 00 00, o sea jp 0000h
@@ -97,7 +102,7 @@ audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
     ldir</code></pre>
 <p>En un MSX eso no hace absolutamente nada, porque en 0x0000 hay ROM y la escritura se pierde por el camino.</p>
 <p>Las otras dos compilaciones del cartucho no llevan nada de esto: ni la primera japonesa ni la europea tienen estas cuatro instrucciones, ni siquiera los tres bytes sueltos de 0x411F. Es cosa de esta.</p>
-<p>Qué hace está comprobado leyendo los bytes; <b>para qué no se puede demostrar desde el binario</b>. La lectura que encaja es que sea un guardián contra correr el cartucho desde RAM, porque la escritura solo llega a alguna parte si eso de ahí no es ROM. Pero es una lectura, no una medida.</p>
+<p>Qué hace está comprobado leyendo los bytes, y <b>para qué lo dice una cuarta compilación</b>: es la segunda japonesa con dos bytes cambiados, y los dos son el destino de este <code>ldir</code>, que en vez de 0x0000 pasa a ser <code>DESPACHA</code>, la tabla de salto de la que no se vuelve. Es un <b>guardián contra correr el cartucho desde RAM</b>, y está contado en <a href="LAS-VERSIONES.html">las versiones</a>.</p>
 <h2 id="hay-una-base-a-la-que-no-se-llega-nunca">Hay una base a la que no se llega nunca</h2>
 <p>El cartucho lleva ocho nombres de base y el recorrido tiene diez paradas. Siete de esos nombres cubren las diez —Estados Unidos sale tres veces y Australia dos— y el octavo, <b>NEW ZEALAND</b>, no lo pide nadie.</p>
 <p>Comprobado por tres caminos distintos, porque una sola comprobación aquí no basta:</p>

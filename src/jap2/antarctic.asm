@@ -84,7 +84,7 @@ INIT:		; Punto de entrada del cartucho, declarado en la cabecera
 ; Que las dos unicas variantes de estos tres bytes apunten, una
 ; al vector de arranque y otra al propio cartucho, no deja
 ; mucho sitio para otra explicacion.
-; Es la misma idea que gastan otros diez cartuchos de la casa,
+; Es la misma idea que gastan otros trece cartuchos de la casa,
 ; que Manuel Pazos identifico en el RC-727.
 ; ----------------------------------------------------------------------
 	ld hl,0411fh		;404c   ; Origen: los tres bytes `jp 0000h` de 0x411F

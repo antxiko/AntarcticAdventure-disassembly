@@ -195,7 +195,7 @@ from RAM**, and here it is measured rather than guessed. On a real cartridge it
 is an instruction you never notice, which is precisely the point.
 
 This is no one-off idea in this cartridge: the same one —writing inside its own
-space, harmless in ROM and lethal in RAM— is in ten others in this series.
+space, harmless in ROM and lethal in RAM— is in thirteen others in this series.
 **Manuel Pazos** identified it in his disassembly of RC-727.
 
 ## What we don't know

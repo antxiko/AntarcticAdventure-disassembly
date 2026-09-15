@@ -195,7 +195,7 @@ desde RAM**, y aquí está medido y no leído. En un cartucho de verdad es una
 instrucción que no se nota, que es exactamente para lo que sirve.
 
 No es una idea suelta de este cartucho: la misma —escribir dentro del propio
-espacio, inofensivo en ROM y letal en RAM— está en otros diez de esta serie. La
+espacio, inofensivo en ROM y letal en RAM— está en otros trece de esta serie. La
 identificó **Manuel Pazos** en su desensamblado del RC-727.
 
 ## Lo que no sabemos

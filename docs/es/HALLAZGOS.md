@@ -19,6 +19,20 @@ Y encaja hasta en la duración. La demo dura 0x073C pasos, que a un byte cada
 32 son 58 bytes de los 64 que hay. La tira acaba exactamente donde empieza la
 primera instrucción de la rutina siguiente.
 
+## La marca oculta de Konami separa las compilaciones
+
+Konami escondió al final de muchos de sus cartuchos el número de catálogo y el título en katakana; lo descubrió **Manuel Pazos** ([@ManuelPazosMSX](https://twitter.com/ManuelPazosMSX)). Aquí no la llevan todas:
+
+| compilación | marca | dónde acaba el contenido |
+|---|---|---|
+| primera japonesa | no | 0x7E42, y detrás 445 bytes de relleno 0xFF |
+| segunda japonesa | **sí, RC-701** | 0x7FFF, el último byte del cartucho |
+| europea | no | 0x7E71, y detrás 398 bytes de relleno 0xFF |
+
+En la segunda japonesa el cartucho acaba en `14 01 AA`: veinte bytes de título, el **01** del RC-701 en BCD y el 0xAA que cierra la marca. El título, del revés y con el código de la casa, se lee KE·tsu·KI·yo·KU · NA·N·KI·yo·KU · TA·"·I·HO·"·U·KE·N: ケッキョク ナンキョク ダイボウケン.
+
+La cuarta compilación que circula, la que solo se distingue de la segunda japonesa en dos bytes (ver [las versiones](LAS-VERSIONES.html)), también la lleva.
+
 ## Lo primero que hace el cartucho es escribir encima de la BIOS
 
 Entre inicializar la máquina y arrancar el juego hay estas cuatro
@@ -38,10 +52,11 @@ Las otras dos compilaciones del cartucho no llevan nada de esto: ni la primera
 japonesa ni la europea tienen estas cuatro instrucciones, ni siquiera los tres
 bytes sueltos de 0x411F. Es cosa de esta.
 
-Qué hace está comprobado leyendo los bytes; **para qué no se puede demostrar
-desde el binario**. La lectura que encaja es que sea un guardián contra correr
-el cartucho desde RAM, porque la escritura solo llega a alguna parte si eso de
-ahí no es ROM. Pero es una lectura, no una medida.
+Qué hace está comprobado leyendo los bytes, y **para qué lo dice una cuarta
+compilación**: es la segunda japonesa con dos bytes cambiados, y los dos son el
+destino de este `ldir`, que en vez de 0x0000 pasa a ser `DESPACHA`, la tabla de
+salto de la que no se vuelve. Es un **guardián contra correr el cartucho desde
+RAM**, y está contado en [las versiones](LAS-VERSIONES.html).
 
 ## Hay una base a la que no se llega nunca
 

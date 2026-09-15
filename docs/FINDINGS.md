@@ -19,6 +19,20 @@ And the length works out too. The demo runs 0x073C steps, which at one byte
 every 32 is 58 of the 64 that are there. The run ends exactly where the next
 routine's first instruction begins.
 
+## Konami's hidden mark tells the builds apart
+
+At the end of many of its cartridges Konami hid the catalogue number and the title in katakana; **Manuel Pazos** ([@ManuelPazosMSX](https://twitter.com/ManuelPazosMSX)) found it. Here not every build carries it:
+
+| build | mark | where the content ends |
+|---|---|---|
+| first Japanese | no | 0x7E42, followed by 445 bytes of 0xFF padding |
+| second Japanese | **yes, RC-701** | 0x7FFF, the cartridge's last byte |
+| European | no | 0x7E71, followed by 398 bytes of 0xFF padding |
+
+In the second Japanese build the cartridge ends in `14 01 AA`: twenty bytes of title, the **01** of RC-701 in BCD and the 0xAA that closes the mark. The title, backwards and in the house's own code, reads KE·tsu·KI·yo·KU · NA·N·KI·yo·KU · TA·"·I·HO·"·U·KE·N: ケッキョク ナンキョク ダイボウケン.
+
+The fourth build going around, the one that differs from the second Japanese in just two bytes (see [the versions](THE-VERSIONS.html)), carries it too.
+
 ## The first thing the cartridge does is write over the BIOS
 
 Between bringing the machine up and starting the game sit these four
@@ -38,10 +52,11 @@ The cartridge's other two builds carry none of this: neither the first Japanese
 version nor the European one has these four instructions, not even the three
 loose bytes at 0x411F. It belongs to this one.
 
-What it does is settled by reading the bytes; **what it's for can't be proved
-from the binary**. The reading that fits is a guard against running the
-cartridge from RAM, since the write only lands anywhere if what's there isn't
-ROM. But that's a reading, not a measurement.
+What it does is settled by reading the bytes, and **what it is for is settled
+by a fourth build**: the second Japanese one with two bytes changed, both of
+them the target of this `ldir`, which goes from 0x0000 to `DESPACHA`, the
+dispatch table nothing returns from. It is a **guard against running the
+cartridge from RAM**, and the whole story is in [the versions](THE-VERSIONS.html).
 
 ## There's a base you never reach
 

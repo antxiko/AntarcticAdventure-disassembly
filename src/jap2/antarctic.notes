@@ -62,7 +62,7 @@ B 0x404c juego se reinicia en cuanto pasa por cualquiera de los seis.
 B 0x404c Que las dos unicas variantes de estos tres bytes apunten, una
 B 0x404c al vector de arranque y otra al propio cartucho, no deja
 B 0x404c mucho sitio para otra explicacion.
-B 0x404c Es la misma idea que gastan otros diez cartuchos de la casa,
+B 0x404c Es la misma idea que gastan otros trece cartuchos de la casa,
 B 0x404c que Manuel Pazos identifico en el RC-727.
 C 0x404c Origen: los tres bytes `jp 0000h` de 0x411F
 C 0x404f Destino: 0x0000, la entrada de la BIOS. Es ROM, asi que la escritura se pierde. En la cuarta compilacion estos dos bytes son 0x40B2 -DESPACHA-, y ahi se ve que esto es un guardian anticopia
