@@ -171,11 +171,32 @@ Neither the first Japanese version nor the European carries any of this: the
 copy doesn't exist anywhere in those two, not even the three loose bytes at
 0x411F.
 
-What it does is settled by reading the bytes; **what it's for can't be proved
-from the binary**. The reading that fits is a guard against running the
-cartridge from RAM, since the write only lands anywhere if what's there isn't
-ROM, and on a real cartridge it's an instruction you never notice: it checks
-nothing and warns about nothing. But that's a reading, not a measurement.
+What it does is settled by reading the bytes. **What it is for is settled by a
+fourth build.**
+
+Besides the three taken apart here there is a fourth dump around (sha256
+`17f4dd654c93…`, circulating under *European Version* names), and it is not a
+new build: it is **this one with two bytes changed**. Those two bytes are
+exactly the operand of that `ld de`:
+
+| | `ldir` destination | what is there |
+|---|---|---|
+| second Japanese | `0x0000` | the BIOS entry point |
+| the fourth | `0x40B2` | `DESPACHA`, inside the cartridge itself |
+
+`DESPACHA` is the dispatch table **six places call and never return from**.
+Leaving a `jp 0000h` on top of it is no small thing: in a copy loaded into RAM
+the game resets the moment it goes through any of those six.
+
+That the only two known variants of those three bytes should point, one at the
+machine's boot vector and the other at the heart of the cartridge itself, leaves
+little room for another reading: **it is a guard against running the cartridge
+from RAM**, and here it is measured rather than guessed. On a real cartridge it
+is an instruction you never notice, which is precisely the point.
+
+This is no one-off idea in this cartridge: the same one —writing inside its own
+space, harmless in ROM and lethal in RAM— is in ten others in this series.
+**Manuel Pazos** identified it in his disassembly of RC-727.
 
 ## What we don't know
 

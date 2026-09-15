@@ -171,11 +171,32 @@ Ahí hay ROM, así que la escritura se pierde y no pasa nada.
 Ni la primera japonesa ni la europea llevan nada de esto: la copia no existe en
 ninguna parte de esas dos, ni siquiera los tres bytes sueltos de 0x411F.
 
-Qué hace está comprobado leyendo los bytes; **para qué no se puede demostrar
-desde el binario**. La lectura que encaja es que sea un guardián contra correr
-el cartucho desde RAM, porque la escritura solo llega a alguna parte si eso de
-ahí no es ROM, y en un cartucho de verdad es una instrucción que no se nota:
-no comprueba nada ni avisa de nada. Pero es una lectura, no una medida.
+Qué hace está comprobado leyendo los bytes. **Para qué, lo dice una cuarta
+compilación.**
+
+Además de las tres que se desensamblan aquí hay un cuarto volcado por ahí
+(sha256 `17f4dd654c93…`, que circula con nombres de *European Version*), y no es
+una compilación nueva: es **ésta misma con dos bytes cambiados**. Los dos bytes
+son justo el operando de ese `ld de`:
+
+| | destino del `ldir` | qué hay ahí |
+|---|---|---|
+| segunda japonesa | `0x0000` | la entrada de la BIOS |
+| la cuarta | `0x40B2` | `DESPACHA`, dentro del propio cartucho |
+
+`DESPACHA` es la tabla de salto que **llaman seis sitios y de la que no se
+vuelve**. Dejarle un `jp 0000h` encima no es un detalle: en una copia cargada en
+RAM el juego se reinicia en cuanto pasa por cualquiera de los seis.
+
+Que las dos únicas variantes conocidas de esos tres bytes apunten, una al vector
+de arranque de la máquina y la otra al corazón del propio cartucho, no deja
+mucho sitio para otra explicación: **es un guardián contra correr el cartucho
+desde RAM**, y aquí está medido y no leído. En un cartucho de verdad es una
+instrucción que no se nota, que es exactamente para lo que sirve.
+
+No es una idea suelta de este cartucho: la misma —escribir dentro del propio
+espacio, inofensivo en ROM y letal en RAM— está en otros diez de esta serie. La
+identificó **Manuel Pazos** en su desensamblado del RC-727.
 
 ## Lo que no sabemos
 

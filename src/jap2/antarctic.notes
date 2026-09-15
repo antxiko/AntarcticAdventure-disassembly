@@ -49,13 +49,23 @@ B 0x404c ROM, asi que la escritura se pierde y no pasa nada.
 B 0x404c Solo lleva esto la segunda japonesa: ni la primera japonesa ni
 B 0x404c la europea tienen el LDIR, ni siquiera los tres bytes sueltos
 B 0x404c de 0x411F.
-B 0x404c Que hace: comprobado leyendo los bytes. Para que: NO SE PUEDE
-B 0x404c DEMOSTRAR desde el binario. La lectura que encaja es que sea un
-B 0x404c guardian contra correr el cartucho desde RAM, porque la
-B 0x404c escritura solo llega a alguna parte si eso de ahi no es ROM;
-B 0x404c pero es una lectura, no una medida.
+B 0x404c Que hace: comprobado leyendo los bytes. Para que: ES UN
+B 0x404c GUARDIAN CONTRA CORRER EL CARTUCHO DESDE RAM, y ya no es una
+B 0x404c lectura sino una medida. Lo demuestra una CUARTA compilacion
+B 0x404c (sha256 17f4dd654c93...), que es esta misma con DOS bytes
+B 0x404c cambiados, y los dos son justo el operando de este `ld de`:
+B 0x404c en vez de 0x0000 pone 0x40B2, que es el primer byte de
+B 0x404c DESPACHA, la tabla de salto que llaman seis sitios y de la que
+B 0x404c no se vuelve. Corriendo desde ROM tampoco llega; en una copia
+B 0x404c cargada en RAM deja un `jp 0000h` encima de DESPACHA y el
+B 0x404c juego se reinicia en cuanto pasa por cualquiera de los seis.
+B 0x404c Que las dos unicas variantes de estos tres bytes apunten, una
+B 0x404c al vector de arranque y otra al propio cartucho, no deja
+B 0x404c mucho sitio para otra explicacion.
+B 0x404c Es la misma idea que gastan otros diez cartuchos de la casa,
+B 0x404c que Manuel Pazos identifico en el RC-727.
 C 0x404c Origen: los tres bytes `jp 0000h` de 0x411F
-C 0x404f Destino: 0x0000, la entrada de la BIOS. Es ROM, asi que la escritura se pierde
+C 0x404f Destino: 0x0000, la entrada de la BIOS. Es ROM, asi que la escritura se pierde. En la cuarta compilacion estos dos bytes son 0x40B2 -DESPACHA-, y ahi se ve que esto es un guardian anticopia
 C 0x4057 Lee el registro de estado del VDP para descartar la interrupcion pendiente
 L 0x405B PARADO           INIT acaba aqui: bucle vacio. El juego entero corre en la interrupcion
 

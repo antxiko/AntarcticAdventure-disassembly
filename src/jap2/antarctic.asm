@@ -71,14 +71,24 @@ INIT:		; Punto de entrada del cartucho, declarado en la cabecera
 ; Solo lleva esto la segunda japonesa: ni la primera japonesa ni
 ; la europea tienen el LDIR, ni siquiera los tres bytes sueltos
 ; de 0x411F.
-; Que hace: comprobado leyendo los bytes. Para que: NO SE PUEDE
-; DEMOSTRAR desde el binario. La lectura que encaja es que sea un
-; guardian contra correr el cartucho desde RAM, porque la
-; escritura solo llega a alguna parte si eso de ahi no es ROM;
-; pero es una lectura, no una medida.
+; Que hace: comprobado leyendo los bytes. Para que: ES UN
+; GUARDIAN CONTRA CORRER EL CARTUCHO DESDE RAM, y ya no es una
+; lectura sino una medida. Lo demuestra una CUARTA compilacion
+; (sha256 17f4dd654c93...), que es esta misma con DOS bytes
+; cambiados, y los dos son justo el operando de este `ld de`:
+; en vez de 0x0000 pone 0x40B2, que es el primer byte de
+; DESPACHA, la tabla de salto que llaman seis sitios y de la que
+; no se vuelve. Corriendo desde ROM tampoco llega; en una copia
+; cargada en RAM deja un `jp 0000h` encima de DESPACHA y el
+; juego se reinicia en cuanto pasa por cualquiera de los seis.
+; Que las dos unicas variantes de estos tres bytes apunten, una
+; al vector de arranque y otra al propio cartucho, no deja
+; mucho sitio para otra explicacion.
+; Es la misma idea que gastan otros diez cartuchos de la casa,
+; que Manuel Pazos identifico en el RC-727.
 ; ----------------------------------------------------------------------
 	ld hl,0411fh		;404c   ; Origen: los tres bytes `jp 0000h` de 0x411F
-	ld de,00000h		;404f   ; Destino: 0x0000, la entrada de la BIOS. Es ROM, asi que la escritura se pierde
+	ld de,00000h		;404f   ; Destino: 0x0000, la entrada de la BIOS. Es ROM, asi que la escritura se pierde. En la cuarta compilacion estos dos bytes son 0x40B2 -DESPACHA-, y ahi se ve que esto es un guardian anticopia
 	ld bc,00003h		;4052
 	ldir		;4055
 	call 0013eh		;4057   ; BIOS RDVDP - Reads VDP status register | Lee el registro de estado del VDP para descartar la interrupcion pendiente
