@@ -126,7 +126,14 @@ clean:
 	rm -rf work/png work/vram.bin work/vram.escrito
 	rm -rf $(foreach v,$(VERSIONES),work/$(v))
 
-.PHONY: all todas comprueba trace listado verify graficos sanity compara test \
+
+PYMUS ?= python3     # el que tenga numpy y lameenc
+# La musica: el motor del cartucho ejecutado (tools/musica.py) a MP3
+musica: $(ROM)
+	$(PYMUS) tools/musica.py todas docs/audio
+	$(PYMUS) tools/pagina_musica.py
+
+.PHONY: musica all todas comprueba trace listado verify graficos sanity compara test \
         clean imagenes web
 
 # Las imagenes de la web salen del propio cartucho: se descomprime lo que el
