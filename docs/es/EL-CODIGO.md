@@ -174,3 +174,24 @@ De los veinticuatro punteros de flujo, uno apunta fuera del cartucho —el del
 sonido cero, que no se pide nunca— y tres apuntan al mismo sitio: a un byte de
 fin. Ese es el silencio, y es lo que el arranque pide para dejar el chip
 callado.
+
+## Código compartido con otros cartuchos de Konami
+
+Este desensamblado se ha comparado, instrucción por instrucción, con
+todos los demás de Konami de la serie. Cuenta un bloque cuando las
+mismas instrucciones, al menos seis desde una etiqueta hasta su `ret`
+o su salto sin condición, están en los dos cartuchos; las direcciones
+no se miran, porque cambian de un cartucho a otro. De los otros 57,
+**48** tienen al menos un bloque en común con este; estos son los
+que más comparten:
+
+| Cartucho | Bloques | Instrucciones | Por ejemplo (aquí = allí) |
+|---|---:|---:|---|
+| [Athletic Land](https://antxiko.github.io/AthleticLand-disassembly/es/) | 14 | 222 | `CANAL_SIGUE` (0x79F4) = `SUENA_PASO` |
+| [Monkey Academy](https://antxiko.github.io/MonkeyAcademy-disassembly/es/) | 9 | 184 | `VOLUMEN_MIRA_FD` (0x7A76) = `MUSICA_EVENTO` |
+| [Super Cobra](https://antxiko.github.io/SuperCobra-disassembly/es/) | 6 | 98 | `VOLUMEN_MIRA_FD` (0x7A76) = `MUSICA_EVENTO` |
+| [Circus Charlie](https://antxiko.github.io/CircusCharlie-disassembly/es/) | 5 | 51 | `PINTA_FASE` (0x4709) = `pinta_el_numero_de_fase` |
+
+La matriz entera, los 58 cartuchos entre sí, está en
+[Las rutinas](https://antxiko.github.io/MSX-disassembly-database/es/LAS-RUTINAS.html) de la base de datos de la
+serie, con el método y el programa que la mide.

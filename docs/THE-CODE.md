@@ -168,3 +168,24 @@ Of the twenty-four stream pointers, one points outside the cartridge —sound
 zero, which is never asked for— and three point at the same place: an
 end-of-stream byte. That's the silence, and it's what the startup asks for to
 leave the chip quiet before it begins.
+
+## Code shared with other Konami cartridges
+
+This disassembly has been compared, instruction by instruction, with
+every other Konami one in the series. A block counts when the same
+instructions, at least six of them from a label to its `ret` or its
+unconditional jump, are in both cartridges; the addresses are left
+aside, because they change from one cartridge to the next. Of the
+other 57, **48** have at least one block in common with this one;
+these are the ones that share the most:
+
+| Cartridge | Blocks | Instructions | For example (here = there) |
+|---|---:|---:|---|
+| [Athletic Land](https://antxiko.github.io/AthleticLand-disassembly/) | 14 | 222 | `CANAL_SIGUE` (0x79F4) = `SUENA_PASO` |
+| [Monkey Academy](https://antxiko.github.io/MonkeyAcademy-disassembly/) | 9 | 184 | `VOLUMEN_MIRA_FD` (0x7A76) = `MUSICA_EVENTO` |
+| [Super Cobra](https://antxiko.github.io/SuperCobra-disassembly/) | 6 | 98 | `VOLUMEN_MIRA_FD` (0x7A76) = `MUSICA_EVENTO` |
+| [Circus Charlie](https://antxiko.github.io/CircusCharlie-disassembly/) | 5 | 51 | `PINTA_FASE` (0x4709) = `pinta_el_numero_de_fase` |
+
+The whole matrix, the 58 cartridges against each other, is on
+[The routines](https://antxiko.github.io/MSX-disassembly-database/THE-ROUTINES.html) in the series database, along
+with the method and the program that measures it.
